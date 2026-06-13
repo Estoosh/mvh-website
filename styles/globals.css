@@ -1,4 +1,3 @@
-```css
 @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap');
 
 *, *::before, *::after {
@@ -10,7 +9,6 @@
 :root {
   --black: #0A0A0A;
   --bronze: #C4922A;
-  --bronze-light: #E8B84B;
   --white: #FFFFFF;
   --gray-100: #F5F5F5;
   --gray-200: #E8E8E8;
@@ -42,9 +40,3 @@ button {
   border: none;
   outline: none;
 }
-
-img {
-  max-width: 100%;
-  display: block;
-}
-```
