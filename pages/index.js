@@ -192,5 +192,5 @@ export default function Home() {
             <form onSubmit={handleEmailSubmit} style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
               <input
                 type="email"
-                placeholder="כתובת המייל שלכם"
+                placeholder="Email"
                 value={email}
