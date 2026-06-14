@@ -10,7 +10,7 @@ export default function Header() {
           <span style={{ fontSize: 28, fontWeight: 800, color: '#ffffff' }}>H</span>
         </Link>
         <nav style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
-          <Link href="/" style={{ color: '#999999', fontSize: 14, textDecoration: 'none' }}>Tours</Link>
+          <Link href="/" style={{ color: '#999999', fontSize: 14, textDecoration: 'none' }}>סיורים</Link>
           <a href="https://open.spotify.com" target="_blank" rel="noopener noreferrer"
             style={{ background: '#C4922A', color: '#ffffff', padding: '8px 18px', borderRadius: 4, fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
             Listen
