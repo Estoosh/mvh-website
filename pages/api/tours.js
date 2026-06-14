@@ -2,7 +2,7 @@ export default async function handler(req, res) {
   const token = process.env.AIRTABLE_TOKEN
   const baseId = process.env.AIRTABLE_BASE_ID
 
-  const url = `https://api.airtable.com/v0/${baseId}/tbl4eJRVg1lRsqAjF`
+  const url = `https://api.airtable.com/v0/${baseId}/tblINQoN9zrZCfR93`
   
   const response = await fetch(url, {
     headers: {
