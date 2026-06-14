@@ -1,5 +1,19 @@
 export default async function handler(req, res) {
-  res.status(200).json({
-    token_preview: process.env.AIRTABLE_TOKEN ? process.env.AIRTABLE_TOKEN.substring(0, 20) : 'missing'
+  const token = process.env.AIRTABLE_TOKEN
+  const baseId = process.env.AIRTABLE_BASE_ID
+
+  const url = `https://api.airtable.com/v0/${baseId}/tbl4eJRVg1lRsqAjF`
+  
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+  })
+
+  const text = await response.text()
+  res.status(200).json({ 
+    status: response.status,
+    body: text
   })
 }
