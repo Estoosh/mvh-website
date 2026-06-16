@@ -126,4 +126,11 @@ export default function AddTour() {
             {input('collab_code', 'קוד שת"פ', 'text', false)}
           </div>
           <button type="submit" disabled={loading}
-            style={{ width: '100%', background: '#0A0A0A',
+            style={{ width: '100%', background: '#0A0A0A', color: '#ffffff', padding: '14px', borderRadius: 8, fontSize: 16, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}>
+            {loading ? 'שומר...' : 'פרסם סיור'}
+          </button>
+        </form>
+      </div>
+    </div>
+  )
+}
