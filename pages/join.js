@@ -39,15 +39,18 @@ export default function Join() {
     }
   }
 
-  const input = function(name, label, type) {
+  const input = function(name, label, type, required) {
     return (
       <div style={{ marginBottom: 16 }}>
-        <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: '#444' }}>{label}</label>
+        <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: '#444' }}>
+          {label} {required && <span style={{ color: '#C4922A' }}>*</span>}
+        </label>
         <input
           type={type || 'text'}
           name={name}
           value={form[name]}
           onChange={handleChange}
+          required={required}
           style={{ width: '100%', padding: '10px 14px', borderRadius: 6, border: '1px solid #ddd', fontSize: 15, fontFamily: 'Heebo, Arial, sans-serif', outline: 'none' }}
         />
       </div>
@@ -83,30 +86,35 @@ export default function Join() {
         </div>
 
         <div style={{ background: '#F9F9F9', borderRadius: 12, padding: 32 }}>
-          <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 24 }}>פרטי ההצטרפות</h2>
+          <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>פרטי ההצטרפות</h2>
+          <p style={{ fontSize: 12, color: '#999', marginBottom: 24 }}>שדות המסומנים ב-* הם חובה</p>
           <form onSubmit={handleSubmit}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 4 }}>
               <div>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: '#444' }}>שם פרטי</label>
-                <input type="text" name="first_name" value={form.first_name} onChange={handleChange}
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: '#444' }}>
+                  שם פרטי <span style={{ color: '#C4922A' }}>*</span>
+                </label>
+                <input type="text" name="first_name" value={form.first_name} onChange={handleChange} required
                   style={{ width: '100%', padding: '10px 14px', borderRadius: 6, border: '1px solid #ddd', fontSize: 15, fontFamily: 'Heebo, Arial, sans-serif', outline: 'none' }} />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: '#444' }}>שם משפחה</label>
-                <input type="text" name="last_name" value={form.last_name} onChange={handleChange}
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: '#444' }}>
+                  שם משפחה <span style={{ color: '#C4922A' }}>*</span>
+                </label>
+                <input type="text" name="last_name" value={form.last_name} onChange={handleChange} required
                   style={{ width: '100%', padding: '10px 14px', borderRadius: 6, border: '1px solid #ddd', fontSize: 15, fontFamily: 'Heebo, Arial, sans-serif', outline: 'none' }} />
               </div>
             </div>
-            {input('business_name', 'שם העסק (יופיע על החשבונית)')}
-            {input('address', 'כתובת העסק')}
-            {input('phone', 'טלפון', 'tel')}
-            {input('email', 'מייל', 'email')}
+            {input('business_name', 'שם העסק (יופיע על החשבונית)', 'text', true)}
+            {input('address', 'כתובת העסק', 'text', true)}
+            {input('phone', 'טלפון', 'tel', true)}
+            {input('email', 'מייל', 'email', true)}
             <div style={{ borderTop: '1px solid #eee', paddingTop: 16, marginTop: 8, marginBottom: 16 }}>
               <p style={{ fontSize: 12, color: '#999', marginBottom: 12 }}>רשתות חברתיות (לא חובה)</p>
-              {input('website', 'אתר אינטרנט', 'url')}
-              {input('facebook', 'פייסבוק')}
-              {input('instagram', 'אינסטגרם')}
-              {input('tiktok', 'טיקטוק')}
+              {input('website', 'אתר אינטרנט', 'url', false)}
+              {input('facebook', 'פייסבוק', 'text', false)}
+              {input('instagram', 'אינסטגרם', 'text', false)}
+              {input('tiktok', 'טיקטוק', 'text', false)}
             </div>
             <button type="submit" disabled={loading}
               style={{ width: '100%', background: '#0A0A0A', color: '#ffffff', padding: '14px', borderRadius: 8, fontSize: 16, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}>
