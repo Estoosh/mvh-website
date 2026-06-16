@@ -25,6 +25,7 @@ export default function AddTour() {
     fetch('/api/get-guide?clerk_id=' + user.id)
       .then(function(r) { return r.json() })
       .then(function(data) {
+        console.log('get-guide response:', data)
         if (!data.found) { router.push('/join'); return }
         setGuideId(data.airtable_id)
       })
@@ -36,6 +37,8 @@ export default function AddTour() {
 
   const handleSubmit = async function(e) {
     e.preventDefault()
+    console.log('submit clicked, guideId:', guideId)
+    console.log('form:', form)
     setLoading(true)
     try {
       const res = await fetch('/api/add-tour', {
@@ -44,6 +47,7 @@ export default function AddTour() {
         body: JSON.stringify(Object.assign({}, form, { guide_id: guideId }))
       })
       const data = await res.json()
+      console.log('response:', data)
       if (res.ok) {
         router.push('/dashboard')
       } else {
@@ -51,7 +55,7 @@ export default function AddTour() {
         setLoading(false)
       }
     } catch(err) {
-      console.error(err)
+      console.error('error:', err)
       setLoading(false)
     }
   }
