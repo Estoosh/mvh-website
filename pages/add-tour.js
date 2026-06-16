@@ -25,7 +25,6 @@ export default function AddTour() {
     fetch('/api/get-guide?clerk_id=' + user.id)
       .then(function(r) { return r.json() })
       .then(function(data) {
-        console.log('get-guide response:', data)
         if (!data.found) { router.push('/join'); return }
         setGuideId(data.airtable_id)
       })
@@ -37,8 +36,6 @@ export default function AddTour() {
 
   const handleSubmit = async function(e) {
     e.preventDefault()
-    console.log('submit clicked, guideId:', guideId)
-    console.log('form:', form)
     setLoading(true)
     try {
       const res = await fetch('/api/add-tour', {
@@ -47,15 +44,14 @@ export default function AddTour() {
         body: JSON.stringify(Object.assign({}, form, { guide_id: guideId }))
       })
       const data = await res.json()
-      console.log('response:', data)
-      if (res.ok) {
+      if (data.id) {
         router.push('/dashboard')
       } else {
         console.error(data)
         setLoading(false)
       }
     } catch(err) {
-      console.error('error:', err)
+      console.error(err)
       setLoading(false)
     }
   }
@@ -130,11 +126,4 @@ export default function AddTour() {
             {input('collab_code', 'קוד שת"פ', 'text', false)}
           </div>
           <button type="submit" disabled={loading}
-            style={{ width: '100%', background: '#0A0A0A', color: '#ffffff', padding: '14px', borderRadius: 8, fontSize: 16, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}>
-            {loading ? 'שומר...' : 'פרסם סיור'}
-          </button>
-        </form>
-      </div>
-    </div>
-  )
-}
+            style={{ width: '100%', background: '#0A0A0A',
