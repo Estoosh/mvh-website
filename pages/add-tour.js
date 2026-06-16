@@ -8,6 +8,7 @@ export default function AddTour() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [guideId, setGuideId] = useState(null)
+  const [guide, setGuide] = useState(null)
   const [form, setForm] = useState({
     title: '',
     teaser: '',
@@ -27,6 +28,7 @@ export default function AddTour() {
       .then(function(data) {
         if (!data.found) { router.push('/join'); return }
         setGuideId(data.airtable_id)
+        setGuide(data.guide)
       })
   }, [isLoaded, user])
 
@@ -41,7 +43,10 @@ export default function AddTour() {
       const res = await fetch('/api/add-tour', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(Object.assign({}, form, { guide_id: guideId }))
+        body: JSON.stringify(Object.assign({}, form, {
+          guide_id: guideId,
+          guide_name: guide ? guide.Guide_Name : ''
+        }))
       })
       const data = await res.json()
       if (data.id) {
@@ -62,14 +67,8 @@ export default function AddTour() {
         <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: '#444' }}>
           {label} {required && <span style={{ color: '#C4922A' }}>*</span>}
         </label>
-        <input
-          type={type || 'text'}
-          name={name}
-          value={form[name]}
-          onChange={handleChange}
-          required={required}
-          style={{ width: '100%', padding: '10px 14px', borderRadius: 6, border: '1px solid #ddd', fontSize: 15, fontFamily: 'Heebo, Arial, sans-serif', outline: 'none' }}
-        />
+        <input type={type || 'text'} name={name} value={form[name]} onChange={handleChange} required={required}
+          style={{ width: '100%', padding: '10px 14px', borderRadius: 6, border: '1px solid #ddd', fontSize: 15, fontFamily: 'Heebo, Arial, sans-serif', outline: 'none' }} />
       </div>
     )
   }
@@ -80,14 +79,8 @@ export default function AddTour() {
         <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: '#444' }}>
           {label} {required && <span style={{ color: '#C4922A' }}>*</span>}
         </label>
-        <textarea
-          name={name}
-          value={form[name]}
-          onChange={handleChange}
-          required={required}
-          rows={4}
-          style={{ width: '100%', padding: '10px 14px', borderRadius: 6, border: '1px solid #ddd', fontSize: 15, fontFamily: 'Heebo, Arial, sans-serif', outline: 'none', resize: 'vertical' }}
-        />
+        <textarea name={name} value={form[name]} onChange={handleChange} required={required} rows={4}
+          style={{ width: '100%', padding: '10px 14px', borderRadius: 6, border: '1px solid #ddd', fontSize: 15, fontFamily: 'Heebo, Arial, sans-serif', outline: 'none', resize: 'vertical' }} />
       </div>
     )
   }
