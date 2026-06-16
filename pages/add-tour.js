@@ -1,10 +1,9 @@
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/router'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Header from '../components/Header'
 
 const CITIES = ["אילת","אשדוד","אשקלון","באר שבע","באר יעקב","בית שאן","בית שמש","בני ברק","גבעתיים","דימונה","הוד השרון","הרצליה","חדרה","חולון","חיפה","טבריה","טירת כרמל","יבנה","יהוד","ירושלים","כפר סבא","כרמיאל","לוד","מודיעין","נהריה","נס ציונה","נצרת","נתיבות","נתניה","עכו","עפולה","פתח תקווה","צפת","קריית אתא","קריית גת","קריית מוצקין","קריית שמונה","ראש העין","ראשון לציון","רהט","רחובות","רמלה","רמת גן","רמת השרון","רעננה","שדרות","תל אביב","עין גדי","מצדה","קומראן","ים המלח","השרון","גליל עליון","גליל מערבי","גולן","נגב","ערבה","שפלה","שרון"]
-
 const DAYS = ["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"]
 const TIMES = ["בוקר","אחה\"צ","ערב"]
 const DEFAULT_ITEMS = ["מים","כובע","קרם הגנה","תכשיר נגד יתושים","נעלי הליכה","בגדים נוחים","אוכל קל","מטען לטלפון","מצלמה","כסף מזומן"]
@@ -23,6 +22,9 @@ export default function AddTour() {
   const [checkedItems, setCheckedItems] = useState(["מים","כובע","קרם הגנה"])
   const [customItem, setCustomItem] = useState('')
   const [extraItems, setExtraItems] = useState([])
+  const [meetingPoint, setMeetingPoint] = useState('')
+  const [meetingLink, setMeetingLink] = useState('')
+  const meetingRef = useRef(null)
   const [form, setForm] = useState({
     title: '',
     teaser: '',
@@ -32,7 +34,6 @@ export default function AddTour() {
     cities: '',
     min_age: '1',
     max_age: '99',
-    meeting_point: '',
     collab_code: '',
     pets_allowed: false,
   })
@@ -47,6 +48,28 @@ export default function AddTour() {
         setGuide(data.guide)
       })
   }, [isLoaded, user])
+
+  useEffect(function() {
+    if (!window.google) {
+      var script = document.createElement('script')
+      script.src = 'https://maps.googleapis.com/maps/api/js?key=' + process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY + '&libraries=places&language=he'
+      script.async = true
+      script.onload = initAutocomplete
+      document.head.appendChild(script)
+    } else {
+      initAutocomplete()
+    }
+  }, [])
+
+  function initAutocomplete() {
+    if (!meetingRef.current) return
+    var autocomplete = new window.google.maps.places.Autocomplete(meetingRef.current, { language: 'he' })
+    autocomplete.addListener('place_changed', function() {
+      var place = autocomplete.getPlace()
+      setMeetingPoint(place.formatted_address || '')
+      setMeetingLink(place.url || 'https://maps.google.com/?q=' + encodeURIComponent(place.formatted_address || ''))
+    })
+  }
 
   const handleChange = function(e) {
     var val = e.target.type === 'checkbox' ? e.target.checked : e.target.value
@@ -100,6 +123,8 @@ export default function AddTour() {
           days: byAppointment ? [] : selectedDays,
           times: byAppointment ? [] : selectedTimes,
           bring_items: allItems,
+          meeting_point: meetingPoint,
+          meeting_link: meetingLink,
         }))
       })
       const data = await res.json()
@@ -133,7 +158,6 @@ export default function AddTour() {
               <label style={labelStyle}>שם הסיור <span style={{ color: '#C4922A' }}>*</span></label>
               <input type="text" name="title" value={form.title} onChange={handleChange} required style={inputStyle} />
             </div>
-
             <div style={{ marginBottom: 16 }}>
               <label style={labelStyle}>
                 תיאור קצר <span style={{ color: '#C4922A' }}>*</span>
@@ -141,8 +165,7 @@ export default function AddTour() {
               </label>
               <input type="text" name="teaser" value={form.teaser} onChange={handleChange} required maxLength={120} style={inputStyle} />
             </div>
-
-            <div style={{ marginBottom: 16 }}>
+            <div style={{ marginBottom: 0 }}>
               <label style={labelStyle}>סיפור הסיור <span style={{ color: '#C4922A' }}>*</span></label>
               <textarea name="story" value={form.story} onChange={handleChange} required rows={5}
                 style={Object.assign({}, inputStyle, { resize: 'vertical' })} />
@@ -166,11 +189,15 @@ export default function AddTour() {
             <label style={labelStyle}>יישוב/אזור <span style={{ color: '#C4922A' }}>*</span></label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12 }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, cursor: 'pointer' }}>
-                <input type="checkbox" checked={isAbroad} onChange={function(e) { setIsAbroad(e.target.checked); if (e.target.checked) setForm(Object.assign({}, form, { cities: 'חו"ל' })) }} />
+                <input type="checkbox" checked={isAbroad} onChange={function(e) {
+                  setIsAbroad(e.target.checked)
+                  if (e.target.checked) setForm(Object.assign({}, form, { cities: 'חו"ל' }))
+                  else setForm(Object.assign({}, form, { cities: '' }))
+                }} />
                 סיור בחו"ל
               </label>
             </div>
-            <select name="cities" value={form.cities} onChange={handleChange} required disabled={isAbroad}
+            <select name="cities" value={form.cities} onChange={handleChange} required={!isAbroad} disabled={isAbroad}
               style={Object.assign({}, inputStyle, { background: isAbroad ? '#f5f5f5' : '#fff', color: isAbroad ? '#999' : '#000' })}>
               <option value="">בחרו יישוב</option>
               {CITIES.sort().map(function(c) { return <option key={c} value={c}>{c}</option> })}
@@ -199,6 +226,24 @@ export default function AddTour() {
           </div>
 
           <div style={sectionStyle}>
+            <label style={labelStyle}>נקודת מפגש</label>
+            <input
+              ref={meetingRef}
+              type="text"
+              value={meetingPoint}
+              onChange={function(e) { setMeetingPoint(e.target.value) }}
+              placeholder="הקלידו כתובת לחיפוש..."
+              style={inputStyle}
+            />
+            {meetingLink && (
+              <a href={meetingLink} target="_blank" rel="noopener noreferrer"
+                style={{ display: 'inline-block', marginTop: 8, fontSize: 13, color: '#C4922A' }}>
+                פתח בגוגל מאפס
+              </a>
+            )}
+          </div>
+
+          <div style={sectionStyle}>
             <label style={labelStyle}>ימים ושעות</label>
             <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, cursor: 'pointer', marginBottom: 16 }}>
               <input type="checkbox" checked={byAppointment} onChange={function(e) {
@@ -207,14 +252,14 @@ export default function AddTour() {
               }} />
               בתיאום מראש בלבד
             </label>
-
             <div style={{ marginBottom: 12 }}>
               <p style={{ fontSize: 13, color: '#666', marginBottom: 8 }}>ימים זמינים:</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {DAYS.map(function(day) {
                   return (
                     <button key={day} type="button" onClick={function() { toggleDay(day) }}
-                      style={{ padding: '6px 14px', borderRadius: 20, border: '1px solid', fontSize: 13, cursor: byAppointment ? 'not-allowed' : 'pointer',
+                      style={{ padding: '6px 14px', borderRadius: 20, border: '1px solid', fontSize: 13,
+                        cursor: byAppointment ? 'not-allowed' : 'pointer',
                         background: selectedDays.includes(day) ? '#0A0A0A' : '#fff',
                         color: selectedDays.includes(day) ? '#fff' : '#444',
                         borderColor: selectedDays.includes(day) ? '#0A0A0A' : '#ddd',
@@ -225,14 +270,14 @@ export default function AddTour() {
                 })}
               </div>
             </div>
-
             <div>
               <p style={{ fontSize: 13, color: '#666', marginBottom: 8 }}>שעות:</p>
               <div style={{ display: 'flex', gap: 8 }}>
                 {TIMES.map(function(time) {
                   return (
                     <button key={time} type="button" onClick={function() { toggleTime(time) }}
-                      style={{ padding: '6px 14px', borderRadius: 20, border: '1px solid', fontSize: 13, cursor: byAppointment ? 'not-allowed' : 'pointer',
+                      style={{ padding: '6px 14px', borderRadius: 20, border: '1px solid', fontSize: 13,
+                        cursor: byAppointment ? 'not-allowed' : 'pointer',
                         background: selectedTimes.includes(time) ? '#0A0A0A' : '#fff',
                         color: selectedTimes.includes(time) ? '#fff' : '#444',
                         borderColor: selectedTimes.includes(time) ? '#0A0A0A' : '#ddd',
@@ -278,11 +323,6 @@ export default function AddTour() {
                 הוסף
               </button>
             </div>
-          </div>
-
-          <div style={{ marginBottom: 16 }}>
-            <label style={labelStyle}>לינק לנקודת מפגש</label>
-            <input type="text" name="meeting_point" value={form.meeting_point} onChange={handleChange} style={inputStyle} />
           </div>
 
           <div style={{ marginBottom: 24 }}>
