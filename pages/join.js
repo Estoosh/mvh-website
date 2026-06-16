@@ -111,7 +111,7 @@ export default function Join() {
             {input('email', 'מייל', 'email', true)}
             <div style={{ borderTop: '1px solid #eee', paddingTop: 16, marginTop: 8, marginBottom: 16 }}>
               <p style={{ fontSize: 12, color: '#999', marginBottom: 12 }}>רשתות חברתיות (לא חובה)</p>
-              {input('website', 'אתר אינטרנט', 'url', false)}
+              {input('website', 'אתר אינטרנט', 'text', false)}
               {input('facebook', 'פייסבוק', 'text', false)}
               {input('instagram', 'אינסטגרם', 'text', false)}
               {input('tiktok', 'טיקטוק', 'text', false)}
