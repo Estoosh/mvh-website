@@ -1,7 +1,20 @@
 import Link from 'next/link'
-import { UserButton, SignedIn, SignedOut } from '@clerk/nextjs'
+import { UserButton, SignedIn, SignedOut, useUser } from '@clerk/nextjs'
+import { useEffect, useState } from 'react'
 
 export default function Header() {
+  const { user, isLoaded } = useUser()
+  const [isGuide, setIsGuide] = useState(false)
+
+  useEffect(function() {
+    if (!isLoaded || !user) return
+    fetch('/api/get-guide?clerk_id=' + user.id)
+      .then(function(r) { return r.json() })
+      .then(function(data) {
+        if (data.found) setIsGuide(true)
+      })
+  }, [isLoaded, user])
+
   return (
     <header style={{ background: '#0A0A0A', borderBottom: '1px solid #222', position: 'sticky', top: 0, zIndex: 100 }}>
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -13,7 +26,9 @@ export default function Header() {
         <nav style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
           <Link href="/" style={{ color: '#999999', fontSize: 14, textDecoration: 'none' }}>סיורים</Link>
           <SignedIn>
-            <Link href="/dashboard" style={{ color: '#999999', fontSize: 14, textDecoration: 'none' }}>דשבורד</Link>
+            {isGuide && (
+              <Link href="/dashboard" style={{ color: '#999999', fontSize: 14, textDecoration: 'none' }}>דשבורד</Link>
+            )}
             <UserButton />
           </SignedIn>
           <SignedOut>
