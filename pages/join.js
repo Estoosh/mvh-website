@@ -28,13 +28,21 @@ export default function Join() {
     e.preventDefault()
     setLoading(true)
     try {
-      await fetch('/api/register-guide', {
+      const res = await fetch('/api/register-guide', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(Object.assign({}, form, { clerk_id: user.id }))
       })
-      router.push('/dashboard')
+      const data = await res.json()
+      console.log('API response:', data)
+      if (res.ok) {
+        router.push('/dashboard')
+      } else {
+        console.error('Error:', data)
+        setLoading(false)
+      }
     } catch(err) {
+      console.error('Fetch error:', err)
       setLoading(false)
     }
   }
