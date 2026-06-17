@@ -26,6 +26,10 @@ export default function AddTour() {
   const [meetingLink, setMeetingLink] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState('')
+  const [images, setImages] = useState([])
+  const [coverIndex, setCoverIndex] = useState(0)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [imageError, setImageError] = useState('')
   const meetingRef = useRef(null)
   const [form, setForm] = useState({
     title: '',
@@ -113,6 +117,48 @@ export default function AddTour() {
     }
   }
 
+  const handleImageUpload = async function(e) {
+    var file = e.target.files[0]
+    if (!file) return
+    if (images.length >= 8) {
+      setImageError('ניתן להעלות עד 8 תמונות')
+      return
+    }
+    setImageError('')
+    setUploadingImage(true)
+
+    var reader = new FileReader()
+    reader.onloadend = async function() {
+      try {
+        var res = await fetch('/api/upload-tour-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image_base64: reader.result })
+        })
+        var data = await res.json()
+        if (data.url) {
+          setImages(function(prev) { return prev.concat({ url: data.url, public_id: data.public_id }) })
+        } else {
+          setImageError('העלאת התמונה נכשלה, נסה שוב')
+        }
+      } catch (err) {
+        console.error(err)
+        setImageError('העלאת התמונה נכשלה, נסה שוב')
+      }
+      setUploadingImage(false)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const removeImage = function(index) {
+    setImages(function(prev) { return prev.filter(function(_, i) { return i !== index }) })
+    setCoverIndex(function(prev) {
+      if (index === prev) return 0
+      if (index < prev) return prev - 1
+      return prev
+    })
+  }
+
   const toggleDay = function(day) {
     if (byAppointment) return
     setSelectedDays(function(prev) {
@@ -144,6 +190,15 @@ export default function AddTour() {
     e.preventDefault()
     setLoading(true)
     var allItems = DEFAULT_ITEMS.concat(extraItems).filter(function(i) { return checkedItems.includes(i) })
+
+    var orderedImageUrls = []
+    if (images.length > 0) {
+      orderedImageUrls.push(images[coverIndex].url)
+      images.forEach(function(img, i) {
+        if (i !== coverIndex) orderedImageUrls.push(img.url)
+      })
+    }
+
     try {
       const res = await fetch('/api/add-tour', {
         method: 'POST',
@@ -158,6 +213,7 @@ export default function AddTour() {
           bring_items: allItems,
           meeting_point: meetingPoint,
           meeting_link: meetingLink,
+          image_urls: orderedImageUrls,
         }))
       })
       const data = await res.json()
@@ -215,6 +271,40 @@ export default function AddTour() {
               <textarea name="story" value={form.story} onChange={handleChange} required rows={5}
                 style={Object.assign({}, inputStyle, { resize: 'vertical' })} />
             </div>
+          </div>
+
+          <div style={sectionStyle}>
+            <label style={labelStyle}>תמונות הסיור (עד 8)</label>
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 12 }}>
+              {images.map(function(img, i) {
+                return (
+                  <div key={img.public_id} style={{ position: 'relative', width: 100, height: 100 }}>
+                    <img src={img.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8,
+                      border: i === coverIndex ? '3px solid #C4922A' : '1px solid #ddd' }} />
+                    <button type="button" onClick={function() { setCoverIndex(i) }}
+                      style={{ position: 'absolute', bottom: 2, right: 2, fontSize: 10, background: i === coverIndex ? '#C4922A' : '#fff',
+                        color: i === coverIndex ? '#fff' : '#444', border: '1px solid #ddd', borderRadius: 4, padding: '2px 6px' }}>
+                      {i === coverIndex ? 'תמונה ראשית' : 'הפוך לראשית'}
+                    </button>
+                    <button type="button" onClick={function() { removeImage(i) }}
+                      style={{ position: 'absolute', top: 2, left: 2, width: 20, height: 20, borderRadius: '50%',
+                        background: '#0A0A0A', color: '#fff', fontSize: 12, lineHeight: 1 }}>
+                      ×
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+
+            {images.length < 8 && (
+              <label style={{ display: 'inline-block', padding: '10px 20px', background: '#F5F5F5', borderRadius: 6,
+                fontSize: 13, cursor: uploadingImage ? 'not-allowed' : 'pointer', opacity: uploadingImage ? 0.6 : 1 }}>
+                {uploadingImage ? 'מעלה...' : '+ הוסף תמונה'}
+                <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploadingImage} style={{ display: 'none' }} />
+              </label>
+            )}
+            {imageError && <p style={{ fontSize: 12, color: '#e00', marginTop: 6 }}>{imageError}</p>}
           </div>
 
           <div style={sectionStyle}>
