@@ -68,25 +68,34 @@ export default function Dashboard() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {tours.map(function(tour) {
               return (
-                <div key={tour.id} style={{ border: '1px solid #E8E8E8', borderRadius: 8, padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <div style={{ fontWeight: 700, marginBottom: 4 }}>{tour.Tour_Title}</div>
-                    <div style={{ fontSize: 13, color: '#666' }}>{tour.Cities_Tags} · {tour.Duration_Hours} שעות</div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: 20, fontWeight: 800 }}>{tour.Lead_Count || 0}</div>
-                      <div style={{ fontSize: 11, color: '#999' }}>פניות</div>
+                <Link key={tour.id} href={'/tours/' + tour.id} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <div style={{ border: '1px solid #E8E8E8', borderRadius: 8, padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                      <div style={{ width: 56, height: 56, borderRadius: 8, overflow: 'hidden', background: '#F5F5F5', flexShrink: 0 }}>
+                        {tour.Tour_Images && (
+                          <img src={tour.Tour_Images.split('|')[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                        )}
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 700, marginBottom: 4 }}>{tour.Tour_Title}</div>
+                        <div style={{ fontSize: 13, color: '#666' }}>{tour.Cities_Tags} · {tour.Duration_Hours} שעות</div>
+                      </div>
                     </div>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: 20, fontWeight: 800 }}>₪{tour.Price_Per_Person}</div>
-                      <div style={{ fontSize: 11, color: '#999' }}>חיוב חודשי</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: 20, fontWeight: 800 }}>{tour.Lead_Count || 0}</div>
+                        <div style={{ fontSize: 11, color: '#999' }}>פניות</div>
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: 20, fontWeight: 800 }}>₪{tour.Price_Per_Person}</div>
+                        <div style={{ fontSize: 11, color: '#999' }}>חיוב חודשי</div>
+                      </div>
+                      <span style={{ background: tour.Tour_Status === 'collab' ? '#FDF6EA' : '#F5F5F5', color: tour.Tour_Status === 'collab' ? '#C4922A' : '#666', fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 20 }}>
+                        {tour.Tour_Status === 'collab' ? 'שת"פ MvH' : 'בתשלום'}
+                      </span>
                     </div>
-                    <span style={{ background: tour.Tour_Status === 'collab' ? '#FDF6EA' : '#F5F5F5', color: tour.Tour_Status === 'collab' ? '#C4922A' : '#666', fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 20 }}>
-                      {tour.Tour_Status === 'collab' ? 'שת"פ MvH' : 'בתשלום'}
-                    </span>
                   </div>
-                </div>
+                </Link>
               )
             })}
           </div>
