@@ -4,58 +4,56 @@ import { useState, useEffect, useRef } from 'react'
 import Header from '../components/Header'
 
 const CITIES = ["אילת","אשדוד","אשקלון","באר שבע","באר יעקב","בית שאן","בית שמש","בני ברק","גבעתיים","דימונה","הוד השרון","הרצליה","חדרה","חולון","חיפה","טבריה","טירת כרמל","יבנה","יהוד","ירושלים","כפר סבא","כרמיאל","לוד","מודיעין","נהריה","נס ציונה","נצרת","נתיבות","נתניה","עכו","עפולה","פתח תקווה","צפת","קריית אתא","קריית גת","קריית מוצקין","קריית שמונה","ראש העין","ראשון לציון","רהט","רחובות","רמלה","רמת גן","רמת השרון","רעננה","שדרות","תל אביב","עין גדי","מצדה","קומראן","ים המלח","השרון","גליל עליון","גליל מערבי","גולן","נגב","ערבה","שפלה","שרון"]
+const DAYS = ["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"]
+const TIMES = ["בוקר","אחה\"צ","ערב"]
 const DEFAULT_ITEMS = ["מים","כובע","קרם הגנה","תכשיר נגד יתושים","נעלי הליכה","בגדים נוחים","אוכל קל","מטען לטלפון","מצלמה","כסף מזומן"]
 
-export default function EditTour({ tour }) {
+export default function AddTour() {
   const { user, isLoaded } = useUser()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [notAuthorized, setNotAuthorized] = useState(false)
-  const [teaserCount, setTeaserCount] = useState(tour ? (tour.Tour_Teaser || '').length : 0)
-  const [isAbroad, setIsAbroad] = useState(tour ? tour.Cities_Tags === 'חו"ל' : false)
+  const [guideId, setGuideId] = useState(null)
+  const [guide, setGuide] = useState(null)
+  const [teaserCount, setTeaserCount] = useState(0)
+  const [isAbroad, setIsAbroad] = useState(false)
+  const [byAppointment, setByAppointment] = useState(false)
+  const [selectedDays, setSelectedDays] = useState([])
+  const [selectedTimes, setSelectedTimes] = useState([])
   const [checkedItems, setCheckedItems] = useState(["מים","כובע","קרם הגנה"])
   const [customItem, setCustomItem] = useState('')
   const [extraItems, setExtraItems] = useState([])
-  const [meetingPoint, setMeetingPoint] = useState(tour ? (tour.Meeting_Point_Waze || '') : '')
+  const [meetingPoint, setMeetingPoint] = useState('')
   const [meetingLink, setMeetingLink] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState('')
-
-  const initialImages = tour && tour.Tour_Images
-    ? tour.Tour_Images.split('|').map(function(s) { return s.trim() }).filter(Boolean).map(function(url) {
-        return { url: url, public_id: url }
-      })
-    : []
-  const [images, setImages] = useState(initialImages)
+  const [images, setImages] = useState([])
   const [coverIndex, setCoverIndex] = useState(0)
   const [uploadingImage, setUploadingImage] = useState(false)
   const [imageError, setImageError] = useState('')
   const meetingRef = useRef(null)
-
   const [form, setForm] = useState({
-    title: tour ? tour.Tour_Title || '' : '',
-    teaser: tour ? tour.Tour_Teaser || '' : '',
-    story: tour ? tour.Tour_Story || '' : '',
-    price: tour ? String(tour.Price_Per_Person || '') : '',
-    duration: tour ? String(tour.Duration_Hours || '') : '',
-    cities: tour ? tour.Cities_Tags || '' : '',
-    min_age: tour ? String(tour.Min_Age || '1') : '1',
+    title: '',
+    teaser: '',
+    story: '',
+    price: '',
+    duration: '',
+    cities: '',
+    min_age: '1',
     max_age: '99',
     collab_code: '',
     pets_allowed: false,
   })
 
   useEffect(function() {
-    if (!isLoaded || !tour) return
-    if (!user) { router.push('/sign-in'); return }
+    if (!isLoaded || !user) return
     fetch('/api/get-guide?clerk_id=' + user.id)
       .then(function(r) { return r.json() })
       .then(function(data) {
-        if (!data.found || data.guide.Guide_Name !== tour.Guide_Name) {
-          setNotAuthorized(true)
-        }
+        if (!data.found) { router.push('/join'); return }
+        setGuideId(data.airtable_id)
+        setGuide(data.guide)
       })
-  }, [isLoaded, user, tour])
+  }, [isLoaded, user])
 
   useEffect(function() {
     if (!window.google) {
@@ -77,28 +75,6 @@ export default function EditTour({ tour }) {
       setMeetingPoint(place.formatted_address || '')
       setMeetingLink(place.url || 'https://maps.google.com/?q=' + encodeURIComponent(place.formatted_address || ''))
     })
-  }
-
-  if (!tour) {
-    return (
-      <div>
-        <Header />
-        <div style={{ textAlign: 'center', padding: '120px 24px' }}>
-          <p>הסיור לא נמצא</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (notAuthorized) {
-    return (
-      <div>
-        <Header />
-        <div style={{ textAlign: 'center', padding: '120px 24px' }}>
-          <p>אין לך הרשאה לערוך סיור זה</p>
-        </div>
-      </div>
-    )
   }
 
   const handleChange = function(e) {
@@ -190,6 +166,20 @@ export default function EditTour({ tour }) {
     })
   }
 
+  const toggleDay = function(day) {
+    if (byAppointment) return
+    setSelectedDays(function(prev) {
+      return prev.includes(day) ? prev.filter(function(d) { return d !== day }) : prev.concat(day)
+    })
+  }
+
+  const toggleTime = function(time) {
+    if (byAppointment) return
+    setSelectedTimes(function(prev) {
+      return prev.includes(time) ? prev.filter(function(t) { return t !== time }) : prev.concat(time)
+    })
+  }
+
   const toggleItem = function(item) {
     setCheckedItems(function(prev) {
       return prev.includes(item) ? prev.filter(function(i) { return i !== item }) : prev.concat(item)
@@ -207,6 +197,8 @@ export default function EditTour({ tour }) {
     e.preventDefault()
     setLoading(true)
     try {
+      var allItems = DEFAULT_ITEMS.concat(extraItems).filter(function(i) { return checkedItems.includes(i) })
+
       var orderedImageUrls = []
       if (images.length > 0) {
         var safeCoverIndex = (coverIndex >= 0 && coverIndex < images.length) ? coverIndex : 0
@@ -216,18 +208,25 @@ export default function EditTour({ tour }) {
         })
       }
 
-      const res = await fetch('/api/update-tour', {
+      const res = await fetch('/api/add-tour', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(Object.assign({}, form, {
-          tour_id: tour.id,
+          guide_id: guideId,
+          guide_name: guide ? guide.Guide_Name : '',
+          is_abroad: isAbroad,
+          by_appointment: byAppointment,
+          days: byAppointment ? [] : selectedDays,
+          times: byAppointment ? [] : selectedTimes,
+          bring_items: allItems,
           meeting_point: meetingPoint,
+          meeting_link: meetingLink,
           image_urls: orderedImageUrls,
         }))
       })
       const data = await res.json()
       if (data.id) {
-        router.push('/tours/' + tour.id)
+        router.push('/dashboard')
       } else {
         console.error(data)
         setLoading(false)
@@ -246,8 +245,8 @@ export default function EditTour({ tour }) {
     <div>
       <Header />
       <div style={{ maxWidth: 700, margin: '0 auto', padding: '48px 24px' }}>
-        <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 8 }}>ערוך סיור</h1>
-        <p style={{ color: '#666', marginBottom: 40 }}>עדכן את פרטי הסיור שלך</p>
+        <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 8 }}>הוסף סיור חדש</h1>
+        <p style={{ color: '#666', marginBottom: 40 }}>פרטי הסיור יופיעו בעמוד שלך באתר</p>
 
         <form onSubmit={handleSubmit}>
 
@@ -388,6 +387,53 @@ export default function EditTour({ tour }) {
           </div>
 
           <div style={sectionStyle}>
+            <label style={labelStyle}>ימים ושעות</label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, cursor: 'pointer', marginBottom: 16 }}>
+              <input type="checkbox" checked={byAppointment} onChange={function(e) {
+                setByAppointment(e.target.checked)
+                if (e.target.checked) { setSelectedDays([]); setSelectedTimes([]) }
+              }} />
+              בתיאום מראש בלבד
+            </label>
+            <div style={{ marginBottom: 12 }}>
+              <p style={{ fontSize: 13, color: '#666', marginBottom: 8 }}>ימים זמינים:</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {DAYS.map(function(day) {
+                  return (
+                    <button key={day} type="button" onClick={function() { toggleDay(day) }}
+                      style={{ padding: '6px 14px', borderRadius: 20, border: '1px solid', fontSize: 13,
+                        cursor: byAppointment ? 'not-allowed' : 'pointer',
+                        background: selectedDays.includes(day) ? '#0A0A0A' : '#fff',
+                        color: selectedDays.includes(day) ? '#fff' : '#444',
+                        borderColor: selectedDays.includes(day) ? '#0A0A0A' : '#ddd',
+                        opacity: byAppointment ? 0.4 : 1 }}>
+                      {day}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+            <div>
+              <p style={{ fontSize: 13, color: '#666', marginBottom: 8 }}>שעות:</p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {TIMES.map(function(time) {
+                  return (
+                    <button key={time} type="button" onClick={function() { toggleTime(time) }}
+                      style={{ padding: '6px 14px', borderRadius: 20, border: '1px solid', fontSize: 13,
+                        cursor: byAppointment ? 'not-allowed' : 'pointer',
+                        background: selectedTimes.includes(time) ? '#0A0A0A' : '#fff',
+                        color: selectedTimes.includes(time) ? '#fff' : '#444',
+                        borderColor: selectedTimes.includes(time) ? '#0A0A0A' : '#ddd',
+                        opacity: byAppointment ? 0.4 : 1 }}>
+                      {time}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div style={sectionStyle}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, cursor: 'pointer' }}>
               <input type="checkbox" name="pets_allowed" checked={form.pets_allowed} onChange={handleChange} />
               מותר להביא חיות מחמד
@@ -429,27 +475,10 @@ export default function EditTour({ tour }) {
 
           <button type="submit" disabled={loading}
             style={{ width: '100%', background: '#0A0A0A', color: '#ffffff', padding: '14px', borderRadius: 8, fontSize: 16, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}>
-            {loading ? 'שומר...' : 'שמור שינויים'}
+            {loading ? 'שומר...' : 'פרסם סיור'}
           </button>
         </form>
       </div>
     </div>
   )
-}
-
-export async function getServerSideProps({ params }) {
-  try {
-    const token = process.env.AIRTABLE_TOKEN
-    const baseId = process.env.AIRTABLE_BASE_ID
-    const response = await fetch(
-      `https://api.airtable.com/v0/${baseId}/tbltsGvfPLMAmJ764/${params.id}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    )
-    if (!response.ok) return { props: { tour: null } }
-    const record = await response.json()
-    const tour = Object.assign({ id: record.id }, record.fields)
-    return { props: { tour } }
-  } catch(e) {
-    return { props: { tour: null } }
-  }
 }
