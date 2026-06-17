@@ -189,17 +189,18 @@ export default function AddTour() {
   const handleSubmit = async function(e) {
     e.preventDefault()
     setLoading(true)
-    var allItems = DEFAULT_ITEMS.concat(extraItems).filter(function(i) { return checkedItems.includes(i) })
-
-    var orderedImageUrls = []
-    if (images.length > 0) {
-      orderedImageUrls.push(images[coverIndex].url)
-      images.forEach(function(img, i) {
-        if (i !== coverIndex) orderedImageUrls.push(img.url)
-      })
-    }
-
     try {
+      var allItems = DEFAULT_ITEMS.concat(extraItems).filter(function(i) { return checkedItems.includes(i) })
+
+      var orderedImageUrls = []
+      if (images.length > 0) {
+        var safeCoverIndex = (coverIndex >= 0 && coverIndex < images.length) ? coverIndex : 0
+        orderedImageUrls.push(images[safeCoverIndex].url)
+        images.forEach(function(img, i) {
+          if (i !== safeCoverIndex) orderedImageUrls.push(img.url)
+        })
+      }
+
       const res = await fetch('/api/add-tour', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
