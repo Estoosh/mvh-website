@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useUser } from '@clerk/nextjs'
 import Head from 'next/head'
+import Link from 'next/link'
 import Header from '../../components/Header'
 
 function ImageGallery({ images }) {
@@ -47,6 +49,18 @@ function ImageGallery({ images }) {
 }
 
 export default function TourPage({ tour }) {
+  const { user, isLoaded } = useUser()
+  const [guideName, setGuideName] = useState(null)
+
+  useEffect(function() {
+    if (!isLoaded || !user) return
+    fetch('/api/get-guide?clerk_id=' + user.id)
+      .then(function(r) { return r.json() })
+      .then(function(data) {
+        if (data.found) setGuideName(data.guide.Guide_Name)
+      })
+  }, [isLoaded, user])
+
   if (!tour) {
     return (
       <div>
@@ -84,6 +98,12 @@ export default function TourPage({ tour }) {
           style={{ background: '#25D366', color: '#ffffff', padding: '16px 32px', borderRadius: 8, fontSize: 18, fontWeight: 700, textDecoration: 'none' }}>
           WhatsApp
         </a>
+        {guideName && guideName === tour.Guide_Name && (
+          <Link href={'/edit-tour/' + tour.id}
+            style={{ marginRight: 12, background: '#fff', color: '#0A0A0A', border: '1px solid #0A0A0A', padding: '16px 32px', borderRadius: 8, fontSize: 18, fontWeight: 700, textDecoration: 'none', display: 'inline-block' }}>
+            ערוך סיור
+          </Link>
+        )}
       </div>
     </div>
   )
