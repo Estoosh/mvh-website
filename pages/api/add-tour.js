@@ -21,7 +21,7 @@ export default async function handler(req, res) {
           Tour_Status: body.collab_code ? 'collab' : 'paid',
           Lead_Count: 0,
           Guide_Name: body.guide_name,
-          "Tour Images": body.image_urls ? body.image_urls.join('|') : '',
+          Tour_Images: body.image_urls ? body.image_urls.join('|') : '',
         }
       })
     }
