@@ -60,7 +60,7 @@ export default function TourPage({ tour }) {
 
   const phone = tour.Guide_Phone ? tour.Guide_Phone.replace(/\D/g, '').replace(/^0/, '') : ''
   const waLink = 'https://wa.me/972' + phone
-  const images = tour.Tour_Images ? tour.Tour_Images.split(',').map(function(s) { return s.trim() }).filter(Boolean) : []
+  const images = tour["Tour Images"] ? tour["Tour Images"].split('|').map(function(s) { return s.trim() }).filter(Boolean) : []
 
   return (
     <div>
