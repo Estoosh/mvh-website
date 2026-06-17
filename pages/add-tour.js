@@ -24,6 +24,8 @@ export default function AddTour() {
   const [extraItems, setExtraItems] = useState([])
   const [meetingPoint, setMeetingPoint] = useState('')
   const [meetingLink, setMeetingLink] = useState('')
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState('')
   const meetingRef = useRef(null)
   const [form, setForm] = useState({
     title: '',
@@ -78,6 +80,37 @@ export default function AddTour() {
       setTeaserCount(e.target.value.length)
     }
     setForm(Object.assign({}, form, { [e.target.name]: val }))
+  }
+
+  const generateWithAI = async function() {
+    if (!form.title.trim()) {
+      setAiError('יש להזין שם סיור לפני יצירת הטקסט')
+      return
+    }
+    setAiError('')
+    setAiLoading(true)
+    try {
+      const res = await fetch('/api/generate-tour-text', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: form.title })
+      })
+      const data = await res.json()
+      if (data.error) {
+        setAiError('לא הצלחנו ליצור טקסט. אפשר לנסות שוב או לכתוב ידנית.')
+        setAiLoading(false)
+        return
+      }
+      setForm(function(prev) {
+        return Object.assign({}, prev, { teaser: data.teaser || prev.teaser, story: data.story || prev.story })
+      })
+      setTeaserCount((data.teaser || '').length)
+      setAiLoading(false)
+    } catch (err) {
+      console.error(err)
+      setAiError('לא הצלחנו ליצור טקסט. אפשר לנסות שוב או לכתוב ידנית.')
+      setAiLoading(false)
+    }
   }
 
   const toggleDay = function(day) {
@@ -158,6 +191,18 @@ export default function AddTour() {
               <label style={labelStyle}>שם הסיור <span style={{ color: '#C4922A' }}>*</span></label>
               <input type="text" name="title" value={form.title} onChange={handleChange} required style={inputStyle} />
             </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <button type="button" onClick={generateWithAI} disabled={aiLoading}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#FDF6EA', color: '#C4922A', border: '1px solid #C4922A',
+                  padding: '8px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: aiLoading ? 'not-allowed' : 'pointer', opacity: aiLoading ? 0.6 : 1 }}>
+                ✨ {aiLoading ? 'יוצר טקסט...' : 'הצע ניסוח עם AI'}
+              </button>
+              {aiError && (
+                <p style={{ fontSize: 12, color: '#e00', marginTop: 6 }}>{aiError}</p>
+              )}
+            </div>
+
             <div style={{ marginBottom: 16 }}>
               <label style={labelStyle}>
                 תיאור קצר <span style={{ color: '#C4922A' }}>*</span>
