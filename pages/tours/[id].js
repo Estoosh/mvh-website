@@ -79,9 +79,18 @@ export default function TourPage({ tour }) {
   }
 
   const phone = tour.Guide_Phone ? tour.Guide_Phone.replace(/\D/g, '').replace(/^0/, '') : ''
-  const baseMessage = 'מתעניין/ת בסיור "' + tour.Tour_Title + '"'
-  const discountMessage = isSignedUpForDiscount ? ' והגעתי דרך MvH עם הנחה של 10%' : ''
-  const waMessage = encodeURIComponent(baseMessage + discountMessage)
+  const senderName = (user && (user.firstName || user.lastName)) ? ((user.firstName || '') + ' ' + (user.lastName || '')).trim() : ''
+  const fullPrice = Number(tour.Price_Per_Person) || 0
+  const discountedPrice = Math.round(fullPrice * 0.9)
+
+  var messageParts = []
+  if (senderName) messageParts.push('שלום, אני ' + senderName + '.')
+  else messageParts.push('שלום,')
+  messageParts.push('מתעניין/ת בסיור "' + tour.Tour_Title + '" עם ' + tour.Guide_Name + '.')
+  if (isSignedUpForDiscount) {
+    messageParts.push('הגעתי דרך MvH, ולפי ה-10% הנחה המחיר אמור להיות ' + discountedPrice + ' ש"ח.')
+  }
+  const waMessage = encodeURIComponent(messageParts.join(' '))
   const waLink = 'https://wa.me/972' + phone + '?text=' + waMessage
   const images = tour.Tour_Images ? tour.Tour_Images.split('|').map(function(s) { return s.trim() }).filter(Boolean) : []
 
@@ -108,7 +117,7 @@ export default function TourPage({ tour }) {
           WhatsApp
         </a>
         {isSignedUpForDiscount && (
-          <p style={{ fontSize: 13, color: '#C4922A', marginTop: 12 }}>✓ ה-10% הנחה שלך יוזכרו אוטומטית בהודעה</p>
+          <p style={{ fontSize: 13, color: '#C4922A', marginTop: 12 }}>✓ ההודעה תכלול אוטומטית מחיר עם 10% הנחה: {discountedPrice} ש"ח</p>
         )}
         {guideName && guideName === tour.Guide_Name && (
           <Link href={'/edit-tour/' + tour.id}
