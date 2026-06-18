@@ -78,7 +78,7 @@ export default function TourPage({ tour }) {
     )
   }
 
-  const phone = tour.Guide_Phone ? tour.Guide_Phone.replace(/\D/g, '').replace(/^0/, '') : ''
+  const phone = tour.WhatsApp_Number ? tour.WhatsApp_Number.replace(/\D/g, '').replace(/^0/, '') : ''
   const senderName = (user && (user.firstName || user.lastName)) ? ((user.firstName || '') + ' ' + (user.lastName || '')).trim() : ''
   const fullPrice = Number(tour.Price_Per_Person) || 0
   const discountedPrice = Math.round(fullPrice * 0.9)
