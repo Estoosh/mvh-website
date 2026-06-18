@@ -79,18 +79,17 @@ export default function TourPage({ tour }) {
   }
 
   const phone = tour.WhatsApp_Number ? tour.WhatsApp_Number.replace(/\D/g, '').replace(/^0/, '') : ''
-  const senderName = (user && (user.firstName || user.lastName)) ? ((user.firstName || '') + ' ' + (user.lastName || '')).trim() : ''
+  const guideFirstName = tour.Guide_Name ? tour.Guide_Name.split(' ')[0] : ''
   const fullPrice = Number(tour.Price_Per_Person) || 0
   const discountedPrice = Math.round(fullPrice * 0.9)
 
-  var messageParts = []
-  if (senderName) messageParts.push('שלום, אני ' + senderName + '.')
-  else messageParts.push('שלום,')
-  messageParts.push('מתעניין/ת בסיור "' + tour.Tour_Title + '" עם ' + tour.Guide_Name + '.')
+  var waMessageText
   if (isSignedUpForDiscount) {
-    messageParts.push('הגעתי דרך MvH, ולפי ה-10% הנחה המחיר אמור להיות ' + discountedPrice + ' ש"ח.')
+    waMessageText = 'היי ' + guideFirstName + '! ראיתי את הסיור שלך "' + tour.Tour_Title + '" באתר MvH ואני אשמח להצטרף במחיר המוזל לחברי קהילה - ' + discountedPrice + ' ש"ח (במקום ' + fullPrice + '), שנבדוק מועדים אפשריים?'
+  } else {
+    waMessageText = 'היי ' + guideFirstName + '! ראיתי את הסיור שלך "' + tour.Tour_Title + '" באתר MvH ואני מתעניין/ת, שנבדוק מועדים אפשריים?'
   }
-  const waMessage = encodeURIComponent(messageParts.join(' '))
+  const waMessage = encodeURIComponent(waMessageText)
   const waLink = 'https://wa.me/972' + phone + '?text=' + waMessage
   const images = tour.Tour_Images ? tour.Tour_Images.split('|').map(function(s) { return s.trim() }).filter(Boolean) : []
 
