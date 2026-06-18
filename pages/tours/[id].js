@@ -51,6 +51,7 @@ function ImageGallery({ images }) {
 export default function TourPage({ tour }) {
   const { user, isLoaded } = useUser()
   const [guideName, setGuideName] = useState(null)
+  const [isSignedUpForDiscount, setIsSignedUpForDiscount] = useState(false)
 
   useEffect(function() {
     if (!isLoaded || !user) return
@@ -58,6 +59,11 @@ export default function TourPage({ tour }) {
       .then(function(r) { return r.json() })
       .then(function(data) {
         if (data.found) setGuideName(data.guide.Guide_Name)
+      })
+    fetch('/api/get-signup?clerk_id=' + user.id)
+      .then(function(r) { return r.json() })
+      .then(function(data) {
+        if (data.found) setIsSignedUpForDiscount(true)
       })
   }, [isLoaded, user])
 
@@ -73,7 +79,10 @@ export default function TourPage({ tour }) {
   }
 
   const phone = tour.Guide_Phone ? tour.Guide_Phone.replace(/\D/g, '').replace(/^0/, '') : ''
-  const waLink = 'https://wa.me/972' + phone
+  const baseMessage = 'מתעניין/ת בסיור "' + tour.Tour_Title + '"'
+  const discountMessage = isSignedUpForDiscount ? ' והגעתי דרך MvH עם הנחה של 10%' : ''
+  const waMessage = encodeURIComponent(baseMessage + discountMessage)
+  const waLink = 'https://wa.me/972' + phone + '?text=' + waMessage
   const images = tour.Tour_Images ? tour.Tour_Images.split('|').map(function(s) { return s.trim() }).filter(Boolean) : []
 
   return (
@@ -98,6 +107,9 @@ export default function TourPage({ tour }) {
           style={{ background: '#25D366', color: '#ffffff', padding: '16px 32px', borderRadius: 8, fontSize: 18, fontWeight: 700, textDecoration: 'none' }}>
           WhatsApp
         </a>
+        {isSignedUpForDiscount && (
+          <p style={{ fontSize: 13, color: '#C4922A', marginTop: 12 }}>✓ ה-10% הנחה שלך יוזכרו אוטומטית בהודעה</p>
+        )}
         {guideName && guideName === tour.Guide_Name && (
           <Link href={'/edit-tour/' + tour.id}
             style={{ marginRight: 12, background: '#fff', color: '#0A0A0A', border: '1px solid #0A0A0A', padding: '16px 32px', borderRadius: 8, fontSize: 18, fontWeight: 700, textDecoration: 'none', display: 'inline-block' }}>
