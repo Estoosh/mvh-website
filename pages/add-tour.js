@@ -14,6 +14,7 @@ export default function AddTour() {
   const [loading, setLoading] = useState(false)
   const [guideId, setGuideId] = useState(null)
   const [guide, setGuide] = useState(null)
+  const [whatsappNumber, setWhatsappNumber] = useState('')
   const [teaserCount, setTeaserCount] = useState(0)
   const [isAbroad, setIsAbroad] = useState(false)
   const [byAppointment, setByAppointment] = useState(false)
@@ -52,6 +53,7 @@ export default function AddTour() {
         if (!data.found) { router.push('/join'); return }
         setGuideId(data.airtable_id)
         setGuide(data.guide)
+        setWhatsappNumber(data.guide.WhatsApp_Number || '')
       })
   }, [isLoaded, user])
 
@@ -222,6 +224,7 @@ export default function AddTour() {
           meeting_point: meetingPoint,
           meeting_link: meetingLink,
           image_urls: orderedImageUrls,
+          whatsapp_number: whatsappNumber,
         }))
       })
       const data = await res.json()
@@ -366,6 +369,12 @@ export default function AddTour() {
                 </select>
               </div>
             </div>
+          </div>
+
+          <div style={sectionStyle}>
+            <label style={labelStyle}>מספר וואטסאפ ליצירת קשר <span style={{ color: '#C4922A' }}>*</span></label>
+            <input type="tel" value={whatsappNumber} onChange={function(e) { setWhatsappNumber(e.target.value) }} required style={inputStyle} />
+            <p style={{ fontSize: 12, color: '#999', marginTop: 6 }}>מולא אוטומטית מהפרטים שלך. אפשר לשנות אם רוצים מספר אחר לסיור הזה (למשל מדריך נוסף)</p>
           </div>
 
           <div style={sectionStyle}>
