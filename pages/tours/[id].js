@@ -112,7 +112,11 @@ export default function TourPage({ tour }) {
         <p style={{ marginBottom: 8, color: '#555555' }}>{tour.Cities_Tags}</p>
         <p style={{ marginBottom: 32, color: '#555555' }}>{tour.Guide_Name}</p>
         <a href={waLink} target="_blank" rel="noopener noreferrer"
-          style={{ background: '#25D366', color: '#ffffff', padding: '16px 32px', borderRadius: 8, fontSize: 18, fontWeight: 700, textDecoration: 'none' }}>
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: '#fff', color: '#25D366', border: '2px solid #25D366', padding: '14px 32px', borderRadius: 8, fontSize: 18, fontWeight: 700, textDecoration: 'none' }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#25D366" strokeWidth="1.8">
+            <path d="M3 21l1.65-4.95A8.95 8.95 0 0 1 3 12a9 9 0 1 1 9 9 8.95 8.95 0 0 1-4.05-.96L3 21z" />
+            <path d="M8.5 9.5c0 3.5 2.5 6 6 6 .5 0 1-.4 1-1l-.3-1.2c-.1-.4-.5-.6-.9-.5l-1.3.4c-.7-.5-1.7-1.5-2.2-2.2l.4-1.3c.1-.4-.1-.8-.5-.9L9.5 8.5c-.6 0-1 .5-1 1z" />
+          </svg>
           WhatsApp
         </a>
         {isSignedUpForDiscount && (
