@@ -22,6 +22,7 @@ export default async function handler(req, res) {
           Lead_Count: 0,
           Guide_Name: body.guide_name,
           Tour_Images: body.image_urls ? body.image_urls.join('|') : '',
+          WhatsApp_Number: body.whatsapp_number,
         }
       })
     }
