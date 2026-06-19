@@ -13,6 +13,7 @@ export default function Discount() {
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
   const [alreadySignedUp, setAlreadySignedUp] = useState(false)
+  const [isGuide, setIsGuide] = useState(false)
   const [regions, setRegions] = useState([])
   const [tourTypes, setTourTypes] = useState([])
   const [travelWith, setTravelWith] = useState([])
@@ -31,6 +32,9 @@ export default function Discount() {
         last_name: user.lastName || '',
       })
     })
+    fetch('/api/get-guide?clerk_id=' + user.id)
+      .then(function(r) { return r.json() })
+      .then(function(data) { if (data.found) setIsGuide(true) })
     fetch('/api/get-signup?clerk_id=' + user.id)
       .then(function(r) { return r.json() })
       .then(function(data) {
@@ -95,16 +99,21 @@ export default function Discount() {
         <p style={{ color: '#666', marginBottom: 40, textAlign: 'center' }}>הרשמה חד פעמית, ותקבלו הנחה גורפת בכל סיור שתבחרו באתר</p>
 
         <SignedOut>
-  <div style={{ textAlign: 'center', background: '#FDF6EA', borderRadius: 8, padding: 32 }}>
-    <p style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>הצטרפו לקהילה וקבלו 10% הנחה</p>
-    <a href="/sign-up" style={{ background: '#0A0A0A', color: '#fff', padding: '12px 32px', borderRadius: 8, fontSize: 15, fontWeight: 700, textDecoration: 'none', display: 'inline-block' }}>
-      הרשמה חינמית
-    </a>
-  </div>
-</SignedOut>
+          <div style={{ textAlign: 'center', background: '#FDF6EA', borderRadius: 8, padding: 32 }}>
+            <p style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>הצטרפו לקהילה וקבלו 10% הנחה</p>
+            <a href="/sign-up" style={{ background: '#0A0A0A', color: '#fff', padding: '12px 32px', borderRadius: 8, fontSize: 15, fontWeight: 700, textDecoration: 'none', display: 'inline-block' }}>
+              הרשמה חינמית
+            </a>
+          </div>
+        </SignedOut>
 
         <SignedIn>
-          {alreadySignedUp ? (
+          {isGuide ? (
+            <div style={{ textAlign: 'center', background: '#FDF6EA', borderRadius: 8, padding: 32 }}>
+              <p style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>ברוכים הבאים, מורה דרך! 🎉</p>
+              <p style={{ color: '#666' }}>כמורה דרך ב-MvH, הנחת חברי הקהילה של 10% חלה עליך אוטומטית בכל סיור שתבחרו</p>
+            </div>
+          ) : alreadySignedUp ? (
             <div style={{ textAlign: 'center', background: '#FDF6EA', borderRadius: 8, padding: 32 }}>
               <p style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>אתם כבר רשומים! 🎉</p>
               <p style={{ color: '#666' }}>פשוט בחרו סיור ולחצו וואטסאפ — ההנחה תוזכר אוטומטית בהודעה</p>
