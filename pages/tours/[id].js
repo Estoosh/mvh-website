@@ -48,10 +48,51 @@ function ImageGallery({ images }) {
   )
 }
 
+function RelatedTours({ tours }) {
+  if (!tours || tours.length === 0) return null
+
+  return (
+    <div style={{ marginTop: 56, paddingTop: 40, borderTop: '1px solid #eee' }}>
+      <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 20 }}>סיורים נוספים שיכולים לעניין אתכם</h2>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
+        {tours.map(function(t) {
+          var thumb = t.Tour_Images ? t.Tour_Images.split('|')[0] : null
+          return (
+            <a key={t.id} href={'/tours/' + t.id} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <div style={{ border: '1px solid #eee', borderRadius: 8, overflow: 'hidden' }}>
+                <div style={{ width: '100%', height: 140, background: '#f5f5f5' }}>
+                  {thumb && <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                </div>
+                <div style={{ padding: 12 }}>
+                  <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>{t.Tour_Title}</p>
+                  <p style={{ fontSize: 12, color: '#888' }}>{t.Cities_Tags} · {t.Guide_Name}</p>
+                </div>
+              </div>
+            </a>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 export default function TourPage({ tour }) {
   const { user, isLoaded } = useUser()
   const [guideName, setGuideName] = useState(null)
   const [isSignedUpForDiscount, setIsSignedUpForDiscount] = useState(false)
+  const [relatedTours, setRelatedTours] = useState([])
+
+  useEffect(function() {
+    if (!tour) return
+    var periodsParam = (tour.Historical_Period || []).join('|')
+    var url = '/api/related-tours?exclude_id=' + tour.id +
+      '&cities=' + encodeURIComponent(tour.Cities_Tags || '') +
+      '&guide_name=' + encodeURIComponent(tour.Guide_Name || '') +
+      '&periods=' + encodeURIComponent(periodsParam)
+    fetch(url)
+      .then(function(r) { return r.json() })
+      .then(function(data) { setRelatedTours(data.tours || []) })
+  }, [tour])
 
   useEffect(function() {
     if (!isLoaded || !user) return
@@ -112,6 +153,13 @@ export default function TourPage({ tour }) {
         <p style={{ marginBottom: 8, color: '#555555' }}>{tour.Cities_Tags}</p>
         <p style={{ marginBottom: 32, color: '#555555' }}>{tour.Guide_Name}</p>
         <a href={waLink} target="_blank" rel="noopener noreferrer"
+          onClick={function() {
+            fetch('/api/increment-lead', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ tour_id: tour.id, current_count: tour.Lead_Count || 0 })
+            })
+          }}
           style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: '#fff', color: '#25D366', border: '2px solid #25D366', padding: '14px 32px', borderRadius: 8, fontSize: 18, fontWeight: 700, textDecoration: 'none' }}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#25D366" strokeWidth="1.8">
             <path d="M3 21l1.65-4.95A8.95 8.95 0 0 1 3 12a9 9 0 1 1 9 9 8.95 8.95 0 0 1-4.05-.96L3 21z" />
@@ -128,6 +176,7 @@ export default function TourPage({ tour }) {
             ערוך סיור
           </Link>
         )}
+        <RelatedTours tours={relatedTours} />
       </div>
     </div>
   )
