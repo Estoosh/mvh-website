@@ -186,7 +186,7 @@ export default function Home({ tours, guides }) {
               <span style={{ fontSize: 18 }}>+</span> הוסף סיור
             </Link>
             {!isGuide && (
-              <p style={{ color: '#888', fontSize: 12, marginTop: 8 }}>מורי דרך — הצטרפו בחינם ופרסמו את הסיורים שלכם</p>
+              <p style={{ color: '#888', fontSize: 12, marginTop: 8 }}>מורי דרך — הצטרפו ופרסמו את הסיורים שלכם</p>
             )}
           </div>
         </div>
