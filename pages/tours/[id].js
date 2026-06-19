@@ -50,7 +50,6 @@ function ImageGallery({ images }) {
 
 function RelatedTours({ tours }) {
   if (!tours || tours.length === 0) return null
-
   return (
     <div style={{ marginTop: 56, paddingTop: 40, borderTop: '1px solid #eee' }}>
       <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 20 }}>סיורים נוספים שיכולים לעניין אתכם</h2>
@@ -80,6 +79,7 @@ export default function TourPage({ tour }) {
   const { user, isLoaded } = useUser()
   const [guideName, setGuideName] = useState(null)
   const [isSignedUpForDiscount, setIsSignedUpForDiscount] = useState(false)
+  const [isGuide, setIsGuide] = useState(false)
   const [relatedTours, setRelatedTours] = useState([])
 
   useEffect(function() {
@@ -99,7 +99,7 @@ export default function TourPage({ tour }) {
     fetch('/api/get-guide?clerk_id=' + user.id)
       .then(function(r) { return r.json() })
       .then(function(data) {
-        if (data.found) setGuideName(data.guide.Guide_Name)
+        if (data.found) { setGuideName(data.guide.Guide_Name); setIsGuide(true) }
       })
     fetch('/api/get-signup?clerk_id=' + user.id)
       .then(function(r) { return r.json() })
@@ -124,8 +124,10 @@ export default function TourPage({ tour }) {
   const fullPrice = Number(tour.Price_Per_Person) || 0
   const discountedPrice = Math.round(fullPrice * 0.9)
 
+  var isOwnTour = guideName && guideName === tour.Guide_Name
+  var hasDiscount = (isSignedUpForDiscount || isGuide) && !isOwnTour
   var waMessageText
-  if (isSignedUpForDiscount) {
+  if (hasDiscount) {
     waMessageText = 'היי ' + guideFirstName + '! ראיתי את הסיור שלך "' + tour.Tour_Title + '" באתר MvH ואני אשמח להצטרף במחיר המוזל לחברי קהילה - ' + discountedPrice + ' ש"ח (במקום ' + fullPrice + '), שנבדוק מועדים אפשריים?'
   } else {
     waMessageText = 'היי ' + guideFirstName + '! ראיתי את הסיור שלך "' + tour.Tour_Title + '" באתר MvH ואני מתעניין/ת, שנבדוק מועדים אפשריים?'
@@ -154,11 +156,13 @@ export default function TourPage({ tour }) {
         <p style={{ marginBottom: 32, color: '#555555' }}>{tour.Guide_Name}</p>
         <a href={waLink} target="_blank" rel="noopener noreferrer"
           onClick={function() {
-            fetch('/api/increment-lead', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ tour_id: tour.id, current_count: tour.Lead_Count || 0 })
-            })
+            if (!isOwnTour) {
+              fetch('/api/increment-lead', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tour_id: tour.id, current_count: tour.Lead_Count || 0 })
+              })
+            }
           }}
           style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: '#fff', color: '#25D366', border: '2px solid #25D366', padding: '14px 32px', borderRadius: 8, fontSize: 18, fontWeight: 700, textDecoration: 'none' }}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#25D366" strokeWidth="1.8">
@@ -167,12 +171,12 @@ export default function TourPage({ tour }) {
           </svg>
           WhatsApp
         </a>
-        {isSignedUpForDiscount && (
+        {hasDiscount && (
           <p style={{ fontSize: 13, color: '#C4922A', marginTop: 12 }}>✓ ההודעה תכלול אוטומטית מחיר עם 10% הנחה: {discountedPrice} ש"ח</p>
         )}
-        {guideName && guideName === tour.Guide_Name && (
+        {isOwnTour && (
           <Link href={'/edit-tour/' + tour.id}
-            style={{ marginRight: 12, background: '#fff', color: '#0A0A0A', border: '1px solid #0A0A0A', padding: '16px 32px', borderRadius: 8, fontSize: 18, fontWeight: 700, textDecoration: 'none', display: 'inline-block' }}>
+            style={{ marginRight: 12, background: '#fff', color: '#0A0A0A', border: '1px solid #0A0A0A', padding: '14px 32px', borderRadius: 8, fontSize: 18, fontWeight: 700, textDecoration: 'none', display: 'inline-block', marginTop: 12 }}>
             ערוך סיור
           </Link>
         )}
