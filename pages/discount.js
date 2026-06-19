@@ -95,10 +95,13 @@ export default function Discount() {
         <p style={{ color: '#666', marginBottom: 40, textAlign: 'center' }}>הרשמה חד פעמית, ותקבלו הנחה גורפת בכל סיור שתבחרו באתר</p>
 
         <SignedOut>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <SignUp />
-          </div>
-        </SignedOut>
+  <div style={{ textAlign: 'center', background: '#FDF6EA', borderRadius: 8, padding: 32 }}>
+    <p style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>הצטרפו לקהילה וקבלו 10% הנחה</p>
+    <a href="/sign-up" style={{ background: '#0A0A0A', color: '#fff', padding: '12px 32px', borderRadius: 8, fontSize: 15, fontWeight: 700, textDecoration: 'none', display: 'inline-block' }}>
+      הרשמה חינמית
+    </a>
+  </div>
+</SignedOut>
 
         <SignedIn>
           {alreadySignedUp ? (
