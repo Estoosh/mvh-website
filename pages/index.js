@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
@@ -28,6 +28,7 @@ function Section({ title, children }) {
 
 export default function Home({ tours, guides }) {
   const { user, isLoaded } = useUser()
+  const [isGuide, setIsGuide] = useState(false)
   const [search, setSearch] = useState('')
   const [selectedRegion, setSelectedRegion] = useState('')
   const [selectedPeriod, setSelectedPeriod] = useState('')
@@ -38,9 +39,13 @@ export default function Home({ tours, guides }) {
   const [notFoundText, setNotFoundText] = useState('')
   const [notFoundSent, setNotFoundSent] = useState(false)
   const [userRegions, setUserRegions] = useState([])
+  const [searching, setSearching] = useState(false)
 
   useEffect(function() {
     if (!isLoaded || !user) return
+    fetch('/api/get-guide?clerk_id=' + user.id)
+      .then(function(r) { return r.json() })
+      .then(function(data) { if (data.found) setIsGuide(true) })
     fetch('/api/get-signup?clerk_id=' + user.id)
       .then(function(r) { return r.json() })
       .then(function(data) {
@@ -49,6 +54,14 @@ export default function Home({ tours, guides }) {
         }
       })
   }, [isLoaded, user])
+
+  useEffect(function() {
+    if (search || selectedRegion || selectedPeriod || selectedGuide) {
+      setSearching(true)
+      var t = setTimeout(function() { setSearching(false) }, 400)
+      return function() { clearTimeout(t) }
+    }
+  }, [search, selectedRegion, selectedPeriod, selectedGuide])
 
   const activeTours = tours.filter(function(t) { return t.Tour_Status === 'paid' })
   const isSearching = search || selectedRegion || selectedPeriod || selectedGuide
@@ -77,8 +90,12 @@ export default function Home({ tours, guides }) {
     setGuideSearch(val)
     setSelectedGuide('')
     if (val.length < 2) { setGuideMatches([]); return }
-    var matches = guides.filter(function(g) { return g.includes(val) })
-    setGuideMatches(matches.slice(0, 5))
+    setGuideMatches(guides.filter(function(g) { return g.includes(val) }).slice(0, 5))
+  }
+
+  const clearSearch = function() {
+    setSearch(''); setSelectedRegion(''); setSelectedPeriod('')
+    setGuideSearch(''); setSelectedGuide('')
   }
 
   const handleNotFoundSubmit = async function(e) {
@@ -97,24 +114,18 @@ export default function Home({ tours, guides }) {
   return (
     <div style={{ fontFamily: 'Heebo, Arial, sans-serif' }}>
       <Head>
-        <title>מאז ועד היום | סיורים היסטוריים בישראל</title>
+        <title>מאז ועד היום | סיורים היסטוריים</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="description" content="סיורים היסטוריים ייחודיים בישראל עם מורי דרך מהשורה הראשונה" />
+        <meta name="description" content="סיורים היסטוריים ייחודיים עם מורי דרך מהשורה הראשונה" />
       </Head>
       <Header />
 
-      <div style={{ background: 'linear-gradient(135deg, #0A0A0A 0%, #1a1208 60%, #2d1f0a 100%)', padding: '64px 24px 48px', textAlign: 'center' }}>
+      <div style={{ background: 'linear-gradient(135deg, #0A0A0A 0%, #1a1208 60%, #2d1f0a 100%)', padding: '48px 24px 36px', textAlign: 'center' }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
-          <p style={{ color: '#C4922A', fontSize: 13, fontWeight: 700, letterSpacing: '3px', marginBottom: 12 }}>פודקאסט וסיורים היסטוריים</p>
-          <h1 style={{ fontSize: 'clamp(32px, 6vw, 56px)', fontWeight: 800, color: '#ffffff', lineHeight: 1.15, marginBottom: 16 }}>
-            גלו את ישראל<br />מאז ועד היום
-          </h1>
-          <p style={{ color: '#aaa', fontSize: 'clamp(14px, 2vw, 18px)', marginBottom: 36, lineHeight: 1.6 }}>
-            סיורים ייחודיים עם מורי דרך שמחיים את ההיסטוריה
-          </p>
+          <p style={{ color: '#C4922A', fontSize: 13, fontWeight: 700, letterSpacing: '3px', marginBottom: 20 }}>פודקאסט וסיורים היסטוריים</p>
 
           <div style={{ background: '#fff', borderRadius: 12, padding: 20, maxWidth: 680, margin: '0 auto', textAlign: 'right' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10, marginBottom: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 10 }}>
               <input type="text" value={search} onChange={function(e) { setSearch(e.target.value) }}
                 placeholder="חפשו סיור..." style={searchBarStyle} />
               <select value={selectedRegion} onChange={function(e) { setSelectedRegion(e.target.value) }} style={searchBarStyle}>
@@ -122,7 +133,7 @@ export default function Home({ tours, guides }) {
                 {REGIONS.map(function(r) { return <option key={r} value={r}>{r}</option> })}
               </select>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10, marginBottom: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 12 }}>
               <select value={selectedPeriod} onChange={function(e) { setSelectedPeriod(e.target.value) }} style={searchBarStyle}>
                 <option value="">כל התקופות ההיסטוריות</option>
                 {PERIODS.map(function(p) { return <option key={p} value={p}>{p}</option> })}
@@ -144,12 +155,20 @@ export default function Home({ tours, guides }) {
                 )}
               </div>
             </div>
-            <button onClick={function() { setShowNotFound(!showNotFound) }}
-              style={{ background: 'none', border: 'none', color: '#C4922A', fontSize: 13, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
-              לא מצאתי מה שחיפשתי — תמצאו לי מורה דרך שיקח אותי ל...
-            </button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <button onClick={function() { setShowNotFound(!showNotFound) }}
+                style={{ background: 'none', border: 'none', color: '#C4922A', fontSize: 12, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
+                לא מצאתי — תמצאו לי מורה דרך שיקח אותי ל...
+              </button>
+              {isSearching && (
+                <button onClick={clearSearch}
+                  style={{ background: 'none', border: 'none', color: '#999', fontSize: 12, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
+                  נקה חיפוש ✕
+                </button>
+              )}
+            </div>
             {showNotFound && !notFoundSent && (
-              <form onSubmit={handleNotFoundSubmit} style={{ marginTop: 10 }}>
+              <form onSubmit={handleNotFoundSubmit} style={{ marginTop: 12 }}>
                 <input type="text" value={notFoundText} onChange={function(e) { if (e.target.value.length <= 120) setNotFoundText(e.target.value) }}
                   placeholder="לאן תרצו ללכת? מה מעניין אתכם?" style={Object.assign({}, searchBarStyle, { marginBottom: 8 })} />
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -160,14 +179,28 @@ export default function Home({ tours, guides }) {
             )}
             {notFoundSent && <p style={{ color: '#22c55e', fontSize: 13, marginTop: 8 }}>✓ ההודעה נשלחה! נחזור אליכם בהקדם</p>}
           </div>
+
+          <div style={{ marginTop: 20 }}>
+            <Link href={isGuide ? '/add-tour' : '/join'}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#C4922A', color: '#fff', padding: '10px 24px', borderRadius: 8, fontSize: 14, fontWeight: 700, textDecoration: 'none' }}>
+              <span style={{ fontSize: 18 }}>+</span> הוסף סיור
+            </Link>
+            {!isGuide && (
+              <p style={{ color: '#888', fontSize: 12, marginTop: 8 }}>מורי דרך — הצטרפו בחינם ופרסמו את הסיורים שלכם</p>
+            )}
+          </div>
         </div>
       </div>
 
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '48px 24px' }}>
 
         {isSearching && (
-          <Section title={'תוצאות חיפוש (' + filteredTours.length + ')'}>
-            <TourGrid tours={filteredTours} emptyText="לא נמצאו סיורים התואמים לחיפוש" />
+          <Section title={searching ? 'מרענן חיפוש...' : 'תוצאות חיפוש (' + filteredTours.length + ')'}>
+            {searching ? (
+              <p style={{ color: '#C4922A', fontSize: 14 }}>⟳ מעדכן תוצאות...</p>
+            ) : (
+              <TourGrid tours={filteredTours} emptyText="לא נמצאו סיורים התואמים לחיפוש" />
+            )}
           </Section>
         )}
 
