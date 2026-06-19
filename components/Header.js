@@ -19,7 +19,7 @@ export default function Header() {
     <header style={{ background: '#0A0A0A', borderBottom: '1px solid #222', position: 'sticky', top: 0, zIndex: 100 }}>
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
-          <img src="/logo.png" alt="מאז ועד היום" style={{ height: 40, objectFit: 'contain' }} />
+          <img src="/logo-light.png" alt="מאז ועד היום" style={{ height: 40, objectFit: 'contain' }} />
         </Link>
         <nav style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
           <Link href="/" style={{ color: '#999999', fontSize: 14, textDecoration: 'none' }}>סיורים</Link>
