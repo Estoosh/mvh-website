@@ -84,16 +84,13 @@ export default function TourPage({ tour }) {
 
   useEffect(function() {
     if (!tour) return
+    fetch('/api/track-view', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tour_id: tour.id, current_count: tour.View_Count || 0 })
+    })
     var periodsParam = (tour.Historical_Period || []).join('|')
-    var url = '/api/related-tours?exclude_id=' + tour.id +
-      '&cities=' + encodeURIComponent(tour.Cities_Tags || '') +
-      '&guide_name=' + encodeURIComponent(tour.Guide_Name || '') +
-      '&periods=' + encodeURIComponent(periodsParam)
-    fetch(url)
-      .then(function(r) { return r.json() })
-      .then(function(data) { setRelatedTours(data.tours || []) })
-  }, [tour])
-
+  
   useEffect(function() {
     if (!isLoaded || !user) return
     fetch('/api/get-guide?clerk_id=' + user.id)
