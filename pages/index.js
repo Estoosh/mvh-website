@@ -172,6 +172,14 @@ export default function Home({ tours, guides }) {
           *{box-sizing:border-box;margin:0;padding:0;}
           ::-webkit-scrollbar{display:none;}
           body{overflow-x:hidden;}
+          @media(max-width:900px){
+            .hero-copy-lock{
+              margin-right:24px!important;
+              margin-left:24px!important;
+              max-width:560px!important;
+              padding:96px 24px 88px!important;
+            }
+          }
           @media(max-width:768px){
             .tc{grid-template-columns:1fr!important;}
             .sb{flex-direction:column!important;}
@@ -198,6 +206,14 @@ export default function Home({ tours, guides }) {
         </div>
       </nav>
 
+      {/*
+        HERO COMPOSITION LOCK:
+        Left = sofa person.
+        Center = copy block.
+        Right = visible Netflix screen.
+        The copy must stay visually between the person and Netflix.
+        Do not move the copy fully to the right or fully over the person.
+      */}
       {/* HERO */}
       <section style={{ background: '#141414', minHeight: '86vh', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
         <div style={{ position: 'absolute', inset: 0 }}>
