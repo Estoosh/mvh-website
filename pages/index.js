@@ -8,27 +8,34 @@ const OFF_WHITE = '#F7F5F2'
 const NEAR_BLACK = '#111111'
 const GRAY = '#6B6B6B'
 
-const PERIODS = ["תקופת המקרא / ימי האבות", "בית ראשון (ממלכת ישראל ויהודה)", "בית שני", "התקופה הרומית-ביזנטית", "התקופה המוסלמית הקדומה", "תקופת הצלבנים", "התקופה הממלוכית", "התקופה העות'מאנית", "המנדט הבריטי", "מדינת ישראל (1948 ואילך)"]
-const REGIONS = ["צפון", "גליל עליון", "גליל מערבי", "גולן", "חיפה", "השרון", "מרכז", "תל אביב", "ירושלים", "שפלה", "יו\"ש", "צפון הנגב", "באר שבע", "נגב", "ערבה", "דרום", "אילת", "ים המלח", "עין גדי", "מצדה"]
-const SIGN_TEXTS = ["לא חשבתי שאגיע לכאן", "זה באמת פה?", "מי בכלל נוסע לשם?", "עוד 3 דקות מהבית", "פניה אחת מהשגרה", "שמעתם על המקום הזה?"]
+const PERIODS = ["תקופת המקרא / ימי האבות","בית ראשון (ממלכת ישראל ויהודה)","בית שני","התקופה הרומית-ביזנטית","התקופה המוסלמית הקדומה","תקופת הצלבנים","התקופה הממלוכית","התקופה העות'מאנית","המנדט הבריטי","מדינת ישראל (1948 ואילך)"]
+const REGIONS = ["צפון","גליל עליון","גליל מערבי","גולן","חיפה","השרון","מרכז","תל אביב","ירושלים","שפלה",'יו"ש',"צפון הנגב","באר שבע","נגב","ערבה","דרום","אילת","ים המלח","עין גדי","מצדה"]
+const SIGN_TEXTS = ["לא חשבתי שאגיע לכאן","זה באמת פה?","מי בכלל נוסע לשם?","עוד 3 דקות מהבית","פניה אחת מהשגרה","שמעתם על המקום הזה?"]
 
-function Sign({ text, size = 'md' }) {
-  const s = size === 'sm' ? { fs: 12, py: 6, px: 16, pl: 26, arrow: 10 }
-           : size === 'lg' ? { fs: 20, py: 14, px: 32, pl: 48, arrow: 16 }
-           : { fs: 15, py: 10, px: 22, pl: 36, arrow: 13 }
+function Sign({ text, size = 'md', rotate = 0 }) {
+  const s = {
+    sm:  { fs: 12, py: 6,  px: 18, pl: 28, arr: 10, r: 3 },
+    md:  { fs: 15, py: 10, px: 22, pl: 36, arr: 13, r: 3 },
+    lg:  { fs: 20, py: 14, px: 30, pl: 48, arr: 16, r: 4 },
+    xl:  { fs: 26, py: 18, px: 38, pl: 60, arr: 20, r: 4 },
+  }[size] || { fs: 15, py: 10, px: 22, pl: 36, arr: 13, r: 3 }
+
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center',
       background: BROWN, color: '#fff',
       paddingTop: s.py, paddingBottom: s.py,
       paddingRight: s.px, paddingLeft: s.pl,
-      borderRadius: 3, fontWeight: 700, fontSize: s.fs,
+      borderRadius: s.r,
+      fontWeight: 700, fontSize: s.fs,
       fontFamily: 'Heebo, Arial, sans-serif',
-      position: 'relative', letterSpacing: '0.01em',
-      boxShadow: '2px 3px 10px rgba(0,0,0,0.22)',
+      position: 'relative',
+      letterSpacing: '0.01em',
+      boxShadow: '3px 4px 14px rgba(0,0,0,0.28)',
       whiteSpace: 'nowrap',
+      transform: rotate ? 'rotate(' + rotate + 'deg)' : undefined,
     }}>
-      <span style={{ position: 'absolute', left: s.arrow, fontSize: s.fs * 0.85 }}>←</span>
+      <span style={{ position: 'absolute', left: s.arr, fontSize: s.fs * 0.85, opacity: 0.9 }}>←</span>
       {text}
     </span>
   )
@@ -46,23 +53,23 @@ function TourCard({ tour }) {
       onMouseEnter={function() { setHov(true) }}
       onMouseLeave={function() { setHov(false) }}>
       <div style={{
-        borderRadius: 12, overflow: 'hidden', position: 'relative', height: 380,
+        borderRadius: 14, overflow: 'hidden', position: 'relative', height: 380,
         background: '#1a0d06',
-        transform: hov ? 'translateY(-5px)' : 'none',
-        transition: 'transform 0.22s ease, box-shadow 0.22s ease',
-        boxShadow: hov ? '0 16px 40px rgba(0,0,0,0.25)' : '0 4px 16px rgba(0,0,0,0.1)',
+        transform: hov ? 'translateY(-6px)' : 'none',
+        transition: 'transform 0.25s ease, box-shadow 0.25s ease',
+        boxShadow: hov ? '0 20px 48px rgba(0,0,0,0.2)' : '0 4px 20px rgba(0,0,0,0.1)',
       }}>
         {thumb
-          ? <img src={thumb} alt={tour.Tour_Title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.4s ease', transform: hov ? 'scale(1.06)' : 'scale(1)' }} />
-          : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(160deg, #2a1508 0%, #4a2c14 60%, #1a0d06 100%)' }} />
+          ? <img src={thumb} alt={tour.Tour_Title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.45s ease', transform: hov ? 'scale(1.07)' : 'scale(1)' }} />
+          : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(160deg,#2a1508,#4a2c14 60%,#1a0d06)' }} />
         }
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.08) 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,0.93) 0%,rgba(0,0,0,0.3) 50%,rgba(0,0,0,0.05) 100%)' }} />
         <div style={{ position: 'absolute', top: 14, right: 14 }}>
           <Sign text={sign} size="sm" />
         </div>
         <div style={{ position: 'absolute', bottom: 0, right: 0, left: 0, padding: '22px 18px' }}>
           <p style={{ color: '#fff', fontWeight: 800, fontSize: 19, lineHeight: 1.25, marginBottom: 5, fontFamily: 'Heebo, Arial, sans-serif' }}>{tour.Tour_Title}</p>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 14, fontFamily: 'Heebo, Arial, sans-serif' }}>{tour.Guide_Name} · {tour.Cities_Tags}</p>
+          <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, marginBottom: 14 }}>{tour.Guide_Name} · {tour.Cities_Tags}</p>
           <Sign text="מה יש לעשות שם?" size="sm" />
         </div>
       </div>
@@ -84,21 +91,17 @@ function Carousel({ tours, title }) {
     if (el) el.addEventListener('scroll', onScroll)
     return function() { if (el) el.removeEventListener('scroll', onScroll) }
   }, [])
-  const btn = function(active, dir) {
-    return (
-      <button onClick={function() { ref.current && ref.current.scrollBy({ left: dir * 316, behavior: 'smooth' }) }}
-        style={{ width: 42, height: 42, borderRadius: '50%', border: '1.5px solid ' + (active ? NEAR_BLACK : '#e0e0e0'), background: '#fff', color: active ? NEAR_BLACK : '#ccc', fontSize: 20, cursor: active ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, lineHeight: 1 }}>
-        {dir === -1 ? '›' : '‹'}
-      </button>
-    )
-  }
+
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22 }}>
-        <h2 style={{ fontSize: 'clamp(22px, 3vw, 30px)', fontWeight: 800, color: NEAR_BLACK, fontFamily: 'Heebo, Arial, sans-serif' }}>{title}</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <h2 style={{ fontSize: 'clamp(22px,3vw,30px)', fontWeight: 800, color: NEAR_BLACK, fontFamily: 'Heebo, Arial, sans-serif' }}>{title}</h2>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <a href="/" style={{ fontSize: 13, color: GRAY, textDecoration: 'none', marginLeft: 12, fontFamily: 'Heebo, Arial, sans-serif' }}>כל הסיורים ←</a>
-          {btn(canR, -1)}{btn(canL, 1)}
+          <a href="/" style={{ fontSize: 13, color: GRAY, textDecoration: 'none', marginLeft: 10 }}>כל הסיורים ←</a>
+          <button onClick={function() { ref.current && ref.current.scrollBy({ left: -316, behavior: 'smooth' }) }}
+            style={{ width: 40, height: 40, borderRadius: '50%', border: '1.5px solid ' + (canR ? NEAR_BLACK : '#ddd'), background: '#fff', color: canR ? NEAR_BLACK : '#ccc', fontSize: 18, cursor: canR ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>›</button>
+          <button onClick={function() { ref.current && ref.current.scrollBy({ left: 316, behavior: 'smooth' }) }}
+            style={{ width: 40, height: 40, borderRadius: '50%', border: '1.5px solid ' + (canL ? NEAR_BLACK : '#ddd'), background: '#fff', color: canL ? NEAR_BLACK : '#ccc', fontSize: 18, cursor: canL ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
         </div>
       </div>
       <div ref={ref} style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 4, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
@@ -138,20 +141,18 @@ export default function Home({ tours, guides }) {
 
   const handleSearch = function() {
     var results = active.filter(function(t) {
-      var ms = !search || (t.Tour_Title && t.Tour_Title.includes(search)) || (t.Tour_Story && t.Tour_Story.includes(search))
-      var mr = !region || t.Cities_Tags === region
-      var mp = !period || (t.Historical_Period && t.Historical_Period.includes(period))
-      var mg = !selectedGuide || t.Guide_Name === selectedGuide
-      return ms && mr && mp && mg
+      return (!search || (t.Tour_Title || '').includes(search) || (t.Tour_Story || '').includes(search))
+          && (!region || t.Cities_Tags === region)
+          && (!period || (t.Historical_Period || []).includes(period))
+          && (!selectedGuide || t.Guide_Name === selectedGuide)
     })
     setSearchResults(results)
-    setTimeout(function() { var el = document.getElementById('search-results'); if (el) el.scrollIntoView({ behavior: 'smooth' }) }, 100)
+    setTimeout(function() { var el = document.getElementById('sr'); if (el) el.scrollIntoView({ behavior: 'smooth' }) }, 80)
   }
 
-  const handleGuideInput = function(val) {
-    setGuideInput(val); setSelectedGuide('')
-    if (val.length < 2) { setGuideMatches([]); return }
-    setGuideMatches(guides.filter(function(g) { return g.includes(val) }).slice(0, 5))
+  const handleGuideInput = function(v) {
+    setGuideInput(v); setSelectedGuide('')
+    setGuideMatches(v.length < 2 ? [] : guides.filter(function(g) { return g.includes(v) }).slice(0, 5))
   }
 
   const handleNotFound = async function(e) {
@@ -175,7 +176,7 @@ export default function Home({ tours, guides }) {
           @media(max-width:768px){
             .hg{grid-template-columns:1fr!important;min-height:100svh!important;}
             .hi{display:none!important;}
-            .ht{padding:48px 24px!important;}
+            .ht{padding:48px 24px 56px!important;}
             .tc{grid-template-columns:1fr!important;}
             .sb{flex-direction:column!important;}
           }
@@ -183,7 +184,7 @@ export default function Home({ tours, guides }) {
       </Head>
 
       {/* NAV */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 200, background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(8px)', borderBottom: '1px solid #f0f0f0' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 200, background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(10px)', borderBottom: '1px solid #efefef' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Link href="/"><img src="/logo.png" alt="מאז ועד היום" style={{ height: 34, objectFit: 'contain' }} /></Link>
           <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
@@ -200,53 +201,53 @@ export default function Home({ tours, guides }) {
         </div>
       </nav>
 
-      {/* HERO */}
-      <section className="hg" style={{ background: NEAR_BLACK, minHeight: '90vh', display: 'grid', gridTemplateColumns: '55% 45%', alignItems: 'center' }}>
+      {/* HERO — dark cinematic */}
+      <section className="hg" style={{ background: NEAR_BLACK, minHeight: '90vh', display: 'grid', gridTemplateColumns: '52% 48%', alignItems: 'center' }}>
         <div className="ht" style={{ padding: '72px 56px 72px 48px' }}>
-          <div style={{ marginBottom: 28 }}><Sign text="אחלה תירוץ לצאת מהבית" size="md" /></div>
-          <h1 style={{ fontSize: 'clamp(38px, 5.5vw, 62px)', fontWeight: 900, color: '#fff', lineHeight: 1.08, marginBottom: 22, letterSpacing: '-0.5px' }}>
+          <div style={{ marginBottom: 32, display: 'inline-block', transform: 'rotate(-2deg)', filter: 'drop-shadow(4px 6px 18px rgba(0,0,0,0.5))' }}>
+            <Sign text="אחלה תירוץ לצאת מהבית" size="lg" />
+          </div>
+          <h1 style={{ fontSize: 'clamp(40px,5.5vw,64px)', fontWeight: 900, color: '#fff', lineHeight: 1.07, marginBottom: 20, letterSpacing: '-1px' }}>
             כולם צריכים<br />תירוץ טוב<br />לצאת מהבית.
           </h1>
-          <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.55)', lineHeight: 1.9, marginBottom: 44, maxWidth: 440 }}>
+          <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.5)', lineHeight: 1.9, marginBottom: 44, maxWidth: 420 }}>
             מקומות שלא חשבתם לנסוע אליהם.<br />
             אנשים שלא הכרתם.<br />
             סיפורים שקשה להאמין שנמצאים כל כך קרוב.
           </p>
           <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center' }}>
             <a href="#tours" style={{ textDecoration: 'none' }}><Sign text="תנו לי אחד" size="md" /></a>
-            <a href="#podcast" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: '1.5px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.8)', padding: '10px 22px', borderRadius: 4, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
-              ▶ הפרק החדש בפודקאסט
+            <a href="#podcast" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: '1.5px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.75)', padding: '10px 22px', borderRadius: 4, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
+              ▶ הפרק החדש
             </a>
           </div>
         </div>
         <div className="hi" style={{ height: '90vh', position: 'relative', overflow: 'hidden' }}>
           <img src="/hero-sofa.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
             onError={function(e) { e.target.parentNode.style.background = 'linear-gradient(160deg,#1a0d06,#3a1a0a)'; e.target.style.display = 'none' }} />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, ' + NEAR_BLACK + ' 0%, rgba(17,17,17,0.1) 50%, transparent 100%)' }} />
-          <div style={{ position: 'absolute', bottom: 48, left: 48 }}>
-            <Sign text="אחלה תירוץ לצאת מהבית" size="lg" />
-          </div>
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right,' + NEAR_BLACK + ' 0%,rgba(17,17,17,0.08) 55%,transparent 100%)' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,' + NEAR_BLACK + ' 0%,transparent 28%)' }} />
         </div>
       </section>
 
-      {/* SEARCH */}
-      <section style={{ background: OFF_WHITE, padding: '28px 24px' }}>
+      {/* DOOR OPENS — white, airy */}
+      <section style={{ background: '#fff', padding: '64px 24px 0' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div className="sb" style={{ display: 'flex', gap: 8, background: '#fff', borderRadius: 12, padding: 8, boxShadow: '0 4px 24px rgba(0,0,0,0.09)' }}>
-            <input type="text" value={search} onChange={function(e) { setSearch(e.target.value) }} onKeyDown={function(e) { if (e.key === 'Enter') handleSearch() }} placeholder="חפשו מקום, מדריך, תקופה..." style={Object.assign({}, inp, { flex: 2 })} />
-            <select value={region} onChange={function(e) { setRegion(e.target.value) }} style={Object.assign({}, inp, { flex: 1 })}>
+          <div className="sb" style={{ display: 'flex', gap: 8, background: '#fff', borderRadius: 14, padding: 8, boxShadow: '0 4px 32px rgba(0,0,0,0.08)', border: '1px solid #f0f0f0', marginBottom: 12 }}>
+            <input type="text" value={search} onChange={function(e) { setSearch(e.target.value) }} onKeyDown={function(e) { if (e.key === 'Enter') handleSearch() }} placeholder="חפשו מקום, מדריך, תקופה..." style={Object.assign({}, inp, { flex: 2, border: 'none', padding: '12px 16px' })} />
+            <select value={region} onChange={function(e) { setRegion(e.target.value) }} style={Object.assign({}, inp, { flex: 1, border: 'none' })}>
               <option value="">כל האזורים</option>
               {REGIONS.map(function(r) { return <option key={r} value={r}>{r}</option> })}
             </select>
-            <select value={period} onChange={function(e) { setPeriod(e.target.value) }} style={Object.assign({}, inp, { flex: 1.5 })}>
+            <select value={period} onChange={function(e) { setPeriod(e.target.value) }} style={Object.assign({}, inp, { flex: 1.5, border: 'none' })}>
               <option value="">כל התקופות</option>
               {PERIODS.map(function(p) { return <option key={p} value={p}>{p}</option> })}
             </select>
-            <button onClick={handleSearch} style={{ background: BROWN, color: '#fff', border: 'none', borderRadius: 8, padding: '11px 28px', fontSize: 14, fontWeight: 700, cursor: 'pointer', flexShrink: 0, fontFamily: 'Heebo, Arial, sans-serif' }}>חפשו</button>
+            <button onClick={handleSearch} style={{ background: BROWN, color: '#fff', border: 'none', borderRadius: 10, padding: '12px 28px', fontSize: 14, fontWeight: 700, cursor: 'pointer', flexShrink: 0, fontFamily: 'Heebo, Arial, sans-serif' }}>חפשו</button>
           </div>
-          <div style={{ display: 'flex', gap: 12, marginTop: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
             <div style={{ position: 'relative' }}>
-              <input type="text" value={guideInput} onChange={function(e) { handleGuideInput(e.target.value) }} placeholder="שם מורה דרך..." style={{ padding: '7px 12px', borderRadius: 6, border: '1px solid #ddd', fontSize: 13, fontFamily: 'Heebo, Arial, sans-serif' }} />
+              <input type="text" value={guideInput} onChange={function(e) { handleGuideInput(e.target.value) }} placeholder="שם מורה דרך..." style={{ padding: '7px 12px', borderRadius: 6, border: '1px solid #e5e5e5', fontSize: 13, fontFamily: 'Heebo, Arial, sans-serif', outline: 'none' }} />
               {guideMatches.length > 0 && (
                 <div style={{ position: 'absolute', top: '100%', right: 0, background: '#fff', border: '1px solid #ddd', borderRadius: 8, zIndex: 10, boxShadow: '0 4px 16px rgba(0,0,0,0.1)', minWidth: 180 }}>
                   {guideMatches.map(function(g) { return <div key={g} onClick={function() { setSelectedGuide(g); setGuideInput(g); setGuideMatches([]) }} style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 13, fontFamily: 'Heebo, Arial, sans-serif' }}>{g}</div> })}
@@ -263,20 +264,20 @@ export default function Home({ tours, guides }) {
               <button type="submit" style={{ background: BROWN, color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>שלח</button>
             </form>
           )}
-          {notFoundSent && <p style={{ marginTop: 8, fontSize: 13, color: '#22c55e', fontFamily: 'Heebo, Arial, sans-serif' }}>✓ נחזור אליכם בהקדם!</p>}
+          {notFoundSent && <p style={{ marginTop: 8, fontSize: 13, color: '#22c55e' }}>✓ נחזור אליכם בהקדם!</p>}
         </div>
       </section>
 
       {/* SEARCH RESULTS */}
       {searchResults !== null && (
-        <section id="search-results" style={{ maxWidth: 1200, margin: '0 auto', padding: '48px 24px' }}>
+        <section id="sr" style={{ maxWidth: 1200, margin: '0 auto', padding: '48px 24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
             <h2 style={{ fontSize: 26, fontWeight: 800 }}>תוצאות ({searchResults.length})</h2>
             <button onClick={function() { setSearchResults(null) }} style={{ background: 'none', border: 'none', fontSize: 13, color: GRAY, cursor: 'pointer', textDecoration: 'underline', fontFamily: 'Heebo, Arial, sans-serif' }}>נקה חיפוש</button>
           </div>
           {searchResults.length === 0
             ? <p style={{ color: GRAY, fontSize: 16 }}>לא נמצאו סיורים. נסו חיפוש אחר.</p>
-            : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px,1fr))', gap: 20 }}>
+            : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 20 }}>
                 {searchResults.map(function(t) { return <TourCard key={t.id} tour={t} /> })}
               </div>
           }
@@ -285,25 +286,27 @@ export default function Home({ tours, guides }) {
 
       {/* MY REGION */}
       {searchResults === null && myRegion.length > 0 && (
-        <section id="tours" style={{ maxWidth: 1200, margin: '0 auto', padding: '60px 24px 0' }}>
+        <section id="tours" style={{ maxWidth: 1200, margin: '0 auto', padding: '64px 24px 0' }}>
           <Carousel tours={myRegion} title="סיורים באזור שלך" />
         </section>
       )}
 
       {/* RECENT */}
       {searchResults === null && (
-        <section id={myRegion.length === 0 ? 'tours' : 'recent'} style={{ maxWidth: 1200, margin: '0 auto', padding: '60px 24px 0' }}>
+        <section id={myRegion.length === 0 ? 'tours' : 'recent'} style={{ maxWidth: 1200, margin: '0 auto', padding: '64px 24px 0' }}>
           <Carousel tours={recent} title="סיורים חדשים" />
         </section>
       )}
 
-      {/* DISCOVERY DARK */}
+      {/* DISCOVERY — ONE dark section */}
       {searchResults === null && (
-        <section style={{ background: NEAR_BLACK, padding: '72px 24px', marginTop: 64 }}>
+        <section style={{ background: NEAR_BLACK, padding: '80px 24px', marginTop: 80 }}>
           <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-            <div style={{ marginBottom: 36 }}>
-              <h2 style={{ fontSize: 'clamp(28px,5vw,50px)', fontWeight: 900, color: '#fff', marginBottom: 8 }}>עזוב, מה יש לעשות שם?</h2>
-              <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.4)' }}>מקומות מפתיעים. סיפורים אמיתיים. אנשים שיפילו אתכם מהרגליים.</p>
+            <div style={{ marginBottom: 40 }}>
+              <div style={{ marginBottom: 16, display: 'inline-block', transform: 'rotate(-1.5deg)' }}>
+                <Sign text="עזוב, מה יש לעשות שם?" size="lg" />
+              </div>
+              <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.38)', marginTop: 12 }}>מקומות מפתיעים. סיפורים אמיתיים. אנשים שיפילו אתכם מהרגליים.</p>
             </div>
             <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 8, scrollbarWidth: 'none' }}>
               {popular.map(function(t) { return <TourCard key={t.id} tour={t} /> })}
@@ -312,20 +315,20 @@ export default function Home({ tours, guides }) {
         </section>
       )}
 
-      {/* PODCAST */}
+      {/* PODCAST — white */}
       {searchResults === null && (
-        <section id="podcast" style={{ background: OFF_WHITE, padding: '80px 24px' }}>
-          <div className="tc" style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 56, alignItems: 'center' }}>
-            <div style={{ borderRadius: 16, overflow: 'hidden', height: 380, background: '#2a1508', position: 'relative' }}>
+        <section id="podcast" style={{ background: '#fff', padding: '88px 24px' }}>
+          <div className="tc" style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }}>
+            <div style={{ borderRadius: 18, overflow: 'hidden', height: 400, background: '#1a0d06', position: 'relative', boxShadow: '0 8px 40px rgba(0,0,0,0.12)' }}>
               <img src="/podcast-hero.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onError={function(e) { e.target.style.display = 'none' }} />
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 60%)' }} />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,0.4) 0%,transparent 55%)' }} />
             </div>
             <div>
               <div style={{ marginBottom: 20 }}><Sign text="הפודקאסט" size="sm" /></div>
-              <h2 style={{ fontSize: 'clamp(22px,3vw,38px)', fontWeight: 800, marginBottom: 16, lineHeight: 1.25 }}>
+              <h2 style={{ fontSize: 'clamp(24px,3vw,40px)', fontWeight: 800, marginBottom: 16, lineHeight: 1.2, color: NEAR_BLACK }}>
                 אם אתם במצב בטטות ספה, לפחות תקשיבו לפרק החדש.
               </h2>
-              <p style={{ fontSize: 16, color: GRAY, lineHeight: 1.85, marginBottom: 32 }}>
+              <p style={{ fontSize: 16, color: GRAY, lineHeight: 1.9, marginBottom: 32 }}>
                 כי בפעם הבאה שמישהו בעבודה ישאל מה עשיתם בסופ"ש, תזרקו שם של מקום שאף אחד לא שמע עליו וכולם יהיו בטוחים שיש לכם חיים מעניינים במיוחד.
               </p>
               <a href="#" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: '1.5px solid ' + NEAR_BLACK, color: NEAR_BLACK, padding: '13px 26px', borderRadius: 4, fontSize: 15, fontWeight: 600, textDecoration: 'none', fontFamily: 'Heebo, Arial, sans-serif' }}>
@@ -336,54 +339,67 @@ export default function Home({ tours, guides }) {
         </section>
       )}
 
-      {/* GUIDE RECRUITMENT */}
+      {/* GUIDE RECRUITMENT — off-white */}
       {searchResults === null && (
-        <section id="guides" style={{ background: '#fff', padding: '80px 24px' }}>
-          <div className="tc" style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 56, alignItems: 'center' }}>
+        <section id="guides" style={{ background: OFF_WHITE, padding: '88px 24px' }}>
+          <div className="tc" style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }}>
             <div>
               <div style={{ marginBottom: 20 }}><Sign text="מחפשים מדריכים" size="sm" /></div>
-              <h2 style={{ fontSize: 'clamp(22px,3vw,42px)', fontWeight: 800, marginBottom: 16, lineHeight: 1.2 }}>
-                מכירים מדריך טוב ב___?<br />
-                יש מצב שבקרוב יגידו את השם שלכם.
+              <h2 style={{ fontSize: 'clamp(24px,3vw,44px)', fontWeight: 800, marginBottom: 16, lineHeight: 1.18, color: NEAR_BLACK }}>
+                מכירים מדריך טוב ב___?<br />יש מצב שבקרוב יגידו את השם שלכם.
               </h2>
-              <p style={{ fontSize: 16, color: GRAY, lineHeight: 1.85, marginBottom: 32 }}>
-                אנחנו מחברים בין מטיילים סקרנים למדריכים שמכירים את הסיפורים מאחורי המקומות. פרסמו סיורים, קבלו לקוחות, ותנו לאנשים סיבה טובה לצאת מהבית.
+              <p style={{ fontSize: 16, color: GRAY, lineHeight: 1.9, marginBottom: 32 }}>
+                אנחנו מחברים בין מטיילים סקרנים למדריכים שמכירים את הסיפורים מאחורי המקומות.
               </p>
               <Link href="/join" style={{ textDecoration: 'none' }}><Sign text="אני מדריך" size="md" /></Link>
             </div>
-            <div style={{ borderRadius: 16, overflow: 'hidden', height: 380, background: '#1a0d06' }}>
+            <div style={{ borderRadius: 18, overflow: 'hidden', height: 400, background: '#1a0d06', boxShadow: '0 8px 40px rgba(0,0,0,0.1)' }}>
               <img src="/guide-hero.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onError={function(e) { e.target.style.display = 'none' }} />
             </div>
           </div>
         </section>
       )}
 
-      {/* FOOTER */}
+      {/* FOOTER — dark, branded, emotional */}
       {searchResults === null && (
-        <footer style={{ background: NEAR_BLACK, padding: '80px 24px 48px' }}>
+        <footer style={{ background: NEAR_BLACK, padding: '88px 24px 52px' }}>
           <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: 64 }}>
-              <div style={{ marginBottom: 24 }}><Sign text="יש מקום לסיפור שלכם כאן" size="lg" /></div>
-              <h2 style={{ fontSize: 'clamp(26px,5vw,52px)', fontWeight: 900, color: '#fff', lineHeight: 1.1, marginBottom: 16 }}>
-                הצטרפו לקהילה שיוצאת מהבית.
+            <div style={{ textAlign: 'center', marginBottom: 72 }}>
+              <div style={{ marginBottom: 28, display: 'inline-block', transform: 'rotate(-1deg)' }}>
+                <Sign text="יש מקום לסיפור שלכם כאן" size="xl" />
+              </div>
+              <h2 style={{ fontSize: 'clamp(28px,5vw,56px)', fontWeight: 900, color: '#fff', lineHeight: 1.08, marginBottom: 16 }}>
+                הצטרפו לקהילה<br />שיוצאת מהבית.
               </h2>
-              <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.4)', marginBottom: 36, lineHeight: 1.8 }}>
+              <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.38)', marginBottom: 40, lineHeight: 1.8 }}>
                 הרשמה חד פעמית. הנחה גורפת. תירוץ מצוין.
               </p>
-              <Link href="/discount" style={{ display: 'inline-block', background: BROWN, color: '#fff', padding: '15px 40px', borderRadius: 4, fontSize: 16, fontWeight: 700, textDecoration: 'none', fontFamily: 'Heebo, Arial, sans-serif' }}>
+              <Link href="/discount" style={{ display: 'inline-block', background: BROWN, color: '#fff', padding: '16px 44px', borderRadius: 4, fontSize: 16, fontWeight: 700, textDecoration: 'none', fontFamily: 'Heebo, Arial, sans-serif', boxShadow: '0 4px 20px rgba(126,72,33,0.35)' }}>
                 הצטרפו — ההנחה כבר מחכה
               </Link>
             </div>
-            <div style={{ borderTop: '1px solid #222', paddingTop: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-              <img src="/logo-light.png" alt="מאז ועד היום" style={{ height: 32, opacity: 0.6 }} onError={function(e) { e.target.style.display = 'none' }} />
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 0, borderTop: '1px solid #1f1f1f', borderBottom: '1px solid #1f1f1f', padding: '40px 0', marginBottom: 48, textAlign: 'center' }}>
+              {[['900+','מקומות'],['150+','מדריכים'],['80+','פרקי פודקאסט'],['אלפי','מטיילים בחודש']].map(function(s) {
+                return (
+                  <div key={s[0]} style={{ padding: '0 24px', borderRight: '1px solid #1f1f1f' }}>
+                    <p style={{ fontSize: 'clamp(32px,4vw,48px)', fontWeight: 900, color: '#fff', lineHeight: 1, marginBottom: 6, fontFamily: 'Heebo, Arial, sans-serif' }}>{s[0]}</p>
+                    <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.35)', fontFamily: 'Heebo, Arial, sans-serif' }}>{s[1]}</p>
+                  </div>
+                )
+              })}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+              <img src="/logo-light.png" alt="מאז ועד היום" style={{ height: 30, opacity: 0.55 }} onError={function(e) { e.target.style.display = 'none' }} />
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {['לא חשבתי שאגיע לכאן', 'זה באמת פה?', 'מי בכלל נוסע לשם?'].map(function(t) {
-                  return <span key={t} style={{ display: 'inline-block', background: 'rgba(126,72,33,0.18)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(126,72,33,0.28)', padding: '4px 12px 4px 20px', borderRadius: 3, fontSize: 12, position: 'relative', fontFamily: 'Heebo, Arial, sans-serif' }}>
-                    <span style={{ position: 'absolute', left: 6, fontSize: 10 }}>←</span>{t}
+                  return <span key={t} style={{ display: 'inline-block', background: 'rgba(126,72,33,0.14)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(126,72,33,0.25)', padding: '4px 12px 4px 22px', borderRadius: 3, fontSize: 11, position: 'relative', fontFamily: 'Heebo, Arial, sans-serif' }}>
+                    <span style={{ position: 'absolute', left: 7, fontSize: 10 }}>←</span>{t}
                   </span>
                 })}
               </div>
-              <p style={{ color: '#333', fontSize: 12, fontFamily: 'Heebo, Arial, sans-serif' }}>© 2025 מאז ועד היום</p>
+              <p style={{ color: '#2a2a2a', fontSize: 12, fontFamily: 'Heebo, Arial, sans-serif' }}>© 2025 מאז ועד היום</p>
             </div>
           </div>
         </footer>
@@ -396,8 +412,8 @@ export async function getServerSideProps() {
   try {
     const token = process.env.AIRTABLE_TOKEN
     const baseId = process.env.AIRTABLE_BASE_ID
-    const response = await fetch(`https://api.airtable.com/v0/${baseId}/tbltsGvfPLMAmJ764?pageSize=100`, { headers: { Authorization: `Bearer ${token}` } })
-    const data = await response.json()
+    const res = await fetch(`https://api.airtable.com/v0/${baseId}/tbltsGvfPLMAmJ764?pageSize=100`, { headers: { Authorization: `Bearer ${token}` } })
+    const data = await res.json()
     const tours = (data.records || []).map(function(r) { return Object.assign({ id: r.id }, r.fields) })
     const guides = [...new Set(tours.map(function(t) { return t.Guide_Name }).filter(Boolean))].sort()
     return { props: { tours, guides } }
