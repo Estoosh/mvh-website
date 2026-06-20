@@ -124,6 +124,14 @@ export default function Admin() {
     setSending(false)
   }
 
+  const handleSendBilling = async function() {
+    if (window.confirm('לשלוח חשבוניות לכל המדריכים הפעילים?')) {
+      const res = await fetch('/api/send-billing-email', { method: 'POST' })
+      const data = await res.json()
+      alert('נשלחו ' + data.sent + ' חשבוניות!')
+    }
+  }
+
   const inputStyle = { width: '100%', padding: '10px 14px', borderRadius: 6, border: '1px solid #ddd', fontSize: 14, fontFamily: 'Heebo, Arial, sans-serif', outline: 'none', boxSizing: 'border-box' }
   const thStyle = { padding: '10px 12px', textAlign: 'right', fontSize: 12, fontWeight: 700, color: '#888', borderBottom: '2px solid #eee', whiteSpace: 'nowrap' }
   const tdStyle = { padding: '10px 12px', fontSize: 13, borderBottom: '1px solid #f0f0f0', verticalAlign: 'middle' }
@@ -134,15 +142,6 @@ export default function Admin() {
         <Header />
         <div style={{ maxWidth: 400, margin: '120px auto', padding: '0 24px', textAlign: 'center' }}>
           <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>MvH Mission Control</h1>
-  <button onClick={async function() {
-  if (window.confirm('לשלוח חשבוניות לכל המדריכים הפעילים?')) {
-    const res = await fetch('/api/send-billing-email', { method: 'POST' })
-    const data = await res.json()
-    alert('נשלחו ' + data.sent + ' חשבוניות!')
-  }
-}} style={{ marginBottom: 32, background: '#0A0A0A', color: '#fff', padding: '10px 24px', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer', border: 'none' }}>
-  💳 שלח חשבוניות חודשיות
-</button>
           <p style={{ color: '#888', fontSize: 13, marginBottom: 32 }}>גישה מורשית בלבד</p>
           <form onSubmit={handleLogin}>
             <input type="password" value={password} onChange={function(e) { setPassword(e.target.value) }}
@@ -172,7 +171,13 @@ export default function Admin() {
     <div>
       <Header />
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 24px' }}>
-        <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 32 }}>MvH Mission Control</h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
+          <h1 style={{ fontSize: 28, fontWeight: 800 }}>MvH Mission Control</h1>
+          <button onClick={handleSendBilling}
+            style={{ background: '#0A0A0A', color: '#fff', padding: '10px 24px', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer', border: 'none' }}>
+            💳 שלח חשבוניות חודשיות
+          </button>
+        </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 16, marginBottom: 40 }}>
           {[
