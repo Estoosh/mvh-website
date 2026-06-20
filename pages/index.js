@@ -199,27 +199,43 @@ export default function Home({ tours, guides }) {
       </nav>
 
       {/* HERO */}
-      <section style={{ background: '#1B1B1B', minHeight: '86vh', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
+      <section style={{ background: '#141414', minHeight: '86vh', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
         <div style={{ position: 'absolute', inset: 0 }}>
-          <img src="/hero-sofa.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center center', opacity: 0.88 }}
-            onError={function(e) { e.target.parentNode.style.background = 'linear-gradient(160deg,#0d0603,#2a1508)'; e.target.style.display = 'none' }} />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.34) 42%, rgba(0,0,0,0.78) 78%)' }} />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(17,17,17,0.45) 0%, transparent 42%)' }} />
+          <img
+            src="/hero-sofa.png"
+            alt=""
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center center',
+              opacity: 0.92
+            }}
+            onError={function(e) {
+              e.target.parentNode.style.background = 'linear-gradient(160deg,#0d0603,#2a1508)'
+              e.target.style.display = 'none'
+            }}
+          />
+
+          {/* Keep the person visible. Darken mainly the right side, where the copy sits. */}
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to left, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.70) 34%, rgba(0,0,0,0.28) 63%, rgba(0,0,0,0.08) 100%)' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(17,17,17,0.38) 0%, transparent 42%)' }} />
         </div>
-        <div style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: 1200, margin: '0 auto', padding: '96px 44px' }}>
-          <div style={{ maxWidth: 520, marginRight: 'auto', marginLeft: 0 }}>
-            <div style={{ marginBottom: 34, display: 'inline-block', transform: 'rotate(-3deg)', filter: 'drop-shadow(6px 10px 26px rgba(0,0,0,0.55))' }}>
+
+        <div style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: 1200, margin: '0 auto', padding: '108px 44px 92px' }}>
+          <div style={{ maxWidth: 540, marginRight: 0, marginLeft: 'auto', textAlign: 'right' }}>
+            <div style={{ marginBottom: 30, display: 'inline-block', transform: 'rotate(-2.5deg)', filter: 'drop-shadow(6px 10px 26px rgba(0,0,0,0.55))' }}>
               <Sign text="אחלה תירוץ לצאת מהבית" size="xl" />
             </div>
             <h1 style={{ fontSize: 'clamp(42px,5.2vw,70px)', fontWeight: 900, color: '#fff', lineHeight: 0.98, marginBottom: 30, letterSpacing: '-2px' }}>
               כולם צריכים<br />תירוץ טוב<br />לצאת מהבית.
             </h1>
-            <p style={{ maxWidth: 420, color: 'rgba(255,255,255,0.78)', fontSize: 17, lineHeight: 1.75, marginBottom: 30 }}>
+            <p style={{ maxWidth: 430, color: 'rgba(255,255,255,0.82)', fontSize: 17, lineHeight: 1.75, marginBottom: 30 }}>
               מקומות שלא חשבתם לנסוע אליהם. אנשים שלא הכרתם. סיפורים שלא ייאמן שהם נמצאים כל כך קרוב.
             </p>
-            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-start' }}>
               <a href="#tours" style={{ textDecoration: 'none' }}><Sign text="תנו לי אחד" size="md" /></a>
-              <a href="#podcast" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: '1.5px solid rgba(255,255,255,0.24)', color: 'rgba(255,255,255,0.78)', padding: '10px 22px', borderRadius: 4, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
+              <a href="#podcast" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: '1.5px solid rgba(255,255,255,0.26)', color: 'rgba(255,255,255,0.82)', padding: '10px 22px', borderRadius: 4, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
                 ▶ הפרק החדש
               </a>
             </div>
