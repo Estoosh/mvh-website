@@ -50,6 +50,7 @@ function ImageGallery({ images }) {
 
 function RelatedTours({ tours }) {
   if (!tours || tours.length === 0) return null
+
   return (
     <div style={{ marginTop: 56, paddingTop: 40, borderTop: '1px solid #eee' }}>
       <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 20 }}>סיורים נוספים שיכולים לעניין אתכם</h2>
@@ -90,7 +91,15 @@ export default function TourPage({ tour }) {
       body: JSON.stringify({ tour_id: tour.id, current_count: tour.View_Count || 0 })
     })
     var periodsParam = (tour.Historical_Period || []).join('|')
-  
+    var url = '/api/related-tours?exclude_id=' + tour.id +
+      '&cities=' + encodeURIComponent(tour.Cities_Tags || '') +
+      '&guide_name=' + encodeURIComponent(tour.Guide_Name || '') +
+      '&periods=' + encodeURIComponent(periodsParam)
+    fetch(url)
+      .then(function(r) { return r.json() })
+      .then(function(data) { setRelatedTours(data.tours || []) })
+  }, [tour])
+
   useEffect(function() {
     if (!isLoaded || !user) return
     fetch('/api/get-guide?clerk_id=' + user.id)
@@ -173,7 +182,7 @@ export default function TourPage({ tour }) {
         )}
         {isOwnTour && (
           <Link href={'/edit-tour/' + tour.id}
-            style={{ marginRight: 12, background: '#fff', color: '#0A0A0A', border: '1px solid #0A0A0A', padding: '14px 32px', borderRadius: 8, fontSize: 18, fontWeight: 700, textDecoration: 'none', display: 'inline-block', marginTop: 12 }}>
+            style={{ marginTop: 12, marginRight: 12, background: '#fff', color: '#0A0A0A', border: '1px solid #0A0A0A', padding: '14px 32px', borderRadius: 8, fontSize: 18, fontWeight: 700, textDecoration: 'none', display: 'inline-block' }}>
             ערוך סיור
           </Link>
         )}
