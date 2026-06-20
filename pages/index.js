@@ -300,7 +300,7 @@ export default function Home({ tours, guides }) {
           </div>
         </div>
         <div className="hero-image" style={{ height: '88vh', position: 'relative', overflow: 'hidden' }}>
-          <img src="/hero-sofa.jpg" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }} onError={function(e) { e.target.parentNode.style.background = 'linear-gradient(135deg, #1a0d06, #3a1a0a)' ; e.target.style.display = 'none' }} />
+          <img src="/hero-sofa.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }} onError={function(e) { e.target.parentNode.style.background = 'linear-gradient(135deg, #1a0d06, #3a1a0a)' ; e.target.style.display = 'none' }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, ' + NEAR_BLACK + ' 0%, transparent 35%)' }} />
         </div>
       </div>
