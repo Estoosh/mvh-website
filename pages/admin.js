@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import Header from '../components/Header'
 
 const ADMIN_PASSWORD = 'mvh2025admin'
@@ -72,6 +73,9 @@ export default function Admin() {
         <Header />
         <div style={{ maxWidth: 400, margin: '120px auto', padding: '0 24px', textAlign: 'center' }}>
           <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>MvH Mission Control</h1>
+<Link href="/newsletter" style={{ display: 'inline-block', marginBottom: 32, background: '#C4922A', color: '#fff', padding: '10px 24px', borderRadius: 8, fontSize: 14, fontWeight: 700, textDecoration: 'none' }}>
+  ✉️ שלח ניוזלטר
+</Link>
           <p style={{ color: '#888', fontSize: 13, marginBottom: 32 }}>גישה מורשית בלבד</p>
           <form onSubmit={handleLogin}>
             <input type="password" value={password} onChange={function(e) { setPassword(e.target.value) }}
