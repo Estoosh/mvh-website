@@ -7,6 +7,7 @@ export default async function handler(req, res) {
   if (type === 'tours') tableId = 'tbltsGvfPLMAmJ764'
   else if (type === 'guides') tableId = 'tblsJ5Ok1yPSgtvSj'
   else if (type === 'signups') tableId = 'Signups'
+  else if (type === 'newsletters') tableId = 'Newsletters'
   else return res.status(400).json({ error: 'invalid type' })
 
   try {
