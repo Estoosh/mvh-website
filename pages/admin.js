@@ -46,7 +46,7 @@ export default function Admin() {
     })
     setTours(function(prev) {
       return prev.map(function(t) {
-        if (t.id === tourId) return Object.assign({}, t, { Tour_Status: status, Frozen_At: status === 'frozen' ? new Date().toISOString() : null })
+        if (t.id === tourId) return Object.assign({}, t, { Tour_Status: status })
         return t
       })
     })
@@ -71,12 +71,13 @@ export default function Admin() {
       <div>
         <Header />
         <div style={{ maxWidth: 400, margin: '120px auto', padding: '0 24px', textAlign: 'center' }}>
-          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 32 }}>דשבורד אדמין</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>MvH Mission Control</h1>
+          <p style={{ color: '#888', fontSize: 13, marginBottom: 32 }}>גישה מורשית בלבד</p>
           <form onSubmit={handleLogin}>
             <input type="password" value={password} onChange={function(e) { setPassword(e.target.value) }}
-              placeholder="סיסמת אדמין" style={Object.assign({}, inputStyle, { width: '100%', marginBottom: 12 })} />
+              placeholder="סיסמה" style={Object.assign({}, inputStyle, { width: '100%', marginBottom: 12, boxSizing: 'border-box' })} />
             {error && <p style={{ color: '#e00', fontSize: 13, marginBottom: 12 }}>{error}</p>}
-            <button type="submit" style={{ width: '100%', background: '#0A0A0A', color: '#fff', padding: '12px', borderRadius: 8, fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>
+            <button type="submit" style={{ width: '100%', background: '#0A0A0A', color: '#fff', padding: '12px', borderRadius: 8, fontSize: 15, fontWeight: 700, cursor: 'pointer', border: 'none' }}>
               כניסה
             </button>
           </form>
@@ -85,14 +86,37 @@ export default function Admin() {
     )
   }
 
+  const totalLeads = tours.reduce(function(acc, t) { return acc + (Number(t.Lead_Count) || 0) }, 0)
+  const totalViews = tours.reduce(function(acc, t) { return acc + (Number(t.View_Count) || 0) }, 0)
+  const totalNewsletter = tours.reduce(function(acc, t) { return acc + (Number(t.Newsletter_Click_Count) || 0) }, 0)
+  const activeTours = tours.filter(function(t) { return t.Tour_Status === 'paid' })
+
   return (
     <div>
       <Header />
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 24px' }}>
-        <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 32 }}>דשבורד אדמין</h1>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 24px' }}>
+        <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 32 }}>MvH Mission Control</h1>
 
-        <div style={{ display: 'flex', gap: 8, marginBottom: 32 }}>
-          {[['tours', 'סיורים (' + tours.length + ')'], ['guides', 'מדריכים (' + guides.length + ')'], ['signups', 'קהילה (' + signups.length + ')'], ['analytics', 'אנליטיקה']].map(function(item) {
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16, marginBottom: 40 }}>
+          {[
+            ['סיורים פעילים', activeTours.length, '#22c55e'],
+            ['מדריכים', guides.length, '#3b82f6'],
+            ['חברי קהילה', signups.length, '#C4922A'],
+            ['צפיות באתר', totalViews, '#8b5cf6'],
+            ['לחיצות ניוזלטר', totalNewsletter, '#06b6d4'],
+            ['לחיצות וואטסאפ', totalLeads, '#25D366'],
+          ].map(function(item) {
+            return (
+              <div key={item[0]} style={{ background: '#F9F9F9', borderRadius: 8, padding: '20px 16px', textAlign: 'center', borderTop: '3px solid ' + item[2] }}>
+                <p style={{ fontSize: 32, fontWeight: 800, marginBottom: 4, color: item[2] }}>{item[1]}</p>
+                <p style={{ fontSize: 12, color: '#666' }}>{item[0]}</p>
+              </div>
+            )
+          })}
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, marginBottom: 32, flexWrap: 'wrap' }}>
+          {[['tours', 'סיורים (' + tours.length + ')'], ['guides', 'מדריכים (' + guides.length + ')'], ['signups', 'קהילה (' + signups.length + ')']].map(function(item) {
             return (
               <button key={item[0]} onClick={function() { setTab(item[0]) }}
                 style={{ padding: '8px 20px', borderRadius: 20, border: '1px solid', fontSize: 14, cursor: 'pointer',
@@ -111,13 +135,17 @@ export default function Admin() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
-                  {['שם סיור', 'מדריך', 'עיר', 'מחיר', 'לידים', 'סטטוס', 'פעולות'].map(function(h) {
+                  {['שם סיור', 'מדריך', 'עיר', 'מחיר', 'צפיות', 'ניוזלטר', 'וואטסאפ', 'סה"כ', 'סטטוס', 'פעולות'].map(function(h) {
                     return <th key={h} style={thStyle}>{h}</th>
                   })}
                 </tr>
               </thead>
               <tbody>
                 {tours.map(function(t) {
+                  var views = Number(t.View_Count) || 0
+                  var newsletter = Number(t.Newsletter_Click_Count) || 0
+                  var leads = Number(t.Lead_Count) || 0
+                  var total = views + newsletter + leads
                   return (
                     <tr key={t.id}>
                       <td style={tdStyle}>
@@ -129,7 +157,10 @@ export default function Admin() {
                       <td style={tdStyle}>{t.Guide_Name}</td>
                       <td style={tdStyle}>{t.Cities_Tags}</td>
                       <td style={tdStyle}>{t.Price_Per_Person} ₪</td>
-                      <td style={tdStyle}>{t.Lead_Count || 0}</td>
+                      <td style={tdStyle}>{views}</td>
+                      <td style={tdStyle}>{newsletter}</td>
+                      <td style={tdStyle}>{leads}</td>
+                      <td style={Object.assign({}, tdStyle, { fontWeight: 700, color: '#C4922A' })}>{total}</td>
                       <td style={tdStyle}>{statusBadge(t.Tour_Status)}</td>
                       <td style={tdStyle}>
                         <div style={{ display: 'flex', gap: 6 }}>
@@ -214,24 +245,6 @@ export default function Admin() {
                 })}
               </tbody>
             </table>
-          </div>
-        )}
-
-        {!loading && tab === 'analytics' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
-            {[
-              ['סה"כ סיורים פעילים', tours.filter(function(t) { return t.Tour_Status === 'paid' }).length],
-              ['סה"כ מדריכים', guides.length],
-              ['סה"כ חברי קהילה', signups.length],
-              ['סה"כ לידים', tours.reduce(function(acc, t) { return acc + (Number(t.Lead_Count) || 0) }, 0)],
-            ].map(function(item) {
-              return (
-                <div key={item[0]} style={{ background: '#F5F5F5', borderRadius: 8, padding: 24, textAlign: 'center' }}>
-                  <p style={{ fontSize: 36, fontWeight: 800, marginBottom: 8 }}>{item[1]}</p>
-                  <p style={{ fontSize: 13, color: '#666' }}>{item[0]}</p>
-                </div>
-              )
-            })}
           </div>
         )}
       </div>
