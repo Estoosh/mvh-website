@@ -12,7 +12,7 @@ const PERIODS = ["תקופת המקרא / ימי האבות","בית ראשון 
 const REGIONS = ["צפון","גליל עליון","גליל מערבי","גולן","חיפה","השרון","מרכז","תל אביב","ירושלים","שפלה",'יו"ש',"צפון הנגב","באר שבע","נגב","ערבה","דרום","אילת","ים המלח","עין גדי","מצדה"]
 const SIGN_TEXTS = ["לא חשבתי שאגיע לכאן","זה באמת פה?","מי בכלל נוסע לשם?","עוד 3 דקות מהבית","פניה אחת מהשגרה","שמעתם על המקום הזה?"]
 
-function Sign({ text, size = 'md', rotate = 0 }) {
+function Sign({ text, size = 'md', rotate = 0, className }) {
   const s = {
     sm:  { fs: 12, py: 6,  px: 18, pl: 28, arr: 10, r: 3 },
     md:  { fs: 15, py: 10, px: 22, pl: 36, arr: 13, r: 3 },
@@ -21,16 +21,14 @@ function Sign({ text, size = 'md', rotate = 0 }) {
   }[size] || { fs: 15, py: 10, px: 22, pl: 36, arr: 13, r: 3 }
 
   return (
-    <span style={{
+    <span className={className} style={{
       display: 'inline-flex', alignItems: 'center',
       background: BROWN, color: '#fff',
       paddingTop: s.py, paddingBottom: s.py,
       paddingRight: s.px, paddingLeft: s.pl,
-      borderRadius: s.r,
-      fontWeight: 700, fontSize: s.fs,
+      borderRadius: s.r, fontWeight: 700, fontSize: s.fs,
       fontFamily: 'Heebo, Arial, sans-serif',
-      position: 'relative',
-      letterSpacing: '0.01em',
+      position: 'relative', letterSpacing: '0.01em',
       boxShadow: '3px 4px 14px rgba(0,0,0,0.28)',
       whiteSpace: 'nowrap',
       transform: rotate ? 'rotate(' + rotate + 'deg)' : undefined,
@@ -63,7 +61,7 @@ function TourCard({ tour }) {
           ? <img src={thumb} alt={tour.Tour_Title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.45s ease', transform: hov ? 'scale(1.07)' : 'scale(1)' }} />
           : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(160deg,#2a1508,#4a2c14 60%,#1a0d06)' }} />
         }
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,0.93) 0%,rgba(0,0,0,0.3) 50%,rgba(0,0,0,0.05) 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.93) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.05) 100%)' }} />
         <div style={{ position: 'absolute', top: 14, right: 14 }}>
           <Sign text={sign} size="sm" />
         </div>
@@ -174,9 +172,6 @@ export default function Home({ tours, guides }) {
           ::-webkit-scrollbar{display:none;}
           body{overflow-x:hidden;}
           @media(max-width:768px){
-            .hg{grid-template-columns:1fr!important;min-height:100svh!important;}
-            .hi{display:none!important;}
-            .ht{padding:48px 24px 56px!important;}
             .tc{grid-template-columns:1fr!important;}
             .sb{flex-direction:column!important;}
           }
@@ -201,32 +196,28 @@ export default function Home({ tours, guides }) {
         </div>
       </nav>
 
-      {/* HERO — dark cinematic */}
-      <section className="hg" style={{ background: NEAR_BLACK, minHeight: '90vh', display: 'grid', gridTemplateColumns: '52% 48%', alignItems: 'center' }}>
-        <div className="ht" style={{ padding: '72px 56px 72px 48px' }}>
-          <div style={{ marginBottom: 32, display: 'inline-block', transform: 'rotate(-2deg)', filter: 'drop-shadow(4px 6px 18px rgba(0,0,0,0.5))' }}>
-            <Sign text="אחלה תירוץ לצאת מהבית" size="lg" />
+      {/* HERO — full cinematic */}
+      <section style={{ background: NEAR_BLACK, minHeight: '95vh', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
+        <div style={{ position: 'absolute', inset: 0 }}>
+          <img src="/hero-sofa.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top', opacity: 0.75 }}
+            onError={function(e) { e.target.parentNode.style.background = 'linear-gradient(160deg,#0d0603,#2a1508)'; e.target.style.display = 'none' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 70% 40%, transparent 20%, rgba(0,0,0,0.7) 80%)' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to left, transparent 30%, rgba(0,0,0,0.85) 80%)' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, ' + NEAR_BLACK + ' 0%, transparent 40%)' }} />
+        </div>
+        <div style={{ position: 'relative', zIndex: 2, maxWidth: 580, padding: '80px 48px 80px 60px', marginRight: 'auto' }}>
+          <div style={{ marginBottom: 40, display: 'inline-block', transform: 'rotate(-3deg)', filter: 'drop-shadow(6px 8px 24px rgba(0,0,0,0.7))' }}>
+            <Sign text="אחלה תירוץ לצאת מהבית" size="xl" />
           </div>
-          <h1 style={{ fontSize: 'clamp(40px,5.5vw,64px)', fontWeight: 900, color: '#fff', lineHeight: 1.07, marginBottom: 20, letterSpacing: '-1px' }}>
+          <h1 style={{ fontSize: 'clamp(44px,6vw,72px)', fontWeight: 900, color: '#fff', lineHeight: 1.05, marginBottom: 40, letterSpacing: '-1.5px' }}>
             כולם צריכים<br />תירוץ טוב<br />לצאת מהבית.
           </h1>
-          <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.5)', lineHeight: 1.9, marginBottom: 44, maxWidth: 420 }}>
-            מקומות שלא חשבתם לנסוע אליהם.<br />
-            אנשים שלא הכרתם.<br />
-            סיפורים שקשה להאמין שנמצאים כל כך קרוב.
-          </p>
           <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center' }}>
             <a href="#tours" style={{ textDecoration: 'none' }}><Sign text="תנו לי אחד" size="md" /></a>
-            <a href="#podcast" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: '1.5px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.75)', padding: '10px 22px', borderRadius: 4, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
+            <a href="#podcast" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: '1.5px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)', padding: '10px 22px', borderRadius: 4, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
               ▶ הפרק החדש
             </a>
           </div>
-        </div>
-        <div className="hi" style={{ height: '90vh', position: 'relative', overflow: 'hidden' }}>
-          <img src="/hero-sofa.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
-            onError={function(e) { e.target.parentNode.style.background = 'linear-gradient(160deg,#1a0d06,#3a1a0a)'; e.target.style.display = 'none' }} />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right,' + NEAR_BLACK + ' 0%,rgba(17,17,17,0.08) 55%,transparent 100%)' }} />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,' + NEAR_BLACK + ' 0%,transparent 28%)' }} />
         </div>
       </section>
 
@@ -298,7 +289,7 @@ export default function Home({ tours, guides }) {
         </section>
       )}
 
-      {/* DISCOVERY — ONE dark section */}
+      {/* DISCOVERY — dark */}
       {searchResults === null && (
         <section style={{ background: NEAR_BLACK, padding: '80px 24px', marginTop: 80 }}>
           <div style={{ maxWidth: 1200, margin: '0 auto' }}>
@@ -315,7 +306,7 @@ export default function Home({ tours, guides }) {
         </section>
       )}
 
-      {/* PODCAST — white */}
+      {/* PODCAST */}
       {searchResults === null && (
         <section id="podcast" style={{ background: '#fff', padding: '88px 24px' }}>
           <div className="tc" style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }}>
@@ -339,7 +330,7 @@ export default function Home({ tours, guides }) {
         </section>
       )}
 
-      {/* GUIDE RECRUITMENT — off-white */}
+      {/* GUIDE RECRUITMENT */}
       {searchResults === null && (
         <section id="guides" style={{ background: OFF_WHITE, padding: '88px 24px' }}>
           <div className="tc" style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }}>
@@ -360,46 +351,42 @@ export default function Home({ tours, guides }) {
         </section>
       )}
 
-      {/* FOOTER — dark, branded, emotional */}
+      {/* FOOTER — poster */}
       {searchResults === null && (
-        <footer style={{ background: NEAR_BLACK, padding: '88px 24px 52px' }}>
-          <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: 72 }}>
-              <div style={{ marginBottom: 28, display: 'inline-block', transform: 'rotate(-1deg)' }}>
-                <Sign text="יש מקום לסיפור שלכם כאן" size="xl" />
-              </div>
-              <h2 style={{ fontSize: 'clamp(28px,5vw,56px)', fontWeight: 900, color: '#fff', lineHeight: 1.08, marginBottom: 16 }}>
-                הצטרפו לקהילה<br />שיוצאת מהבית.
-              </h2>
-              <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.38)', marginBottom: 40, lineHeight: 1.8 }}>
-                הרשמה חד פעמית. הנחה גורפת. תירוץ מצוין.
-              </p>
-              <Link href="/discount" style={{ display: 'inline-block', background: BROWN, color: '#fff', padding: '16px 44px', borderRadius: 4, fontSize: 16, fontWeight: 700, textDecoration: 'none', fontFamily: 'Heebo, Arial, sans-serif', boxShadow: '0 4px 20px rgba(126,72,33,0.35)' }}>
-                הצטרפו — ההנחה כבר מחכה
-              </Link>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 0, borderTop: '1px solid #1f1f1f', borderBottom: '1px solid #1f1f1f', padding: '40px 0', marginBottom: 48, textAlign: 'center' }}>
-              {[['900+','מקומות'],['150+','מדריכים'],['80+','פרקי פודקאסט'],['אלפי','מטיילים בחודש']].map(function(s) {
+        <footer style={{ background: '#0A0A0A', padding: '100px 24px 56px' }}>
+          <div style={{ maxWidth: 1000, margin: '0 auto', textAlign: 'center' }}>
+            <h2 style={{ fontSize: 'clamp(40px,7vw,88px)', fontWeight: 900, color: '#fff', lineHeight: 1.05, marginBottom: 24, letterSpacing: '-2px' }}>
+              לא הצלחנו<br />להוציא אתכם<br />מהבית?
+            </h2>
+            <p style={{ fontSize: 'clamp(16px,2vw,22px)', color: 'rgba(255,255,255,0.35)', marginBottom: 20, lineHeight: 1.7 }}>
+              גם זה קורה.
+            </p>
+            <p style={{ fontSize: 'clamp(15px,1.8vw,19px)', color: 'rgba(255,255,255,0.25)', lineHeight: 1.7, maxWidth: 560, margin: '0 auto 56px' }}>
+              לפחות תשלחו את האתר למישהו שצריך תירוץ טוב יותר מכם.
+            </p>
+            <Link href="/discount" style={{ display: 'inline-block', background: BROWN, color: '#fff', padding: '18px 48px', borderRadius: 4, fontSize: 17, fontWeight: 700, textDecoration: 'none', fontFamily: 'Heebo, Arial, sans-serif', boxShadow: '0 6px 28px rgba(126,72,33,0.4)', marginBottom: 96 }}>
+              הצטרפו — ההנחה כבר מחכה
+            </Link>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 0, borderTop: '1px solid #1a1a1a', paddingTop: 64, marginBottom: 64 }}>
+              {[['80+','פרקי פודקאסט'],['150+','מדריכים'],['900+','מקומות']].map(function(s) {
                 return (
-                  <div key={s[0]} style={{ padding: '0 24px', borderRight: '1px solid #1f1f1f' }}>
-                    <p style={{ fontSize: 'clamp(32px,4vw,48px)', fontWeight: 900, color: '#fff', lineHeight: 1, marginBottom: 6, fontFamily: 'Heebo, Arial, sans-serif' }}>{s[0]}</p>
-                    <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.35)', fontFamily: 'Heebo, Arial, sans-serif' }}>{s[1]}</p>
+                  <div key={s[0]} style={{ padding: '0 32px', borderRight: '1px solid #1a1a1a' }}>
+                    <p style={{ fontSize: 'clamp(48px,6vw,72px)', fontWeight: 900, color: '#fff', lineHeight: 1, marginBottom: 10, fontFamily: 'Heebo, Arial, sans-serif', letterSpacing: '-2px' }}>{s[0]}</p>
+                    <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.28)', fontFamily: 'Heebo, Arial, sans-serif' }}>{s[1]}</p>
                   </div>
                 )
               })}
             </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-              <img src="/logo-light.png" alt="מאז ועד היום" style={{ height: 30, opacity: 0.55 }} onError={function(e) { e.target.style.display = 'none' }} />
+            <div style={{ borderTop: '1px solid #1a1a1a', paddingTop: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+              <img src="/logo-light.png" alt="מאז ועד היום" style={{ height: 28, opacity: 0.45 }} onError={function(e) { e.target.style.display = 'none' }} />
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {['לא חשבתי שאגיע לכאן', 'זה באמת פה?', 'מי בכלל נוסע לשם?'].map(function(t) {
-                  return <span key={t} style={{ display: 'inline-block', background: 'rgba(126,72,33,0.14)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(126,72,33,0.25)', padding: '4px 12px 4px 22px', borderRadius: 3, fontSize: 11, position: 'relative', fontFamily: 'Heebo, Arial, sans-serif' }}>
+                  return <span key={t} style={{ display: 'inline-block', background: 'rgba(126,72,33,0.12)', color: 'rgba(255,255,255,0.3)', border: '1px solid rgba(126,72,33,0.2)', padding: '4px 12px 4px 22px', borderRadius: 3, fontSize: 11, position: 'relative', fontFamily: 'Heebo, Arial, sans-serif' }}>
                     <span style={{ position: 'absolute', left: 7, fontSize: 10 }}>←</span>{t}
                   </span>
                 })}
               </div>
-              <p style={{ color: '#2a2a2a', fontSize: 12, fontFamily: 'Heebo, Arial, sans-serif' }}>© 2025 מאז ועד היום</p>
+              <p style={{ color: '#222', fontSize: 12, fontFamily: 'Heebo, Arial, sans-serif' }}>© 2025 מאז ועד היום</p>
             </div>
           </div>
         </footer>
