@@ -134,6 +134,15 @@ export default function Admin() {
         <Header />
         <div style={{ maxWidth: 400, margin: '120px auto', padding: '0 24px', textAlign: 'center' }}>
           <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>MvH Mission Control</h1>
+  <button onClick={async function() {
+  if (window.confirm('לשלוח חשבוניות לכל המדריכים הפעילים?')) {
+    const res = await fetch('/api/send-billing-email', { method: 'POST' })
+    const data = await res.json()
+    alert('נשלחו ' + data.sent + ' חשבוניות!')
+  }
+}} style={{ marginBottom: 32, background: '#0A0A0A', color: '#fff', padding: '10px 24px', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer', border: 'none' }}>
+  💳 שלח חשבוניות חודשיות
+</button>
           <p style={{ color: '#888', fontSize: 13, marginBottom: 32 }}>גישה מורשית בלבד</p>
           <form onSubmit={handleLogin}>
             <input type="password" value={password} onChange={function(e) { setPassword(e.target.value) }}
