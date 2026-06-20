@@ -26,5 +26,14 @@ export default async function handler(req, res) {
     }
   )
   const data = await response.json()
+
+  if (data.id && body.email) {
+    fetch('/api/send-welcome-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: body.email, first_name: body.first_name })
+    }).catch(function(err) { console.error('welcome email error:', err) })
+  }
+
   res.status(200).json(data)
 }
