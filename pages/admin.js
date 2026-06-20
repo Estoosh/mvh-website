@@ -177,14 +177,8 @@ export default function Admin() {
                             </button>
                           )}
                           {t.Tour_Status !== 'removed' && (
-                            <button onClick={function() {
-                              if (window.confirm('להסיר את הסיור לצמיתות?')) updateTourStatus(t.id, 'removed')
-                            }}
-                              style={{ padding: '4px 10px', fontSize: 12, borderRadius: 6, border: '1px solid #ef4444', color: '#ef4444', cursor: 'pointer', background: '#fff' }}>
-                              הסר
-                            </button>
-                          )}
-                        </div>
+                           
+                            </div>
                       </td>
                     </tr>
                   )
