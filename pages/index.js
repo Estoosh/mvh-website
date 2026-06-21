@@ -123,11 +123,52 @@ function Carousel({ tours, title }) {
   )
 }
 
-function JourneyCard({ icon, iconSrc, title, text, cta, href }) {
+function JourneyIcon({ type }) {
+  const common = {
+    fill: 'none',
+    stroke: '#F3F1ED',
+    strokeWidth: 3.2,
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round'
+  }
+
+  if (type === 'mic') {
+    return (
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="22" y="10" width="20" height="30" rx="10" {...common} />
+        <path d="M16 30c0 9 7 16 16 16s16-7 16-16" {...common} />
+        <path d="M32 46v9" {...common} />
+        <path d="M23 55h18" {...common} />
+        <path d="M27 20h10M27 28h10" {...common} />
+      </svg>
+    )
+  }
+
+  if (type === 'location') {
+    return (
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M32 57s18-17 18-34A18 18 0 0 0 14 23c0 17 18 34 18 34z" {...common} />
+        <circle cx="32" cy="24" r="7" {...common} />
+      </svg>
+    )
+  }
+
+  return (
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M18 36c2-10 6-17 14-17s12 7 14 17" {...common} />
+      <path d="M14 37c5 4 31 4 36 0" {...common} />
+      <path d="M19 37c0 8 5 13 13 13s13-5 13-13" {...common} />
+      <path d="M27 25h10" {...common} />
+      <path d="M23 32h18" {...common} />
+    </svg>
+  )
+}
+
+function JourneyCard({ type, title, text, cta, href }) {
   return (
     <a href={href} className="journey-card">
       <div className="journey-icon">
-        {iconSrc ? <img src={iconSrc} alt="" /> : icon}
+        <JourneyIcon type={type} />
       </div>
       <div>
         <h3>{title}</h3>
@@ -225,13 +266,13 @@ export default function Home({ tours, guides }) {
           *{box-sizing:border-box;margin:0;padding:0;}
           body{overflow-x:hidden;background:${CREAM};}
           ::-webkit-scrollbar{display:none;}
-          .top-nav{height:66px;background:#090909;color:#fff;position:sticky;top:0;z-index:200;border-bottom:1px solid rgba(255,255,255,.08);}
-          .nav-inner{max-width:1180px;margin:0 auto;height:66px;padding:0 26px;display:flex;align-items:center;justify-content:space-between;}
-          .nav-logo{height:42px;object-fit:contain;display:block;}
+          .top-nav{height:82px;background:#090909;color:#fff;position:sticky;top:0;z-index:200;border-bottom:1px solid rgba(255,255,255,.08);}
+          .nav-inner{max-width:1180px;margin:0 auto;height:82px;padding:0 26px;display:flex;align-items:center;justify-content:space-between;}
+          .nav-logo{height:64px;width:auto;max-width:220px;object-fit:contain;display:block;}
           .nav-links{display:flex;gap:28px;align-items:center;}
           .nav-links a{color:rgba(255,255,255,.82);text-decoration:none;font-weight:700;font-size:14px;}
           .hamb{font-size:28px;color:#fff;line-height:1;}
-          .hero-section{position:relative;min-height:520px;height:calc(100vh - 66px);max-height:680px;background:#080808;overflow:hidden;}
+          .hero-section{position:relative;min-height:520px;height:calc(100vh - 82px);max-height:680px;background:#080808;overflow:hidden;}
           .hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center center;display:block;}
           .hero-shade{position:absolute;inset:0;background:linear-gradient(to left,rgba(0,0,0,.08) 0%,rgba(0,0,0,.10) 25%,rgba(0,0,0,.62) 44%,rgba(0,0,0,.58) 59%,rgba(0,0,0,.12) 100%);}
           .hero-bottom{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.34) 0%,transparent 35%);}
@@ -249,8 +290,9 @@ export default function Home({ tours, guides }) {
           .journey-title{font-size:clamp(26px,3vw,36px);font-weight:900;text-align:center;margin-bottom:24px;letter-spacing:-.5px;}
           .journey-grid{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
           .journey-card{background:rgba(255,255,255,.72);border:1px solid rgba(126,72,33,.16);border-radius:18px;padding:28px 26px;display:flex;align-items:center;gap:22px;color:${NEAR_BLACK};text-decoration:none;box-shadow:0 10px 28px rgba(126,72,33,.05);}
-          .journey-icon{width:78px;height:78px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#A05D2A;color:${CREAM};font-size:34px;flex-shrink:0;}
-          .journey-icon img{width:42px;height:42px;object-fit:contain;display:block;filter:brightness(0) invert(94%) sepia(12%) saturate(220%) hue-rotate(340deg) brightness(105%) contrast(96%);}
+          .journey-icon{width:92px;height:92px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#A05D2A;color:#F3F1ED;flex-shrink:0;}
+          .journey-icon svg{width:46px;height:46px;display:block;}
+          .journey-icon img{width:46px;height:46px;object-fit:contain;display:block;filter:brightness(0) invert(94%) sepia(10%) saturate(205%) hue-rotate(340deg) brightness(104%) contrast(94%);}
           .journey-card h3{font-size:24px;font-weight:900;margin-bottom:8px;}
           .journey-card p{font-size:15px;line-height:1.65;color:#555;margin-bottom:10px;}
           .journey-card span{font-size:14px;color:${BROWN};font-weight:800;}
@@ -286,7 +328,7 @@ export default function Home({ tours, guides }) {
           .route-doodle{position:absolute;left:36px;top:38px;color:${BROWN};font-size:80px;opacity:.85;}
           .footer{background:#090909;color:#fff;padding:34px 24px 28px;}
           .footer-inner{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:1fr 2fr 1fr;gap:28px;align-items:center;}
-          .footer-logo img{height:42px;display:block;margin-bottom:8px;}
+          .footer-logo img{height:78px;width:auto;max-width:240px;display:block;margin-bottom:10px;}
           .footer-logo p{font-size:13px;color:rgba(255,255,255,.7);line-height:1.5;}
           .footer-social{display:flex;gap:20px;align-items:center;justify-content:center;flex-wrap:wrap;}
           .footer-social a{color:#fff;text-decoration:none;display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;}
@@ -305,14 +347,14 @@ export default function Home({ tours, guides }) {
             .videos-grid{grid-template-columns:1fr 1fr;}
             .guide-banner{grid-template-columns:1fr;}
             .footer-inner{grid-template-columns:1fr;text-align:center;}
-            .footer-logo img{margin:0 auto 8px;}
+            .footer-logo img{margin:0 auto 10px;height:70px;}
             .footer-links{text-align:center;}
           }
           @media(max-width:700px){
-            .top-nav{height:58px;}
-            .nav-inner{height:58px;padding:0 16px;}
+            .top-nav{height:66px;}
+            .nav-inner{height:66px;padding:0 16px;}
             .nav-links a:not(:first-child){display:none;}
-            .nav-logo{height:34px;}
+            .nav-logo{height:50px;max-width:160px;}
             .hero-section{min-height:620px;}
             .hero-bg{object-position:32% center;}
             .hero-copy p{font-size:15px;line-height:1.6;max-width:320px;}
@@ -366,9 +408,9 @@ export default function Home({ tours, guides }) {
       <section className="page-section" style={{ paddingTop: 32 }}>
         <h2 className="journey-title">איך בא לכם לצאת מהבית היום?</h2>
         <div className="journey-grid">
-          <JourneyCard iconSrc="/ICON-Mic.png" title="להאזין לסיפור" text="פודקאסטים קצרים על מקומות ואנשים." cta="להאזין עכשיו" href="#podcast" />
-          <JourneyCard iconSrc="/ICON-Location.png" title="למצוא סיור" text="מדריכים וסיורים מיוחדים בכל רחבי הארץ." cta="לגלות סיורים" href="#tours" />
-          <JourneyCard iconSrc="/ICON-Guide.png" title="אני מדריך" text="הפכו את הידע שלכם לקהילה וללקוחות." cta="לפרטים נוספים" href="#guides" />
+          <JourneyCard type="mic" title="להאזין לסיפור" text="פודקאסטים קצרים על מקומות ואנשים." cta="להאזין עכשיו" href="#podcast" />
+          <JourneyCard type="location" title="למצוא סיור" text="מדריכים וסיורים מיוחדים בכל רחבי הארץ." cta="לגלות סיורים" href="#tours" />
+          <JourneyCard type="guide" title="אני מדריך" text="הפכו את הידע שלכם לקהילה וללקוחות." cta="לפרטים נוספים" href="#guides" />
         </div>
       </section>
 
