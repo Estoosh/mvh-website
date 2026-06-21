@@ -22,6 +22,13 @@ const SOCIAL_LINKS = [
   ['▣', 'Apple Podcasts']
 ]
 
+const VIDEO_SLIDES = [
+  { title: 'איך עשו את אשדוד?', img: '/Ashdod.png', duration: '01:12' },
+  { title: 'איך עשו את עכו?', img: '/Akko.png', duration: '01:17' },
+  { title: 'איך עשו את טבריה?', img: '/Tiberias.png', duration: '01:05' },
+  { title: 'איך עשו את בית שאן?', img: '/BeitShean.png', duration: '01:09' }
+]
+
 function Sign({ text, size = 'md', rotate = 0, className }) {
   const s = {
     sm: { fs: 12, py: 6, px: 16, pl: 28, arr: 10, r: 4 },
@@ -116,10 +123,12 @@ function Carousel({ tours, title }) {
   )
 }
 
-function JourneyCard({ icon, title, text, cta, href }) {
+function JourneyCard({ icon, iconSrc, title, text, cta, href }) {
   return (
     <a href={href} className="journey-card">
-      <div className="journey-icon">{icon}</div>
+      <div className="journey-icon">
+        {iconSrc ? <img src={iconSrc} alt="" /> : icon}
+      </div>
       <div>
         <h3>{title}</h3>
         <p>{text}</p>
@@ -182,11 +191,6 @@ export default function Home({ tours, guides }) {
   const popular = active.slice().sort(function(a, b) { return (Number(b.Lead_Count) || 0) - (Number(a.Lead_Count) || 0) }).slice(0, 10)
   const shownTours = recent.length ? recent : active.slice(0, 10)
   const myRegion = userRegions.length > 0 ? active.filter(function(t) { return userRegions.includes(t.Cities_Tags) }).slice(0, 10) : []
-  const videoImages = shownTours.slice(0, 4).map(function(t) {
-    const imgs = t.Tour_Images ? t.Tour_Images.split('|').filter(Boolean) : []
-    return imgs[0] || '/podcast-hero.png'
-  })
-
   const handleSearch = function() {
     var results = active.filter(function(t) {
       return (!search || (t.Tour_Title || '').includes(search) || (t.Tour_Story || '').includes(search))
@@ -223,7 +227,7 @@ export default function Home({ tours, guides }) {
           ::-webkit-scrollbar{display:none;}
           .top-nav{height:66px;background:#090909;color:#fff;position:sticky;top:0;z-index:200;border-bottom:1px solid rgba(255,255,255,.08);}
           .nav-inner{max-width:1180px;margin:0 auto;height:66px;padding:0 26px;display:flex;align-items:center;justify-content:space-between;}
-          .nav-logo{height:42px;object-fit:contain;display:block;filter:brightness(0) invert(1);}
+          .nav-logo{height:42px;object-fit:contain;display:block;}
           .nav-links{display:flex;gap:28px;align-items:center;}
           .nav-links a{color:rgba(255,255,255,.82);text-decoration:none;font-weight:700;font-size:14px;}
           .hamb{font-size:28px;color:#fff;line-height:1;}
@@ -246,6 +250,7 @@ export default function Home({ tours, guides }) {
           .journey-grid{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
           .journey-card{background:rgba(255,255,255,.72);border:1px solid rgba(126,72,33,.16);border-radius:18px;padding:28px 26px;display:flex;align-items:center;gap:22px;color:${NEAR_BLACK};text-decoration:none;box-shadow:0 10px 28px rgba(126,72,33,.05);}
           .journey-icon{width:78px;height:78px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(135deg,#9A5A2A,#6A3516);color:#fff;font-size:34px;flex-shrink:0;}
+          .journey-icon img{width:42px;height:42px;object-fit:contain;display:block;}
           .journey-card h3{font-size:24px;font-weight:900;margin-bottom:8px;}
           .journey-card p{font-size:15px;line-height:1.65;color:#555;margin-bottom:10px;}
           .journey-card span{font-size:14px;color:${BROWN};font-weight:800;}
@@ -281,7 +286,7 @@ export default function Home({ tours, guides }) {
           .route-doodle{position:absolute;left:36px;top:38px;color:${BROWN};font-size:80px;opacity:.85;}
           .footer{background:#090909;color:#fff;padding:34px 24px 28px;}
           .footer-inner{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:1fr 2fr 1fr;gap:28px;align-items:center;}
-          .footer-logo img{height:42px;filter:brightness(0) invert(1);display:block;margin-bottom:8px;}
+          .footer-logo img{height:42px;display:block;margin-bottom:8px;}
           .footer-logo p{font-size:13px;color:rgba(255,255,255,.7);line-height:1.5;}
           .footer-social{display:flex;gap:20px;align-items:center;justify-content:center;flex-wrap:wrap;}
           .footer-social a{color:#fff;text-decoration:none;display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;}
@@ -326,7 +331,7 @@ export default function Home({ tours, guides }) {
       <nav className="top-nav">
         <div className="nav-inner">
           <div className="hamb">☰</div>
-          <Link href="/"><img src="/New_Logo.png" alt="מאז ועד היום" className="nav-logo" /></Link>
+          <Link href="/"><img src="/Logo-black.png" alt="מאז ועד היום" className="nav-logo" /></Link>
           <div className="nav-links">
             <a href="#tours">סיורים</a>
             <a href="#podcast">פודקאסט</a>
@@ -361,9 +366,9 @@ export default function Home({ tours, guides }) {
       <section className="page-section" style={{ paddingTop: 32 }}>
         <h2 className="journey-title">איך בא לכם לצאת מהבית היום?</h2>
         <div className="journey-grid">
-          <JourneyCard icon="🎙️" title="להאזין לסיפור" text="פודקאסטים קצרים על מקומות ואנשים." cta="להאזין עכשיו" href="#podcast" />
-          <JourneyCard icon="📍" title="למצוא סיור" text="מדריכים וסיורים מיוחדים בכל רחבי הארץ." cta="לגלות סיורים" href="#tours" />
-          <JourneyCard icon="👥" title="אני מדריך" text="הפכו את הידע שלכם לקהילה וללקוחות." cta="לפרטים נוספים" href="#guides" />
+          <JourneyCard iconSrc="/ICON-Mic.png" title="להאזין לסיפור" text="פודקאסטים קצרים על מקומות ואנשים." cta="להאזין עכשיו" href="#podcast" />
+          <JourneyCard iconSrc="/ICON-Location.png" title="למצוא סיור" text="מדריכים וסיורים מיוחדים בכל רחבי הארץ." cta="לגלות סיורים" href="#tours" />
+          <JourneyCard iconSrc="/ICON-Guide.png" title="אני מדריך" text="הפכו את הידע שלכם לקהילה וללקוחות." cta="לפרטים נוספים" href="#guides" />
         </div>
       </section>
 
@@ -398,10 +403,9 @@ export default function Home({ tours, guides }) {
           <div className="section-wrap">
             <h2 className="journey-title" style={{ marginBottom: 24 }}>מה ראיתם אצלנו ברשת?</h2>
             <div className="videos-grid">
-              <VideoCard title="איך עשו את אשדוד?" img={videoImages[0] || '/podcast-hero.png'} duration="01:12" />
-              <VideoCard title="איך עשו את טבריה?" img={videoImages[1] || '/podcast-hero.png'} duration="01:05" />
-              <VideoCard title="למה עכו נראית ככה?" img={videoImages[2] || '/podcast-hero.png'} duration="01:18" />
-              <VideoCard title="מי בנה את יפו?" img={videoImages[3] || '/podcast-hero.png'} duration="00:59" />
+              {VIDEO_SLIDES.map(function(v) {
+                return <VideoCard key={v.title} title={v.title} img={v.img} duration={v.duration} />
+              })}
             </div>
           </div>
         </section>
@@ -473,7 +477,7 @@ export default function Home({ tours, guides }) {
       <footer className="footer">
         <div className="footer-inner">
           <div className="footer-logo">
-            <img src="/New_Logo.png" alt="מאז ועד היום" />
+            <img src="/Logo-black.png" alt="מאז ועד היום" />
             <p>סיפורים שגורמים<br />לאנשים לצאת מהבית.</p>
           </div>
           <div className="footer-social">
