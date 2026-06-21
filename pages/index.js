@@ -4,39 +4,58 @@ import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 
 const BROWN = '#7E4821'
-const OFF_WHITE = '#F7F5F2'
+const BROWN_DARK = '#5A2F13'
+const CREAM = '#F7F1EA'
+const CARD = '#FBF7F1'
 const NEAR_BLACK = '#111111'
 const GRAY = '#6B6B6B'
-const FOOTER_GRAY = '#E9E4DE'
 
 const PERIODS = ["תקופת המקרא / ימי האבות","בית ראשון (ממלכת ישראל ויהודה)","בית שני","התקופה הרומית-ביזנטית","התקופה המוסלמית הקדומה","תקופת הצלבנים","התקופה הממלוכית","התקופה העות'מאנית","המנדט הבריטי","מדינת ישראל (1948 ואילך)"]
 const REGIONS = ["צפון","גליל עליון","גליל מערבי","גולן","חיפה","השרון","מרכז","תל אביב","ירושלים","שפלה",'יו"ש',"צפון הנגב","באר שבע","נגב","ערבה","דרום","אילת","ים המלח","עין גדי","מצדה"]
-const SIGN_TEXTS = ["לא חשבתי שאגיע לכאן","זה באמת פה?","מי בכלל נוסע לשם?","עוד 3 דקות מהבית","פניה אחת מהשגרה","שמעתם על המקום הזה?"]
+const SIGN_TEXTS = ["מי בנה את המקום הזה?","יש בעיר הזאת הכל","סיפורים מהבראשית","עוד 3 דקות מהבית","פנייה אחת מהשגרה","מה יש לעשות שם?"]
+
+const SOCIAL_LINKS = [
+  ['♪', 'TikTok'],
+  ['f', 'Facebook'],
+  ['▶', 'YouTube'],
+  ['◉', 'Spotify'],
+  ['▣', 'Apple Podcasts']
+]
 
 function Sign({ text, size = 'md', rotate = 0, className }) {
   const s = {
-    sm:  { fs: 12, py: 6,  px: 18, pl: 28, arr: 10, r: 3 },
-    md:  { fs: 15, py: 10, px: 22, pl: 36, arr: 13, r: 3 },
-    lg:  { fs: 20, py: 14, px: 30, pl: 48, arr: 16, r: 4 },
-    xl:  { fs: 32, py: 22, px: 48, pl: 74, arr: 24, r: 4 },
-  }[size] || { fs: 15, py: 10, px: 22, pl: 36, arr: 13, r: 3 }
+    sm: { fs: 12, py: 6, px: 16, pl: 28, arr: 10, r: 4 },
+    md: { fs: 15, py: 10, px: 22, pl: 36, arr: 13, r: 5 },
+    lg: { fs: 20, py: 14, px: 30, pl: 48, arr: 16, r: 5 },
+  }[size] || { fs: 15, py: 10, px: 22, pl: 36, arr: 13, r: 5 }
 
   return (
     <span className={className} style={{
-      display: 'inline-flex', alignItems: 'center',
-      background: BROWN, color: '#fff',
-      paddingTop: s.py, paddingBottom: s.py,
-      paddingRight: s.px, paddingLeft: s.pl,
-      borderRadius: s.r, fontWeight: 700, fontSize: s.fs,
-      fontFamily: 'Heebo, Arial, sans-serif',
-      position: 'relative', letterSpacing: '0.01em',
-      boxShadow: size === 'xl' ? '0 18px 44px rgba(0,0,0,0.45)' : '3px 4px 14px rgba(0,0,0,0.28)',
-      whiteSpace: 'nowrap',
-      transform: rotate ? 'rotate(' + rotate + 'deg)' : undefined,
+      display: 'inline-flex', alignItems: 'center', background: BROWN, color: '#fff',
+      paddingTop: s.py, paddingBottom: s.py, paddingRight: s.px, paddingLeft: s.pl,
+      borderRadius: s.r, fontWeight: 800, fontSize: s.fs, fontFamily: 'Heebo, Arial, sans-serif',
+      position: 'relative', letterSpacing: '0.01em', boxShadow: '0 10px 26px rgba(0,0,0,0.25)',
+      whiteSpace: 'nowrap', transform: rotate ? 'rotate(' + rotate + 'deg)' : undefined,
     }}>
       <span style={{ position: 'absolute', left: s.arr, fontSize: s.fs * 0.85, opacity: 0.9 }}>←</span>
       {text}
     </span>
+  )
+}
+
+function CTAButton({ href, children, variant = 'solid', icon }) {
+  const solid = variant === 'solid'
+  return (
+    <a href={href} style={{
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+      minWidth: 178, padding: '14px 26px', borderRadius: 7,
+      background: solid ? BROWN : 'rgba(0,0,0,0.22)', color: '#fff',
+      border: solid ? '1px solid ' + BROWN : '1px solid rgba(255,255,255,0.34)',
+      textDecoration: 'none', fontSize: 16, fontWeight: 800, boxShadow: solid ? '0 12px 28px rgba(126,72,33,0.3)' : 'none',
+      fontFamily: 'Heebo, Arial, sans-serif'
+    }}>
+      {icon && <span>{icon}</span>}{children}
+    </a>
   )
 }
 
@@ -47,29 +66,18 @@ function TourCard({ tour }) {
   const sign = SIGN_TEXTS[Math.abs((tour.Tour_Title || 'x').charCodeAt(0)) % SIGN_TEXTS.length]
 
   return (
-    <a href={'/tours/' + tour.id}
-      style={{ textDecoration: 'none', display: 'block', flexShrink: 0, width: 300 }}
-      onMouseEnter={function() { setHov(true) }}
-      onMouseLeave={function() { setHov(false) }}>
-      <div style={{
-        borderRadius: 14, overflow: 'hidden', position: 'relative', height: 340,
-        background: '#1a0d06',
-        transform: hov ? 'translateY(-6px)' : 'none',
-        transition: 'transform 0.25s ease, box-shadow 0.25s ease',
-        boxShadow: hov ? '0 20px 48px rgba(0,0,0,0.2)' : '0 4px 20px rgba(0,0,0,0.1)',
-      }}>
+    <a href={'/tours/' + tour.id} className="tour-card" onMouseEnter={function() { setHov(true) }} onMouseLeave={function() { setHov(false) }}>
+      <div className="tour-card-inner" style={{ transform: hov ? 'translateY(-5px)' : 'none', boxShadow: hov ? '0 22px 48px rgba(0,0,0,0.18)' : '0 10px 28px rgba(0,0,0,0.08)' }}>
         {thumb
-          ? <img src={thumb} alt={tour.Tour_Title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.45s ease', transform: hov ? 'scale(1.07)' : 'scale(1)' }} />
-          : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(160deg,#2a1508,#4a2c14 60%,#1a0d06)' }} />
+          ? <img src={thumb} alt={tour.Tour_Title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: hov ? 'scale(1.05)' : 'scale(1)', transition: 'transform .45s ease' }} />
+          : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(150deg,#8A4B20,#1a0d06)' }} />
         }
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.22) 55%, rgba(0,0,0,0.03) 100%)' }} />
-        <div style={{ position: 'absolute', top: 14, right: 14 }}>
-          <Sign text={sign} size="sm" />
-        </div>
-        <div style={{ position: 'absolute', bottom: 0, right: 0, left: 0, padding: '22px 18px' }}>
-          <p style={{ color: '#fff', fontWeight: 800, fontSize: 19, lineHeight: 1.25, marginBottom: 5, fontFamily: 'Heebo, Arial, sans-serif' }}>{tour.Tour_Title}</p>
-          <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, marginBottom: 14 }}>{tour.Guide_Name} · {tour.Cities_Tags}</p>
-          <Sign text="מה יש לעשות שם?" size="sm" />
+        <div className="tour-card-fade" />
+        <div className="tour-sign"><Sign text={sign} size="sm" /></div>
+        <div className="tour-content">
+          <p className="tour-title">{tour.Tour_Title || 'סיור חדש בדרך'}</p>
+          <p className="tour-meta">{tour.Guide_Name || 'מדריך מקומי'} · {tour.Cities_Tags || 'ישראל'}</p>
+          <span className="mini-cta">מה יש לעשות שם? ←</span>
         </div>
       </div>
     </a>
@@ -92,20 +100,56 @@ function Carousel({ tours, title }) {
   }, [])
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h2 style={{ fontSize: 'clamp(22px,3vw,30px)', fontWeight: 800, color: NEAR_BLACK, fontFamily: 'Heebo, Arial, sans-serif' }}>{title}</h2>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <a href="/" style={{ fontSize: 13, color: GRAY, textDecoration: 'none', marginLeft: 10 }}>כל הסיורים ←</a>
-          <button onClick={function() { ref.current && ref.current.scrollBy({ left: -316, behavior: 'smooth' }) }}
-            style={{ width: 40, height: 40, borderRadius: '50%', border: '1.5px solid ' + (canR ? NEAR_BLACK : '#ddd'), background: '#fff', color: canR ? NEAR_BLACK : '#ccc', fontSize: 18, cursor: canR ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>›</button>
-          <button onClick={function() { ref.current && ref.current.scrollBy({ left: 316, behavior: 'smooth' }) }}
-            style={{ width: 40, height: 40, borderRadius: '50%', border: '1.5px solid ' + (canL ? NEAR_BLACK : '#ddd'), background: '#fff', color: canL ? NEAR_BLACK : '#ccc', fontSize: 18, cursor: canL ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
+    <div className="section-wrap">
+      <div className="section-head">
+        <a href="/" className="all-link">כל הסיורים ←</a>
+        <h2>{title}</h2>
+        <div className="nav-arrows">
+          <button onClick={function() { ref.current && ref.current.scrollBy({ left: -340, behavior: 'smooth' }) }} className="round-btn" style={{ opacity: canR ? 1 : .35 }}>›</button>
+          <button onClick={function() { ref.current && ref.current.scrollBy({ left: 340, behavior: 'smooth' }) }} className="round-btn" style={{ opacity: canL ? 1 : .35 }}>‹</button>
         </div>
       </div>
-      <div ref={ref} style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 4, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+      <div ref={ref} className="tour-row">
         {tours.map(function(t) { return <TourCard key={t.id} tour={t} /> })}
       </div>
+    </div>
+  )
+}
+
+function JourneyCard({ icon, title, text, cta, href }) {
+  return (
+    <a href={href} className="journey-card">
+      <div className="journey-icon">{icon}</div>
+      <div>
+        <h3>{title}</h3>
+        <p>{text}</p>
+        <span>{cta} ←</span>
+      </div>
+    </a>
+  )
+}
+
+function VideoCard({ title, img, duration }) {
+  return (
+    <a href="https://mvh.co.il" target="_blank" rel="noopener noreferrer" className="video-card">
+      <div className="video-thumb">
+        <img src={img} alt="" />
+        <div className="video-platform">♪</div>
+        <div className="play">▶</div>
+        <div className="duration">{duration}</div>
+      </div>
+      <h3>{title}</h3>
+      <span>לצפייה עכשיו ←</span>
+    </a>
+  )
+}
+
+function StatCard({ icon, num, label }) {
+  return (
+    <div className="stat-card">
+      <div>{icon}</div>
+      <strong>{num}</strong>
+      <span>{label}</span>
     </div>
   )
 }
@@ -136,14 +180,19 @@ export default function Home({ tours, guides }) {
   const active = tours.filter(function(t) { return t.Tour_Status === 'paid' })
   const recent = active.slice().sort(function(a, b) { return new Date(b.Created_At || 0) - new Date(a.Created_At || 0) }).slice(0, 10)
   const popular = active.slice().sort(function(a, b) { return (Number(b.Lead_Count) || 0) - (Number(a.Lead_Count) || 0) }).slice(0, 10)
+  const shownTours = recent.length ? recent : active.slice(0, 10)
   const myRegion = userRegions.length > 0 ? active.filter(function(t) { return userRegions.includes(t.Cities_Tags) }).slice(0, 10) : []
+  const videoImages = shownTours.slice(0, 4).map(function(t) {
+    const imgs = t.Tour_Images ? t.Tour_Images.split('|').filter(Boolean) : []
+    return imgs[0] || '/podcast-hero.png'
+  })
 
   const handleSearch = function() {
     var results = active.filter(function(t) {
       return (!search || (t.Tour_Title || '').includes(search) || (t.Tour_Story || '').includes(search))
-          && (!region || t.Cities_Tags === region)
-          && (!period || (t.Historical_Period || []).includes(period))
-          && (!selectedGuide || t.Guide_Name === selectedGuide)
+        && (!region || t.Cities_Tags === region)
+        && (!period || (t.Historical_Period || []).includes(period))
+        && (!selectedGuide || t.Guide_Name === selectedGuide)
     })
     setSearchResults(results)
     setTimeout(function() { var el = document.getElementById('sr'); if (el) el.scrollIntoView({ behavior: 'smooth' }) }, 80)
@@ -163,315 +212,284 @@ export default function Home({ tours, guides }) {
   const inp = { padding: '11px 16px', borderRadius: 8, border: '1px solid #e5e5e5', fontSize: 14, fontFamily: 'Heebo, Arial, sans-serif', outline: 'none', background: '#fff', width: '100%', boxSizing: 'border-box' }
 
   return (
-    <div dir="rtl" style={{ fontFamily: 'Heebo, Arial, sans-serif', background: '#fff', color: NEAR_BLACK, overflowX: 'hidden' }}>
+    <div dir="rtl" style={{ fontFamily: 'Heebo, Arial, sans-serif', background: CREAM, color: NEAR_BLACK, overflowX: 'hidden' }}>
       <Head>
         <title>מאז ועד היום | אחלה תירוץ לצאת מהבית</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="description" content="מקומות שלא חשבתם לנסוע אליהם. אנשים שלא הכרתם. סיפורים שקשה להאמין שנמצאים כל כך קרוב." />
+        <meta name="description" content="מגלים סיפורים דרך סיורים, סרטונים קצרים ופודקאסטים." />
         <style>{`
           *{box-sizing:border-box;margin:0;padding:0;}
+          body{overflow-x:hidden;background:${CREAM};}
           ::-webkit-scrollbar{display:none;}
-          body{overflow-x:hidden;}
-          .hero-section{
-            background:#141414;
-            min-height:calc(100vh - 60px);
-            position:relative;
-            overflow:hidden;
-            display:flex;
-            align-items:center;
+          .top-nav{height:66px;background:#090909;color:#fff;position:sticky;top:0;z-index:200;border-bottom:1px solid rgba(255,255,255,.08);}
+          .nav-inner{max-width:1180px;margin:0 auto;height:66px;padding:0 26px;display:flex;align-items:center;justify-content:space-between;}
+          .nav-logo{height:42px;object-fit:contain;display:block;filter:brightness(0) invert(1);}
+          .nav-links{display:flex;gap:28px;align-items:center;}
+          .nav-links a{color:rgba(255,255,255,.82);text-decoration:none;font-weight:700;font-size:14px;}
+          .hamb{font-size:28px;color:#fff;line-height:1;}
+          .hero-section{position:relative;min-height:520px;height:calc(100vh - 66px);max-height:680px;background:#080808;overflow:hidden;}
+          .hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center center;display:block;}
+          .hero-shade{position:absolute;inset:0;background:linear-gradient(to left,rgba(0,0,0,.08) 0%,rgba(0,0,0,.10) 25%,rgba(0,0,0,.62) 44%,rgba(0,0,0,.58) 59%,rgba(0,0,0,.12) 100%);}
+          .hero-bottom{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.34) 0%,transparent 35%);}
+          .hero-copy{position:absolute;top:50%;right:43.2vw;transform:translateY(-50%);width:min(30vw,500px);min-width:390px;text-align:center;z-index:3;}
+          .hero-copy h1{font-size:clamp(38px,4.55vw,65px);font-weight:900;color:#fff;line-height:1.02;letter-spacing:-1.8px;margin:24px 0 22px;text-shadow:0 5px 22px rgba(0,0,0,.6);}
+          .hero-copy p{max-width:420px;margin:0 auto 28px;color:rgba(255,255,255,.86);font-size:18px;line-height:1.75;text-shadow:0 2px 12px rgba(0,0,0,.55);}
+          .hero-actions{display:flex;gap:14px;justify-content:center;align-items:center;flex-wrap:wrap;}
+          .page-section{background:${CREAM};padding:42px 24px;}
+          .section-wrap{max-width:1120px;margin:0 auto;}
+          .section-head{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin-bottom:24px;}
+          .section-head h2{text-align:center;font-size:clamp(25px,3vw,34px);font-weight:900;color:${NEAR_BLACK};letter-spacing:-.7px;}
+          .all-link{justify-self:start;color:${BROWN};text-decoration:none;font-weight:700;font-size:14px;}
+          .nav-arrows{justify-self:end;display:flex;gap:10px;}
+          .round-btn{width:42px;height:42px;border-radius:50%;border:1px solid rgba(126,72,33,.24);background:#fff;color:${BROWN};font-size:26px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+          .journey-title{font-size:clamp(26px,3vw,36px);font-weight:900;text-align:center;margin-bottom:24px;letter-spacing:-.5px;}
+          .journey-grid{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+          .journey-card{background:rgba(255,255,255,.72);border:1px solid rgba(126,72,33,.16);border-radius:18px;padding:28px 26px;display:flex;align-items:center;gap:22px;color:${NEAR_BLACK};text-decoration:none;box-shadow:0 10px 28px rgba(126,72,33,.05);}
+          .journey-icon{width:78px;height:78px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(135deg,#9A5A2A,#6A3516);color:#fff;font-size:34px;flex-shrink:0;}
+          .journey-card h3{font-size:24px;font-weight:900;margin-bottom:8px;}
+          .journey-card p{font-size:15px;line-height:1.65;color:#555;margin-bottom:10px;}
+          .journey-card span{font-size:14px;color:${BROWN};font-weight:800;}
+          .tour-row{display:flex;gap:22px;overflow-x:auto;padding:4px 0 18px;scrollbar-width:none;}
+          .tour-card{text-decoration:none;display:block;flex-shrink:0;width:344px;color:#fff;}
+          .tour-card-inner{height:270px;border-radius:16px;overflow:hidden;position:relative;background:#1a0d06;transition:transform .25s ease, box-shadow .25s ease;}
+          .tour-card-fade{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.82) 0%,rgba(0,0,0,.34) 48%,rgba(0,0,0,.02) 100%);}
+          .tour-sign{position:absolute;top:16px;right:16px;}
+          .tour-content{position:absolute;right:22px;left:22px;bottom:18px;text-align:right;}
+          .tour-title{font-size:22px;font-weight:900;line-height:1.2;margin-bottom:6px;text-shadow:0 3px 12px rgba(0,0,0,.5);}
+          .tour-meta{font-size:13px;color:rgba(255,255,255,.72);margin-bottom:14px;}
+          .mini-cta{display:inline-flex;background:${BROWN};color:#fff;padding:8px 14px;border-radius:5px;font-size:13px;font-weight:800;}
+          .videos-grid{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:22px;}
+          .video-card{text-decoration:none;color:${NEAR_BLACK};}
+          .video-thumb{position:relative;border-radius:12px;overflow:hidden;height:150px;background:#1a0d06;box-shadow:0 10px 26px rgba(0,0,0,.08);}
+          .video-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+          .video-platform{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;background:#050505;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;}
+          .play{position:absolute;inset:0;margin:auto;width:48px;height:48px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;}
+          .duration{position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.72);color:#fff;border-radius:4px;padding:3px 6px;font-size:11px;font-weight:700;}
+          .video-card h3{font-size:16px;font-weight:900;margin:10px 0 4px;text-align:center;}
+          .video-card span{display:block;text-align:center;color:${BROWN};font-size:13px;font-weight:800;}
+          .stats-grid{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:22px;}
+          .stat-card{background:rgba(255,255,255,.72);border-radius:14px;padding:18px;text-align:center;border:1px solid rgba(126,72,33,.12);}
+          .stat-card div{font-size:32px;color:${BROWN};margin-bottom:8px;}
+          .stat-card strong{display:block;font-size:30px;color:${BROWN};font-weight:900;line-height:1;}
+          .stat-card span{display:block;margin-top:8px;font-size:13px;color:#4A4139;line-height:1.35;font-weight:700;}
+          .guide-banner{max-width:1120px;margin:10px auto 0;border-radius:18px;overflow:hidden;background:#0d0b08;display:grid;grid-template-columns:1fr 1fr;min-height:210px;color:#fff;box-shadow:0 18px 46px rgba(0,0,0,.16);}
+          .guide-photo{position:relative;min-height:210px;background:#1a0d06;}
+          .guide-photo img{width:100%;height:100%;object-fit:cover;display:block;opacity:.86;}
+          .guide-copy{padding:34px 40px;display:flex;flex-direction:column;justify-content:center;position:relative;}
+          .guide-copy h2{font-size:clamp(28px,3vw,42px);font-weight:900;margin-bottom:12px;}
+          .guide-copy p{font-size:17px;color:rgba(255,255,255,.78);line-height:1.7;max-width:420px;margin-bottom:20px;}
+          .route-doodle{position:absolute;left:36px;top:38px;color:${BROWN};font-size:80px;opacity:.85;}
+          .footer{background:#090909;color:#fff;padding:34px 24px 28px;}
+          .footer-inner{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:1fr 2fr 1fr;gap:28px;align-items:center;}
+          .footer-logo img{height:42px;filter:brightness(0) invert(1);display:block;margin-bottom:8px;}
+          .footer-logo p{font-size:13px;color:rgba(255,255,255,.7);line-height:1.5;}
+          .footer-social{display:flex;gap:20px;align-items:center;justify-content:center;flex-wrap:wrap;}
+          .footer-social a{color:#fff;text-decoration:none;display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;}
+          .footer-social span{width:30px;height:30px;border-radius:50%;background:${BROWN};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;}
+          .footer-links{display:flex;flex-direction:column;gap:8px;text-align:left;}
+          .footer-links a{color:rgba(255,255,255,.75);text-decoration:none;font-size:13px;}
+          .footer-copy{text-align:center;margin-top:22px;color:rgba(255,255,255,.55);font-size:12px;}
+          .search-box{max-width:1100px;margin:0 auto 8px;display:flex;gap:8px;background:#fff;border-radius:14px;padding:8px;box-shadow:0 12px 40px rgba(17,17,17,0.06);border:1px solid #F0ECE7;}
+          @media(max-width:980px){
+            .hero-section{height:auto;min-height:680px;}
+            .hero-bg{object-position:38% center;}
+            .hero-shade{background:linear-gradient(to top,rgba(0,0,0,.75) 0%,rgba(0,0,0,.15) 100%);}
+            .hero-copy{right:24px;left:24px;top:auto;bottom:46px;transform:none;width:auto;min-width:0;}
+            .hero-copy h1{font-size:clamp(38px,10vw,58px);}
+            .journey-grid,.stats-grid{grid-template-columns:1fr 1fr;}
+            .videos-grid{grid-template-columns:1fr 1fr;}
+            .guide-banner{grid-template-columns:1fr;}
+            .footer-inner{grid-template-columns:1fr;text-align:center;}
+            .footer-logo img{margin:0 auto 8px;}
+            .footer-links{text-align:center;}
           }
-          .hero-image{
-            width:100%;
-            height:100%;
-            object-fit:cover;
-            object-position:center center;
-            opacity:.96;
-            display:block;
-          }
-          .hero-copy-lock{
-            position:absolute;
-            top:50%;
-            right:32vw;
-            transform:translateY(-50%);
-            width:min(31vw,520px);
-            min-width:410px;
-            text-align:center;
-            z-index:3;
-          }
-          .hero-title{
-            font-size:clamp(36px,4.42vw,59.5px);
-            font-weight:900;
-            color:#fff;
-            line-height:1.04;
-            margin-bottom:26px;
-            letter-spacing:-1.7px;
-            text-shadow:0 5px 22px rgba(0,0,0,.55);
-          }
-          .hero-subtitle{
-            max-width:430px;
-            margin:0 auto 28px;
-            color:rgba(255,255,255,.86);
-            font-size:17px;
-            line-height:1.72;
-            text-shadow:0 2px 12px rgba(0,0,0,.55);
-          }
-          .hero-actions{display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:center;}
-          @media(max-width:1100px){
-            .hero-copy-lock{right:28vw;width:38vw;min-width:360px;}
-            .hero-title{font-size:clamp(34px,5vw,52px);}
-          }
-          @media(max-width:900px){
-            .hero-section{min-height:720px;}
-            .hero-image{object-position:38% center;}
-            .hero-copy-lock{right:24px;left:24px;top:54%;width:auto;min-width:0;}
-            .hero-title{font-size:clamp(34px,10vw,50px);}
-            .hero-subtitle{font-size:15px;line-height:1.65;max-width:340px;}
-          }
-          @media(max-width:768px){
-            .tc{grid-template-columns:1fr!important;}
-            .sb{flex-direction:column!important;}
-            nav a:not(:first-child){font-size:12px!important;}
+          @media(max-width:700px){
+            .top-nav{height:58px;}
+            .nav-inner{height:58px;padding:0 16px;}
+            .nav-links a:not(:first-child){display:none;}
+            .nav-logo{height:34px;}
+            .hero-section{min-height:620px;}
+            .hero-bg{object-position:32% center;}
+            .hero-copy p{font-size:15px;line-height:1.6;max-width:320px;}
+            .hero-actions a{min-width:150px;font-size:14px;padding:12px 18px;}
+            .journey-grid,.stats-grid,.videos-grid{grid-template-columns:1fr;}
+            .journey-card{padding:22px;}
+            .tour-card{width:300px;}
+            .tour-card-inner{height:250px;}
+            .section-head{grid-template-columns:1fr;gap:12px;text-align:center;}
+            .all-link,.nav-arrows{justify-self:center;}
+            .search-box{flex-direction:column;}
           }
         `}</style>
       </Head>
 
-      {/* NAV */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 200, background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(10px)', borderBottom: '1px solid #efefef' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Link href="/"><img src="/New_Logo.png" alt="מאז ועד היום" style={{ height: 42, objectFit: 'contain', display: 'block' }} /></Link>
-          <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
-            <a href="#podcast" style={{ fontSize: 14, color: GRAY, textDecoration: 'none' }}>פודקאסט</a>
-            <a href="#guides" style={{ fontSize: 14, color: GRAY, textDecoration: 'none' }}>מדריכים</a>
+      <nav className="top-nav">
+        <div className="nav-inner">
+          <div className="hamb">☰</div>
+          <Link href="/"><img src="/New_Logo.png" alt="מאז ועד היום" className="nav-logo" /></Link>
+          <div className="nav-links">
+            <a href="#tours">סיורים</a>
+            <a href="#podcast">פודקאסט</a>
+            <a href="#guides">מדריכים</a>
             {user && (isGuide
-              ? <Link href="/dashboard" style={{ fontSize: 14, color: GRAY, textDecoration: 'none' }}>דשבורד</Link>
-              : <Link href="/discount" style={{ fontSize: 14, color: GRAY, textDecoration: 'none' }}>ההנחה שלי</Link>
+              ? <Link href="/dashboard">דשבורד</Link>
+              : <Link href="/discount">ההנחה שלי</Link>
             )}
             <Link href={isGuide ? '/add-tour' : '/join'} style={{ textDecoration: 'none' }}>
-              <Sign text="אני מדריך" size="sm" />
+              <Sign text={isGuide ? 'הוסף סיור' : 'אני מדריך'} size="sm" />
             </Link>
           </div>
         </div>
       </nav>
 
-      {/*
-        HERO COMPOSITION LOCK:
-        Left = sofa person.
-        Center = copy block.
-        Right = visible Netflix screen.
-        The copy must stay visually between the person and Netflix.
-        Do not move the copy fully to the right or fully over the person.
-      */}
-      {/* HERO */}
       <section className="hero-section">
-        <div style={{ position: 'absolute', inset: 0 }}>
-          <img
-            className="hero-image"
-            src="/hero-sofa.png"
-            alt=""
-            onError={function(e) {
-              e.target.parentNode.style.background = 'linear-gradient(160deg,#0d0603,#2a1508)'
-              e.target.style.display = 'none'
-            }}
-          />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to left, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.18) 26%, rgba(0,0,0,0.72) 46%, rgba(0,0,0,0.58) 61%, rgba(0,0,0,0.12) 100%)' }} />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(17,17,17,0.42) 0%, transparent 36%)' }} />
-        </div>
-
-        <div className="hero-copy-lock">
-          <div style={{ marginBottom: 26, display: 'inline-block', transform: 'rotate(-2deg)', filter: 'drop-shadow(6px 10px 26px rgba(0,0,0,0.55))' }}>
-            <Sign text="אחלה תירוץ לצאת מהבית" size="lg" />
-          </div>
-          <h1 className="hero-title">
-            כולם צריכים<br />תירוץ טוב<br />לצאת מהבית.
-          </h1>
-          <p className="hero-subtitle">
-            מקומות שלא חשבתם לנסוע אליהם. אנשים שלא הכרתם. סיפורים שלא ייאמן שהם נמצאים כל כך קרוב.
-          </p>
+        <img src="/hero-sofa.png" alt="" className="hero-bg" onError={function(e) { e.target.src = '/sofa-hero.png' }} />
+        <div className="hero-shade" />
+        <div className="hero-bottom" />
+        <div className="hero-copy">
+          <div style={{ display: 'inline-block', transform: 'rotate(-2deg)' }}><Sign text="אחלה תירוץ לצאת מהבית" size="lg" /></div>
+          <h1>כולם צריכים<br />תירוץ טוב<br />לצאת מהבית.</h1>
+          <p>מגלים סיפורים דרך סיורים, סרטונים קצרים ופודקאסטים.</p>
           <div className="hero-actions">
-            <a href="#tours" style={{ textDecoration: 'none' }}><Sign text="תנו לי אחד" size="md" /></a>
-            <a href="#podcast" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: '1.5px solid rgba(255,255,255,0.32)', color: 'rgba(255,255,255,0.9)', padding: '10px 22px', borderRadius: 4, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
-              ▶ הפרק החדש
-            </a>
+            <CTAButton href="#tours" icon="📍">גלו סיורים</CTAButton>
+            <CTAButton href="#podcast" variant="ghost" icon="🎧">הפרק החדש</CTAButton>
+            <CTAButton href="#guides" variant="ghost" icon="👤">אני מדריך</CTAButton>
           </div>
         </div>
       </section>
 
-      {/* DOOR OPENS — white, airy */}
-      <section style={{ background: '#fff', padding: '64px 24px 0' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div className="sb" style={{ display: 'flex', gap: 8, background: '#fff', borderRadius: 14, padding: 8, boxShadow: '0 12px 40px rgba(17,17,17,0.06)', border: '1px solid #F0ECE7', marginBottom: 12 }}>
-            <input type="text" value={search} onChange={function(e) { setSearch(e.target.value) }} onKeyDown={function(e) { if (e.key === 'Enter') handleSearch() }} placeholder="חפשו מקום, מדריך, תקופה..." style={Object.assign({}, inp, { flex: 2, border: 'none', padding: '12px 16px' })} />
-            <select value={region} onChange={function(e) { setRegion(e.target.value) }} style={Object.assign({}, inp, { flex: 1, border: 'none' })}>
-              <option value="">כל האזורים</option>
-              {REGIONS.map(function(r) { return <option key={r} value={r}>{r}</option> })}
-            </select>
-            <select value={period} onChange={function(e) { setPeriod(e.target.value) }} style={Object.assign({}, inp, { flex: 1.5, border: 'none' })}>
-              <option value="">כל התקופות</option>
-              {PERIODS.map(function(p) { return <option key={p} value={p}>{p}</option> })}
-            </select>
-            <button onClick={handleSearch} style={{ background: BROWN, color: '#fff', border: 'none', borderRadius: 10, padding: '12px 28px', fontSize: 14, fontWeight: 700, cursor: 'pointer', flexShrink: 0, fontFamily: 'Heebo, Arial, sans-serif' }}>חפשו</button>
-          </div>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-            <div style={{ position: 'relative' }}>
-              <input type="text" value={guideInput} onChange={function(e) { handleGuideInput(e.target.value) }} placeholder="שם מורה דרך..." style={{ padding: '7px 12px', borderRadius: 6, border: '1px solid #e5e5e5', fontSize: 13, fontFamily: 'Heebo, Arial, sans-serif', outline: 'none' }} />
-              {guideMatches.length > 0 && (
-                <div style={{ position: 'absolute', top: '100%', right: 0, background: '#fff', border: '1px solid #ddd', borderRadius: 8, zIndex: 10, boxShadow: '0 4px 16px rgba(0,0,0,0.1)', minWidth: 180 }}>
-                  {guideMatches.map(function(g) { return <div key={g} onClick={function() { setSelectedGuide(g); setGuideInput(g); setGuideMatches([]) }} style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 13, fontFamily: 'Heebo, Arial, sans-serif' }}>{g}</div> })}
-                </div>
-              )}
-            </div>
-            <button onClick={function() { setNotFound(!notFound) }} style={{ background: 'none', border: 'none', color: BROWN, fontSize: 13, cursor: 'pointer', textDecoration: 'underline', fontFamily: 'Heebo, Arial, sans-serif' }}>
-              לא מצאתי — תמצאו לי מדריך שיקח אותי ל...
-            </button>
-          </div>
-          {notFound && !notFoundSent && (
-            <form onSubmit={handleNotFound} style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-              <input type="text" value={notFoundText} onChange={function(e) { if (e.target.value.length <= 120) setNotFoundText(e.target.value) }} placeholder="לאן תרצו ללכת?" style={Object.assign({}, inp, { flex: 1 })} />
-              <button type="submit" style={{ background: BROWN, color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>שלח</button>
-            </form>
-          )}
-          {notFoundSent && <p style={{ marginTop: 8, fontSize: 13, color: '#22c55e' }}>✓ נחזור אליכם בהקדם!</p>}
+      <section className="page-section" style={{ paddingTop: 32 }}>
+        <h2 className="journey-title">איך בא לכם לצאת מהבית היום?</h2>
+        <div className="journey-grid">
+          <JourneyCard icon="🎙️" title="להאזין לסיפור" text="פודקאסטים קצרים על מקומות ואנשים." cta="להאזין עכשיו" href="#podcast" />
+          <JourneyCard icon="📍" title="למצוא סיור" text="מדריכים וסיורים מיוחדים בכל רחבי הארץ." cta="לגלות סיורים" href="#tours" />
+          <JourneyCard icon="👥" title="אני מדריך" text="הפכו את הידע שלכם לקהילה וללקוחות." cta="לפרטים נוספים" href="#guides" />
         </div>
       </section>
 
-      {/* SEARCH RESULTS */}
       {searchResults !== null && (
-        <section id="sr" style={{ maxWidth: 1200, margin: '0 auto', padding: '48px 24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-            <h2 style={{ fontSize: 26, fontWeight: 800 }}>תוצאות ({searchResults.length})</h2>
-            <button onClick={function() { setSearchResults(null) }} style={{ background: 'none', border: 'none', fontSize: 13, color: GRAY, cursor: 'pointer', textDecoration: 'underline', fontFamily: 'Heebo, Arial, sans-serif' }}>נקה חיפוש</button>
+        <section id="sr" className="page-section">
+          <div className="section-wrap">
+            <div className="section-head">
+              <span />
+              <h2>תוצאות ({searchResults.length})</h2>
+              <button onClick={function() { setSearchResults(null) }} style={{ justifySelf: 'end', background: 'none', border: 'none', fontSize: 13, color: GRAY, cursor: 'pointer', textDecoration: 'underline', fontFamily: 'Heebo, Arial, sans-serif' }}>נקה חיפוש</button>
+            </div>
+            {searchResults.length === 0
+              ? <p style={{ color: GRAY, fontSize: 16, textAlign: 'center' }}>לא נמצאו סיורים. נסו חיפוש אחר.</p>
+              : <div className="tour-row">{searchResults.map(function(t) { return <TourCard key={t.id} tour={t} /> })}</div>
+            }
           </div>
-          {searchResults.length === 0
-            ? <p style={{ color: GRAY, fontSize: 16 }}>לא נמצאו סיורים. נסו חיפוש אחר.</p>
-            : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 20 }}>
-                {searchResults.map(function(t) { return <TourCard key={t.id} tour={t} /> })}
-              </div>
-          }
         </section>
       )}
 
-      {/* MY REGION */}
       {searchResults === null && myRegion.length > 0 && (
-        <section id="tours" style={{ maxWidth: 1200, margin: '0 auto', padding: '64px 24px 0' }}>
-          <Carousel tours={myRegion} title="סיורים באזור שלך" />
+        <section id="tours" className="page-section"><Carousel tours={myRegion} title="סיורים באזור שלך" /></section>
+      )}
+
+      {searchResults === null && (
+        <section id={myRegion.length === 0 ? 'tours' : 'recent'} className="page-section" style={{ paddingTop: 18 }}>
+          <Carousel tours={shownTours} title="סיורים מומלצים" />
         </section>
       )}
 
-      {/* RECENT */}
       {searchResults === null && (
-        <section id={myRegion.length === 0 ? 'tours' : 'recent'} style={{ maxWidth: 1200, margin: '0 auto', padding: '64px 24px 0' }}>
-          <Carousel tours={recent} title="סיורים חדשים" />
-        </section>
-      )}
-
-      {/* DISCOVERY */}
-      {searchResults === null && (
-        <section style={{ background: OFF_WHITE, padding: '88px 24px', marginTop: 80 }}>
-          <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-            <div style={{ marginBottom: 40 }}>
-              <div style={{ marginBottom: 16, display: 'inline-block', transform: 'rotate(-1.5deg)' }}>
-                <Sign text="עזוב, מה יש לעשות שם?" size="lg" />
-              </div>
-              <p style={{ fontSize: 16, color: GRAY, marginTop: 12 }}>מקומות מפתיעים. סיפורים אמיתיים. סיבות טובות לעשות משהו שלא היה בתוכניות.</p>
-            </div>
-            <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 8, scrollbarWidth: 'none' }}>
-              {popular.map(function(t) { return <TourCard key={t.id} tour={t} /> })}
+        <section className="page-section" id="social-videos" style={{ paddingTop: 18 }}>
+          <div className="section-wrap">
+            <h2 className="journey-title" style={{ marginBottom: 24 }}>מה ראיתם אצלנו ברשת?</h2>
+            <div className="videos-grid">
+              <VideoCard title="איך עשו את אשדוד?" img={videoImages[0] || '/podcast-hero.png'} duration="01:12" />
+              <VideoCard title="איך עשו את טבריה?" img={videoImages[1] || '/podcast-hero.png'} duration="01:05" />
+              <VideoCard title="למה עכו נראית ככה?" img={videoImages[2] || '/podcast-hero.png'} duration="01:18" />
+              <VideoCard title="מי בנה את יפו?" img={videoImages[3] || '/podcast-hero.png'} duration="00:59" />
             </div>
           </div>
         </section>
       )}
 
-      {/* PODCAST */}
       {searchResults === null && (
-        <section id="podcast" style={{ background: '#fff', padding: '88px 24px' }}>
-          <div className="tc" style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }}>
-            <div style={{ borderRadius: 18, overflow: 'hidden', height: 400, background: '#1a0d06', position: 'relative', boxShadow: '0 8px 40px rgba(0,0,0,0.12)' }}>
-              <img src="/podcast-hero.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onError={function(e) { e.target.style.display = 'none' }} />
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,0.4) 0%,transparent 55%)' }} />
+        <section className="page-section" style={{ paddingTop: 18 }}>
+          <h2 className="journey-title">למה אנשים אוהבים את MVH?</h2>
+          <div className="stats-grid">
+            <StatCard icon="⭐" num="4.9" label="דירוג ממוצע מחוויות קודמות" />
+            <StatCard icon="🎧" num="30K+" label="האזנות לפודקאסט והולך וגדל" />
+            <StatCard icon="👥" num="100+" label="מדריכים מצטרפים לקהילה שלנו" />
+            <StatCard icon="📍" num="600+" label="סיורים בכל הארץ ועוד רבים בדרך" />
+          </div>
+        </section>
+      )}
+
+      {searchResults === null && (
+        <section className="page-section" id="guides" style={{ paddingTop: 18 }}>
+          <div className="guide-banner">
+            <div className="guide-copy">
+              <div className="route-doodle">⌁</div>
+              <h2>מדריכי טיולים?</h2>
+              <p>הסיפורים שלכם כבר קיימים. אנחנו עוזרים לאנשים למצוא אותם.</p>
+              <Link href="/join" style={{ textDecoration: 'none', alignSelf: 'flex-start' }}><Sign text="הצטרפו כמדריכים" size="md" /></Link>
             </div>
-            <div>
-              <div style={{ marginBottom: 20 }}><Sign text="הפודקאסט" size="sm" /></div>
-              <h2 style={{ fontSize: 'clamp(24px,3vw,40px)', fontWeight: 800, marginBottom: 16, lineHeight: 1.2, color: NEAR_BLACK }}>
-                אם אתם במצב בטטות ספה, לפחות תקשיבו לפרק החדש.
-              </h2>
-              <p style={{ fontSize: 16, color: GRAY, lineHeight: 1.9, marginBottom: 32 }}>
-                כי בפעם הבאה שמישהו בעבודה ישאל מה עשיתם בסופ"ש, תזרקו שם של מקום שאף אחד לא שמע עליו וכולם יהיו בטוחים שיש לכם חיים מעניינים במיוחד.
-              </p>
-              <a href="#" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: '1.5px solid ' + NEAR_BLACK, color: NEAR_BLACK, padding: '13px 26px', borderRadius: 4, fontSize: 15, fontWeight: 600, textDecoration: 'none', fontFamily: 'Heebo, Arial, sans-serif' }}>
-                ▶ הפרק החדש
-              </a>
+            <div className="guide-photo">
+              <img src="/guide-hero.png" alt="" onError={function(e) { e.target.style.display = 'none' }} />
             </div>
           </div>
         </section>
       )}
 
-      {/* GUIDE RECRUITMENT */}
-      {searchResults === null && (
-        <section id="guides" style={{ background: '#fff', padding: '84px 24px' }}>
-          <div style={{ maxWidth: 1200, margin: '0 auto', borderRadius: 28, overflow: 'hidden', background: OFF_WHITE, display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', minHeight: 320, boxShadow: '0 18px 60px rgba(17,17,17,0.08)' }} className="tc">
-            <div style={{ minHeight: 320, position: 'relative', overflow: 'hidden' }}>
-              <img src="/guide-hero.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onError={function(e) { e.target.style.display = 'none' }} />
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to left, rgba(0,0,0,0.05), rgba(0,0,0,0.22))' }} />
-            </div>
-            <div style={{ padding: '46px 52px', position: 'relative' }}>
-              <div style={{ position: 'absolute', top: 34, left: 40, width: 120, height: 120, border: '2px dashed rgba(126,72,33,0.35)', borderRadius: '50%', opacity: 0.7 }} />
-              <div style={{ marginBottom: 20 }}><Sign text="מחפשים מדריכים" size="sm" /></div>
-              <h2 style={{ fontSize: 'clamp(26px,3.2vw,42px)', fontWeight: 900, marginBottom: 16, lineHeight: 1.16, color: NEAR_BLACK, letterSpacing: '-0.8px' }}>
-                מכירים מדריך טוב ב___?<br />יש מצב שבקרוב יגידו את השם שלכם.
-              </h2>
-              <p style={{ fontSize: 16, color: GRAY, lineHeight: 1.85, marginBottom: 28, maxWidth: 430 }}>
-                אנחנו מחברים בין מטיילים שמחפשים תירוץ טוב לצאת מהבית לבין מדריכים שיודעים לתת להם סיבה אמיתית.
-              </p>
-              <Link href="/join" style={{ textDecoration: 'none' }}><Sign text="אני מדריך" size="md" /></Link>
-            </div>
+      <section className="page-section" style={{ paddingTop: 18 }}>
+        <div className="search-box">
+          <input type="text" value={search} onChange={function(e) { setSearch(e.target.value) }} onKeyDown={function(e) { if (e.key === 'Enter') handleSearch() }} placeholder="חפשו מקום, מדריך, תקופה..." style={Object.assign({}, inp, { flex: 2, border: 'none', padding: '12px 16px' })} />
+          <select value={region} onChange={function(e) { setRegion(e.target.value) }} style={Object.assign({}, inp, { flex: 1, border: 'none' })}>
+            <option value="">כל האזורים</option>
+            {REGIONS.map(function(r) { return <option key={r} value={r}>{r}</option> })}
+          </select>
+          <select value={period} onChange={function(e) { setPeriod(e.target.value) }} style={Object.assign({}, inp, { flex: 1.4, border: 'none' })}>
+            <option value="">כל התקופות</option>
+            {PERIODS.map(function(p) { return <option key={p} value={p}>{p}</option> })}
+          </select>
+          <button onClick={handleSearch} style={{ background: BROWN, color: '#fff', border: 'none', borderRadius: 10, padding: '12px 28px', fontSize: 14, fontWeight: 800, cursor: 'pointer', flexShrink: 0, fontFamily: 'Heebo, Arial, sans-serif' }}>חפשו</button>
+        </div>
+        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative' }}>
+            <input type="text" value={guideInput} onChange={function(e) { handleGuideInput(e.target.value) }} placeholder="שם מורה דרך..." style={{ padding: '7px 12px', borderRadius: 6, border: '1px solid #e5e5e5', fontSize: 13, fontFamily: 'Heebo, Arial, sans-serif', outline: 'none' }} />
+            {guideMatches.length > 0 && (
+              <div style={{ position: 'absolute', top: '100%', right: 0, background: '#fff', border: '1px solid #ddd', borderRadius: 8, zIndex: 10, boxShadow: '0 4px 16px rgba(0,0,0,0.1)', minWidth: 180 }}>
+                {guideMatches.map(function(g) { return <div key={g} onClick={function() { setSelectedGuide(g); setGuideInput(g); setGuideMatches([]) }} style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 13, fontFamily: 'Heebo, Arial, sans-serif' }}>{g}</div> })}
+              </div>
+            )}
           </div>
-        </section>
-      )}
+          <button onClick={function() { setNotFound(!notFound) }} style={{ background: 'none', border: 'none', color: BROWN, fontSize: 13, cursor: 'pointer', textDecoration: 'underline', fontFamily: 'Heebo, Arial, sans-serif' }}>
+            לא מצאתי, תמצאו לי מדריך שיקח אותי ל...
+          </button>
+        </div>
+        {notFound && !notFoundSent && (
+          <form onSubmit={handleNotFound} style={{ maxWidth: 720, margin: '12px auto 0', display: 'flex', gap: 8 }}>
+            <input type="text" value={notFoundText} onChange={function(e) { if (e.target.value.length <= 120) setNotFoundText(e.target.value) }} placeholder="לאן תרצו ללכת?" style={Object.assign({}, inp, { flex: 1 })} />
+            <button type="submit" style={{ background: BROWN, color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>שלח</button>
+          </form>
+        )}
+        {notFoundSent && <p style={{ marginTop: 8, fontSize: 13, color: '#22c55e', textAlign: 'center' }}>✓ נחזור אליכם בהקדם!</p>}
+      </section>
 
-      {/* FOOTER */}
-      {searchResults === null && (
-        <footer style={{ background: FOOTER_GRAY, padding: '72px 24px 36px', color: NEAR_BLACK }}>
-          <div style={{ maxWidth: 1120, margin: '0 auto' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: 56, alignItems: 'center', marginBottom: 54 }} className="tc">
-              <div>
-                <h2 style={{ fontSize: 'clamp(30px,4.5vw,56px)', fontWeight: 900, lineHeight: 1.08, letterSpacing: '-1.2px', marginBottom: 18 }}>
-                  לא הצלחנו להוציא אתכם מהבית?
-                </h2>
-                <p style={{ fontSize: 18, color: '#4E4A45', lineHeight: 1.85, maxWidth: 560 }}>
-                  גם זה קורה. לפחות תשלחו את האתר למישהו שצריך תירוץ טוב יותר מכם.
-                </p>
-              </div>
-              <div style={{ background: '#fff', borderRadius: 22, padding: 28, boxShadow: '0 14px 40px rgba(17,17,17,0.06)' }}>
-                <p style={{ fontSize: 15, color: GRAY, lineHeight: 1.8, marginBottom: 20 }}>
-                  רוצים לקבל סיורים חדשים, פרקים חדשים ומקומות שיגרמו לכם להגיד "עזוב, מה יש לעשות שם?" ואז לבדוק בכל זאת?
-                </p>
-                <Link href="/discount" style={{ textDecoration: 'none' }}><Sign text="צרפו אותי" size="md" /></Link>
-              </div>
-            </div>
-            <div style={{ borderTop: '1px solid rgba(17,17,17,0.10)', paddingTop: 26, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-              <img src="/New_Logo.png" alt="מאז ועד היום" style={{ height: 36, objectFit: 'contain', opacity: 0.9 }} />
-              <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
-                {[
-                  ['♪', 'TikTok'],
-                  ['f', 'Facebook'],
-                  ['▶', 'YouTube'],
-                  ['◉', 'Spotify'],
-                  ['▣', 'Apple Podcasts']
-                ].map(function(item) {
-                  return <a key={item[1]} href="https://mvh.co.il" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: '#3A2418', textDecoration: 'none', fontSize: 14, fontWeight: 600, fontFamily: 'Heebo, Arial, sans-serif' }}>
-                    <span style={{ color: BROWN, fontWeight: 900, fontSize: 17 }}>{item[0]}</span>{item[1]}
-                  </a>
-                })}
-              </div>
-              <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
-                <a href="https://mvh.co.il" style={{ color: '#5C554E', fontSize: 12, textDecoration: 'none', fontFamily: 'Heebo, Arial, sans-serif' }}>תנאי שימוש</a>
-                <a href="https://mvh.co.il" style={{ color: '#5C554E', fontSize: 12, textDecoration: 'none', fontFamily: 'Heebo, Arial, sans-serif' }}>מדיניות פרטיות</a>
-                <p style={{ color: '#77716A', fontSize: 12, fontFamily: 'Heebo, Arial, sans-serif' }}>© 2025 מאז ועד היום</p>
-              </div>
-            </div>
+      <footer className="footer">
+        <div className="footer-inner">
+          <div className="footer-logo">
+            <img src="/New_Logo.png" alt="מאז ועד היום" />
+            <p>סיפורים שגורמים<br />לאנשים לצאת מהבית.</p>
           </div>
-        </footer>
-      )}
+          <div className="footer-social">
+            {SOCIAL_LINKS.map(function(item) {
+              return <a key={item[1]} href="https://mvh.co.il" target="_blank" rel="noopener noreferrer"><span>{item[0]}</span>{item[1]}</a>
+            })}
+          </div>
+          <div className="footer-links">
+            <a href="https://mvh.co.il">אודות</a>
+            <a href="https://mvh.co.il">צור קשר</a>
+            <a href="https://mvh.co.il">מדיניות פרטיות</a>
+            <a href="https://mvh.co.il">תנאי שימוש</a>
+          </div>
+        </div>
+        <p className="footer-copy">© כל הזכויות שמורות ל-MVH</p>
+      </footer>
     </div>
   )
 }
