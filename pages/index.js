@@ -172,13 +172,31 @@ export default function Home({ tours, guides }) {
           *{box-sizing:border-box;margin:0;padding:0;}
           ::-webkit-scrollbar{display:none;}
           body{overflow-x:hidden;}
-          @media(max-width:900px){
+          .hero-copy-lock{
+            width:min(44vw,620px);
+            margin-inline-start:37vw;
+            margin-inline-end:auto;
+            text-align:center;
+          }
+          .hero-title{font-size:clamp(50px,5.8vw,84px);}
+          .hero-tag{transform:rotate(-2.5deg);}
+          .hero-actions{justify-content:center;}
+          @media(max-width:1100px){
+            .hero-copy-lock{width:min(48vw,560px);margin-inline-start:35vw;}
+            .hero-title{font-size:clamp(44px,6.3vw,72px);}
+          }
+          @media(max-width:820px){
             .hero-copy-lock{
-              margin-right:24px!important;
-              margin-left:24px!important;
-              max-width:560px!important;
-              padding:96px 24px 88px!important;
+              width:100%;
+              max-width:430px;
+              margin-inline-start:auto;
+              margin-inline-end:auto;
+              padding-top:260px;
+              text-align:center;
             }
+            .hero-title{font-size:clamp(40px,12vw,58px);}
+            .hero-tag{transform:rotate(-2deg) scale(0.82);transform-origin:center;}
+            .hero-actions{justify-content:center;}
           }
           @media(max-width:768px){
             .tc{grid-template-columns:1fr!important;}
@@ -225,7 +243,7 @@ export default function Home({ tours, guides }) {
               height: '100%',
               objectFit: 'cover',
               objectPosition: 'center center',
-              opacity: 0.92
+              opacity: 0.96
             }}
             onError={function(e) {
               e.target.parentNode.style.background = 'linear-gradient(160deg,#0d0603,#2a1508)'
@@ -233,25 +251,26 @@ export default function Home({ tours, guides }) {
             }}
           />
 
-          {/* Keep the person visible. Darken mainly the right side, where the copy sits. */}
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to left, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.70) 34%, rgba(0,0,0,0.28) 63%, rgba(0,0,0,0.08) 100%)' }} />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(17,17,17,0.38) 0%, transparent 42%)' }} />
+          {/* Keep the TV visible. Darken mainly the center so the copy starts where the screen begins. */}
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.22) 29%, rgba(0,0,0,0.64) 42%, rgba(0,0,0,0.52) 62%, rgba(0,0,0,0.18) 100%)' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 74% 48%, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.22) 55%, rgba(0,0,0,0.42) 100%)' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(17,17,17,0.24) 0%, transparent 44%)' }} />
         </div>
 
-        <div style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: 1200, margin: '0 auto', padding: '108px 44px 92px' }}>
-          <div style={{ maxWidth: 540, marginRight: 0, marginLeft: 'auto', textAlign: 'right' }}>
-            <div style={{ marginBottom: 30, display: 'inline-block', transform: 'rotate(-2.5deg)', filter: 'drop-shadow(6px 10px 26px rgba(0,0,0,0.55))' }}>
-              <Sign text="אחלה תירוץ לצאת מהבית" size="xl" />
+        <div style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: 1400, margin: '0 auto', padding: '92px 32px 82px' }}>
+          <div className="hero-copy-lock">
+            <div className="hero-tag" style={{ marginBottom: 24, display: 'inline-block', filter: 'drop-shadow(6px 10px 26px rgba(0,0,0,0.55))' }}>
+              <Sign text="אחלה תירוץ לצאת מהבית" size="lg" />
             </div>
-            <h1 style={{ fontSize: 'clamp(42px,5.2vw,70px)', fontWeight: 900, color: '#fff', lineHeight: 0.98, marginBottom: 30, letterSpacing: '-2px' }}>
+            <h1 className="hero-title" style={{ fontWeight: 900, color: '#fff', lineHeight: 0.98, marginBottom: 24, letterSpacing: '-2px' }}>
               כולם צריכים<br />תירוץ טוב<br />לצאת מהבית.
             </h1>
-            <p style={{ maxWidth: 430, color: 'rgba(255,255,255,0.82)', fontSize: 17, lineHeight: 1.75, marginBottom: 30 }}>
+            <p style={{ maxWidth: 480, margin: '0 auto 28px', color: 'rgba(255,255,255,0.86)', fontSize: 'clamp(18px,1.6vw,21px)', lineHeight: 1.65 }}>
               מקומות שלא חשבתם לנסוע אליהם. אנשים שלא הכרתם. סיפורים שלא ייאמן שהם נמצאים כל כך קרוב.
             </p>
-            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-start' }}>
+            <div className="hero-actions" style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center' }}>
               <a href="#tours" style={{ textDecoration: 'none' }}><Sign text="תנו לי אחד" size="md" /></a>
-              <a href="#podcast" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: '1.5px solid rgba(255,255,255,0.26)', color: 'rgba(255,255,255,0.82)', padding: '10px 22px', borderRadius: 4, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
+              <a href="#podcast" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: '1.5px solid rgba(255,255,255,0.28)', color: 'rgba(255,255,255,0.86)', padding: '10px 22px', borderRadius: 4, fontSize: 15, fontWeight: 600, textDecoration: 'none' }}>
                 ▶ הפרק החדש
               </a>
             </div>
@@ -413,11 +432,18 @@ export default function Home({ tours, guides }) {
             </div>
             <div style={{ borderTop: '1px solid rgba(17,17,17,0.10)', paddingTop: 26, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
               <img src="/New_Logo.png" alt="מאז ועד היום" style={{ height: 36, objectFit: 'contain', opacity: 0.9 }} />
-              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
-                {['מה יש לעשות שם?', 'אחלה תירוץ לצאת מהבית', 'פנייה אחת מהשגרה'].map(function(t) {
-                  return <span key={t} style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(126,72,33,0.08)', color: BROWN, border: '1px solid rgba(126,72,33,0.16)', padding: '6px 12px 6px 22px', borderRadius: 4, fontSize: 12, fontWeight: 700, position: 'relative', fontFamily: 'Heebo, Arial, sans-serif' }}>
-                    <span style={{ position: 'absolute', left: 8, fontSize: 10 }}>←</span>{t}
-                  </span>
+              <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
+                {[
+                  ['♪', 'TikTok'],
+                  ['f', 'Facebook'],
+                  ['▶', 'YouTube'],
+                  ['◉', 'Spotify'],
+                  ['▣', 'Apple Podcasts']
+                ].map(function(item) {
+                  return <a key={item[1]} href="https://mvh.co.il" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: NEAR_BLACK, textDecoration: 'none', fontSize: 14, fontWeight: 600, fontFamily: 'Heebo, Arial, sans-serif' }}>
+                    <span style={{ width: 24, height: 24, borderRadius: '50%', background: BROWN, color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800 }}>{item[0]}</span>
+                    {item[1]}
+                  </a>
                 })}
               </div>
               <p style={{ color: '#77716A', fontSize: 12, fontFamily: 'Heebo, Arial, sans-serif' }}>© 2025 מאז ועד היום</p>
