@@ -249,8 +249,8 @@ export default function Home({ tours, guides }) {
           .journey-title{font-size:clamp(26px,3vw,36px);font-weight:900;text-align:center;margin-bottom:24px;letter-spacing:-.5px;}
           .journey-grid{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
           .journey-card{background:rgba(255,255,255,.72);border:1px solid rgba(126,72,33,.16);border-radius:18px;padding:28px 26px;display:flex;align-items:center;gap:22px;color:${NEAR_BLACK};text-decoration:none;box-shadow:0 10px 28px rgba(126,72,33,.05);}
-          .journey-icon{width:78px;height:78px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(135deg,#9A5A2A,#6A3516);color:#fff;font-size:34px;flex-shrink:0;}
-          .journey-icon img{width:42px;height:42px;object-fit:contain;display:block;}
+          .journey-icon{width:78px;height:78px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#A05D2A;color:${CREAM};font-size:34px;flex-shrink:0;}
+          .journey-icon img{width:42px;height:42px;object-fit:contain;display:block;filter:brightness(0) invert(94%) sepia(12%) saturate(220%) hue-rotate(340deg) brightness(105%) contrast(96%);}
           .journey-card h3{font-size:24px;font-weight:900;margin-bottom:8px;}
           .journey-card p{font-size:15px;line-height:1.65;color:#555;margin-bottom:10px;}
           .journey-card span{font-size:14px;color:${BROWN};font-weight:800;}
