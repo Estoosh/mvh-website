@@ -24,7 +24,7 @@
 
 .header { background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 200; }
 .nav { max-width: 1180px; margin: 0 auto; padding: 0 28px; height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-.navLogo img { height: 64px; width: auto; object-fit: contain; display: block; }
+.navLogo img { height: 144px; width: auto; object-fit: contain; display: block; position: relative; z-index: 201; margin-bottom: -72px; }
 .navLinks { display: flex; align-items: center; gap: 20px; }
 .navLinks a { color: var(--black); text-decoration: none; font-weight: 700; font-size: 14px; }
 .navLinks a:hover { color: var(--brown); }
