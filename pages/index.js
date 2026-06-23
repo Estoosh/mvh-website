@@ -4,45 +4,55 @@ import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 import styles from '../styles/Home.module.css'
 
-const STATIC_TOURS = [
-  { id: 'apolonia', title: 'אפולוניה', city: 'הרצליה', img: '/Tours-Apolonia.png', price: 120, duration: 3, isNew: true },
-  { id: 'safed',    title: 'צפת',      city: 'צפת',     img: '/Tours-Safed.png',    price: 120, duration: 5, isNew: true },
-  { id: 'david',   title: 'עיר דוד',  city: 'ירושלים', img: '/Tours-DavidCity.png', price: 120, duration: 3, isNew: true },
-  { id: 'church',  title: 'כנסיות ירושלים', city: 'ירושלים', img: '/Tours-JLM-Church.png', price: 120, duration: 4, isNew: true },
+const FALLBACK_TOURS = [
+  { id: 'apolonia', Tour_Title: 'אפולוניה', Cities_Tags: 'הרצליה', Tour_Images: '/Tours-Apolonia.png', Price_Per_Person: 120, Duration_Hours: 3, Tour_Status: 'paid' },
+  { id: 'safed',    Tour_Title: 'צפת',      Cities_Tags: 'צפת',     Tour_Images: '/Tours-Safed.png',    Price_Per_Person: 120, Duration_Hours: 5, Tour_Status: 'paid' },
+  { id: 'david',   Tour_Title: 'עיר דוד',  Cities_Tags: 'ירושלים', Tour_Images: '/Tours-DavidCity.png', Price_Per_Person: 120, Duration_Hours: 3, Tour_Status: 'paid' },
+  { id: 'church',  Tour_Title: 'כנסיות ירושלים', Cities_Tags: 'ירושלים', Tour_Images: '/Tours-JLM-Church.png', Price_Per_Person: 120, Duration_Hours: 4, Tour_Status: 'paid' },
 ]
 
-const STATIC_GUIDES = [
-  { id: 'daniel', name: 'דניאל כהן', region: 'צפון והגליל', img: '/Hero-Guide-M.png', desc: 'מדריך בן 8 שנות ניסיון. מתמחה בסיורי לילה וגליל, מספר ומחבר סיפורים שאוהבים ומחברים אנשים למקומות.', tags: ['אנשים', 'טבע', 'גבו'], tours: 12, episodes: 9 },
-  { id: 'michal', name: 'מיכל לוי',  region: 'ירושלים והרי יהודה', img: '/Hero-Guide-F.png', desc: 'אני מחברת בין אנשים, היסטוריה וסיפורים. מאז ועד היום היא בשבילי הדרך לספר את הסיפורים שמחברים כל מקום.', tags: ['סיפורים', 'חברותא', 'היסטוריה'], tours: 12, episodes: 2 },
+const FALLBACK_GUIDES = [
+  { id: 'daniel', Guide_Name: 'דניאל כהן', Guide_Region: 'צפון והגליל', Guide_Photo: '/Hero-Guide-M.png', Guide_Bio: 'מדריך בן 8 שנות ניסיון.', Guide_Tags: 'אנשים,טבע,גבו', Tour_Count: 12, Episode_Count: 9 },
+  { id: 'michal', Guide_Name: 'מיכל לוי',  Guide_Region: 'ירושלים והרי יהודה', Guide_Photo: '/Hero-Guide-F.png', Guide_Bio: 'אני מחברת בין אנשים, היסטוריה וסיפורים.', Guide_Tags: 'סיפורים,חברותא,היסטוריה', Tour_Count: 12, Episode_Count: 2 },
 ]
 
 const HOW_STEPS = [
   { num: 1, icon: '/ICON-Location.png', text: 'אנחנו לוקחים את המקומות הכי מסקרנים' },
   { num: 2, icon: '/ICON-Guide.png',    text: 'מחפשים מורה דרך שמכיר את הסיפור שלהם הכי טוב' },
   { num: 3, icon: '/ICON-Mic.png',      text: 'מקליטים אותם פרק פודקאסט שמספר את הסיפור של המקום מאז ועד היום' },
-  { num: 4, icon: '/ICON-Location.png', text: 'משייכים לכם מחיר מיוחד מהסיור על הסיור אתם' },
+  { num: 4, icon: '/ICON-Location.png', text: 'משייכים לכם מחיר מיוחד על הסיור' },
 ]
 
 function TourCard({ tour }) {
-  const discounted = Math.round((tour.price || 120) * 0.9)
+  const images = tour.Tour_Images ? tour.Tour_Images.split('|').filter(Boolean) : []
+  const thumb = images[0] || null
+  const price = Number(tour.Price_Per_Person) || 120
+  const discounted = Math.round(price * 0.9)
+  const city = tour.Cities_Tags || ''
+  const duration = tour.Duration_Hours || ''
+  const title = tour.Tour_Title || 'סיור חדש'
+
   return (
     <a href={'/tours/' + tour.id} className={styles.tourCard}>
       <div className={styles.tourImg}>
-        <img src={tour.img} alt={tour.title} onError={e => e.target.style.display='none'} />
+        {thumb
+          ? <img src={thumb} alt={title} onError={e => e.target.style.display='none'} />
+          : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(150deg,#3a1a08,#1a0d06)' }} />
+        }
         <div className={styles.tourImgFade} />
-        {tour.isNew && <span className={styles.tourBadge}>🎧 פרק חדש</span>}
+        <span className={styles.tourBadge}>🎧 פרק חדש</span>
         <div className={styles.tourBottom}>
-          <h3 className={styles.tourTitle}>{tour.title}</h3>
+          <h3 className={styles.tourTitle}>{title}</h3>
           <div className={styles.tourMeta}>
-            <span>📍 {tour.city}</span>
-            <span>🕐 {tour.duration} שעות</span>
+            {city && <span>📍 {city}</span>}
+            {duration && <span>🕐 {duration} שעות</span>}
           </div>
           <div className={styles.tourPriceRow}>
             <span className={styles.tourPrice}>
-              <s>{tour.price} ₪</s> <strong>{discounted} ₪</strong>
+              <s>{price} ₪</s> <strong>{discounted} ₪</strong>
               <span className={styles.forMembers}>לחברי קהילה</span>
             </span>
-            <span className={styles.tourCta}>גלו את {tour.title} ←</span>
+            <span className={styles.tourCta}>גלו את {title} ←</span>
           </div>
         </div>
       </div>
@@ -51,21 +61,34 @@ function TourCard({ tour }) {
 }
 
 function GuideCard({ guide }) {
+  const tags = guide.Guide_Tags ? guide.Guide_Tags.split(',').map(t => t.trim()).filter(Boolean) : []
+  const photo = guide.Guide_Photo || null
+  const name = guide.Guide_Name || 'מדריך'
+  const region = guide.Guide_Region || ''
+  const bio = guide.Guide_Bio || ''
+  const tours = guide.Tour_Count || 0
+  const episodes = guide.Episode_Count || 0
+
   return (
     <article className={styles.guideCard}>
       <div className={styles.guideImg}>
-        <img src={guide.img} alt={guide.name} onError={e => e.target.style.display='none'} />
+        {photo
+          ? <img src={photo} alt={name} onError={e => e.target.style.display='none'} />
+          : <div style={{ width: '100%', height: '100%', background: '#1a0d06' }} />
+        }
       </div>
       <div className={styles.guideBody}>
-        <h3 className={styles.guideName}>{guide.name}</h3>
-        <p className={styles.guideRegion}>📍 {guide.region}</p>
-        <p className={styles.guideDesc}>{guide.desc}</p>
-        <div className={styles.guideTags}>
-          {guide.tags.map(t => <span key={t} className={styles.guideTag}>{t}</span>)}
-        </div>
+        <h3 className={styles.guideName}>{name}</h3>
+        {region && <p className={styles.guideRegion}>📍 {region}</p>}
+        {bio && <p className={styles.guideDesc}>{bio}</p>}
+        {tags.length > 0 && (
+          <div className={styles.guideTags}>
+            {tags.map(t => <span key={t} className={styles.guideTag}>{t}</span>)}
+          </div>
+        )}
         <div className={styles.guideStats}>
-          <span>🎧 {guide.episodes} פרקים</span>
-          <span>🗺 {guide.tours} סיורים</span>
+          {episodes > 0 && <span>🎧 {episodes} פרקים</span>}
+          {tours > 0 && <span>🗺 {tours} סיורים</span>}
         </div>
         <a href={'/guides/' + guide.id} className={styles.guideBtn}>לפרופיל המלא ←</a>
       </div>
@@ -73,23 +96,31 @@ function GuideCard({ guide }) {
   )
 }
 
-export default function Home({ tours }) {
+export default function Home({ tours, guides, featuredTours, featuredGuides }) {
   const { user, isLoaded } = useUser()
   const [isGuide, setIsGuide] = useState(false)
+  const [userRegions, setUserRegions] = useState([])
   const guidesRef = useRef(null)
   const [guideIdx, setGuideIdx] = useState(0)
 
   useEffect(function() {
     if (!isLoaded || !user) return
     fetch('/api/get-guide?clerk_id=' + user.id).then(r => r.json()).then(d => { if (d.found) setIsGuide(true) })
+    fetch('/api/get-signup?clerk_id=' + user.id).then(r => r.json()).then(d => {
+      if (d.found && d.signup && d.signup.Regions_Interest)
+        setUserRegions(d.signup.Regions_Interest.split(', ').filter(Boolean))
+    })
   }, [isLoaded, user])
 
   function scrollGuide(dir) {
     if (!guidesRef.current) return
-    const w = guidesRef.current.offsetWidth
-    guidesRef.current.scrollBy({ left: dir * w, behavior: 'smooth' })
-    setGuideIdx(prev => Math.max(0, Math.min(STATIC_GUIDES.length - 1, prev + dir)))
+    const w = guidesRef.current.querySelector('article')?.offsetWidth || guidesRef.current.offsetWidth / 2
+    guidesRef.current.scrollBy({ left: dir * (w + 20), behavior: 'smooth' })
+    setGuideIdx(prev => Math.max(0, Math.min((featuredGuides.length || 1) - 1, prev + dir)))
   }
+
+  const displayTours = featuredTours.length > 0 ? featuredTours : FALLBACK_TOURS
+  const displayGuides = featuredGuides.length > 0 ? featuredGuides : FALLBACK_GUIDES
 
   return (
     <div dir="rtl" className={styles.root}>
@@ -173,7 +204,7 @@ export default function Home({ tours }) {
               <a href="/tours" className={styles.seeAll}>כל הסיורים ←</a>
             </div>
             <div className={styles.toursGrid}>
-              {STATIC_TOURS.map(t => <TourCard key={t.id} tour={t} />)}
+              {displayTours.map(t => <TourCard key={t.id} tour={t} />)}
             </div>
           </div>
         </section>
@@ -184,12 +215,12 @@ export default function Home({ tours }) {
             <div className={styles.guidesSliderWrap}>
               <button className={styles.guideArrow} onClick={() => scrollGuide(1)} aria-label="הקודם">›</button>
               <div className={styles.guidesSlider} ref={guidesRef}>
-                {STATIC_GUIDES.map(g => <GuideCard key={g.id} guide={g} />)}
+                {displayGuides.map(g => <GuideCard key={g.id} guide={g} />)}
               </div>
               <button className={styles.guideArrow} onClick={() => scrollGuide(-1)} aria-label="הבא">‹</button>
             </div>
             <div className={styles.guidesDots}>
-              {STATIC_GUIDES.map((_, i) => (
+              {displayGuides.map((_, i) => (
                 <span key={i} className={styles.dot + (i === guideIdx ? ' ' + styles.dotActive : '')} />
               ))}
             </div>
@@ -260,10 +291,32 @@ export async function getServerSideProps() {
   try {
     const token = process.env.AIRTABLE_TOKEN
     const baseId = process.env.AIRTABLE_BASE_ID
-    const res = await fetch(`https://api.airtable.com/v0/${baseId}/tbltsGvfPLMAmJ764?pageSize=100`, { headers: { Authorization: `Bearer ${token}` } })
-    const data = await res.json()
-    const tours = (data.records || []).map(r => Object.assign({ id: r.id }, r.fields))
-    const guides = [...new Set(tours.map(t => t.Guide_Name).filter(Boolean))].sort()
-    return { props: { tours, guides } }
-  } catch(e) { return { props: { tours: [], guides: [] } } }
+
+    const toursRes = await fetch(
+      `https://api.airtable.com/v0/${baseId}/tbltsGvfPLMAmJ764?pageSize=100`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+    const toursData = await toursRes.json()
+    const allTours = (toursData.records || []).map(r => Object.assign({ id: r.id }, r.fields))
+
+    const featuredTours = allTours
+      .filter(t => t.Tour_Status === 'paid')
+      .sort((a, b) => new Date(b.Created_At || 0) - new Date(a.Created_At || 0))
+      .slice(0, 4)
+
+    let featuredGuides = []
+    try {
+      const guidesRes = await fetch(
+        `https://api.airtable.com/v0/${baseId}/tblGuides?pageSize=10`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      const guidesData = await guidesRes.json()
+      featuredGuides = (guidesData.records || []).map(r => Object.assign({ id: r.id }, r.fields)).slice(0, 4)
+    } catch(e) {}
+
+    const guides = [...new Set(allTours.map(t => t.Guide_Name).filter(Boolean))].sort()
+    return { props: { tours: allTours, guides, featuredTours, featuredGuides } }
+  } catch(e) {
+    return { props: { tours: [], guides: [], featuredTours: [], featuredGuides: [] } }
+  }
 }
