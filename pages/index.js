@@ -300,8 +300,8 @@ export async function getServerSideProps() {
     const toursData = await toursRes.json()
     const allTours = (toursData.records || []).map(r => Object.assign({ id: r.id }, r.fields))
 
-    const featuredTours = allTours
-      .filter(t => t.Tour_Status === 'paid')
+ const featuredTours = allTours
+  .filter(t => t.Tour_Status === 'paid' || t.Tour_Status === 'collab')
       .sort((a, b) => new Date(b.Created_At || 0) - new Date(a.Created_At || 0))
       .slice(0, 4)
 
