@@ -31,11 +31,10 @@ export default function Discount() {
         first_name: user.firstName || '',
         last_name: user.lastName || '',
       })
-    })
-    fetch('/api/get-guide?clerk_id=' + user.id)
+    })fetch('/api/get-guide?clerk_id=' + user.id + '&email=' + encodeURIComponent(user.emailAddresses?.[0]?.emailAddress || ''))
       .then(function(r) { return r.json() })
       .then(function(data) { if (data.found) setIsGuide(true) })
-    fetch('/api/get-signup?clerk_id=' + user.id)
+    fetch('/api/get-guide?clerk_id=' + user.id + '&email=' + encodeURIComponent(user.emailAddresses?.[0]?.emailAddress || ''))
       .then(function(r) { return r.json() })
       .then(function(data) {
         if (data.found) setAlreadySignedUp(true)
