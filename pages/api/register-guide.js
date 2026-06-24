@@ -18,6 +18,8 @@ export default async function handler(req, res) {
           Street_Address: body.address,
           Account_Status: 'פעיל',
           Clerk_ID: body.clerk_id,
+          Guide_Status: 'pending',
+          Certificate_URL: body.certificate_url || '',
         }
       })
     }
