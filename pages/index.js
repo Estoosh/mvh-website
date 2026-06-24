@@ -105,7 +105,8 @@ export default function Home({ tours, guides, featuredTours, featuredGuides }) {
 
   useEffect(function() {
     if (!isLoaded || !user) return
-    fetch('/api/get-guide?clerk_id=' + user.id).then(r => r.json()).then(d => { if (d.found) setIsGuide(true) })
+    fetch('/api/get-guide?clerk_id=' + user.id + '&email=' + encodeURIComponent(user.emailAddresses?.[0]?.emailAddress || '')).then(function(r) { return r.json() }).then(function(d) { if (d.found) setIsGuide(true) })
+    
     fetch('/api/get-signup?clerk_id=' + user.id).then(r => r.json()).then(d => {
       if (d.found && d.signup && d.signup.Regions_Interest)
         setUserRegions(d.signup.Regions_Interest.split(', ').filter(Boolean))
