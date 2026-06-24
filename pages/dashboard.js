@@ -18,7 +18,7 @@ export default function Dashboard() {
   useEffect(function() {
     if (!isLoaded) return
     if (!user) { router.push('/sign-in'); return }
-    fetch('/api/get-guide?clerk_id=' + user.id)
+    fetch('/api/get-guide?clerk_id=' + user.id + '&email=' + encodeURIComponent(user.emailAddresses?.[0]?.emailAddress || ''))
       .then(function(r) { return r.json() })
       .then(function(data) {
         if (!data.found) { router.push('/join'); return }
