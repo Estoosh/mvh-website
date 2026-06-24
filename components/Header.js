@@ -8,7 +8,7 @@ export default function Header() {
 
   useEffect(function() {
     if (!isLoaded || !user) return
-    fetch('/api/get-guide?clerk_id=' + user.id)
+    fetch('/api/get-guide?clerk_id=' + user.id + '&email=' + encodeURIComponent(user.emailAddresses?.[0]?.emailAddress || ''))
       .then(r => r.json())
       .then(d => { if (d.found) setIsGuide(true) })
   }, [isLoaded, user])
