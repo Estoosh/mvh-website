@@ -2,17 +2,113 @@ import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/router'
 import { useState, useEffect, useRef } from 'react'
 import Header from '../components/Header'
+import Footer from '../components/Footer'
+
+const BROWN = '#7E4821'
+const CREAM = '#F7F1EA'
+const TIMELINE_COLOR = '#C8A582'
 
 const CITIES = ["אילת","אשדוד","אשקלון","באר שבע","באר יעקב","בית שאן","בית שמש","בני ברק","גבעתיים","דימונה","הוד השרון","הרצליה","חדרה","חולון","חיפה","טבריה","טירת כרמל","יבנה","יהוד","ירושלים","כפר סבא","כרמיאל","לוד","מודיעין","נהריה","נס ציונה","נצרת","נתיבות","נתניה","עכו","עפולה","פתח תקווה","צפת","קריית אתא","קריית גת","קריית מוצקין","קריית שמונה","ראש העין","ראשון לציון","רהט","רחובות","רמלה","רמת גן","רמת השרון","רעננה","שדרות","תל אביב","עין גדי","מצדה","קומראן","ים המלח","השרון","גליל עליון","גליל מערבי","גולן","נגב","ערבה","שפלה","שרון"]
 const DAYS = ["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"]
-const TIMES = ["בוקר","אחה\"צ","ערב"]
+const TIMES = ['בוקר','אחה"צ','ערב']
 const DEFAULT_ITEMS = ["מים","כובע","קרם הגנה","תכשיר נגד יתושים","נעלי הליכה","בגדים נוחים","אוכל קל","מטען לטלפון","מצלמה","כסף מזומן"]
-const HISTORICAL_PERIODS = ["תקופת המקרא / ימי האבות", "בית ראשון (ממלכת ישראל ויהודה)", "בית שני", "התקופה הרומית-ביזנטית", "התקופה המוסלמית הקדומה", "תקופת הצלבנים", "התקופה הממלוכית", "התקופה העות'מאנית", "המנדט הבריטי", "מדינת ישראל (1948 ואילך)"]
+const HISTORICAL_PERIODS = ["תקופת המקרא / ימי האבות","בית ראשון (ממלכת ישראל ויהודה)","בית שני","התקופה הרומית-ביזנטית","התקופה המוסלמית הקדומה","תקופת הצלבנים","התקופה הממלוכית","התקופה העות'מאנית","המנדט הבריטי","מדינת ישראל (1948 ואילך)"]
+
+function TimelineDivider() {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0', userSelect: 'none' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+        <div style={{ width: 8, height: 8, borderRadius: '50%', background: TIMELINE_COLOR }} />
+        <div style={{ width: 2, height: 32, background: TIMELINE_COLOR, opacity: 0.35 }} />
+        <div style={{ width: 6, height: 6, borderRadius: '50%', background: TIMELINE_COLOR, opacity: 0.5 }} />
+        <div style={{ width: 2, height: 32, background: TIMELINE_COLOR, opacity: 0.35 }} />
+        <div style={{ width: 8, height: 8, borderRadius: '50%', background: TIMELINE_COLOR }} />
+      </div>
+    </div>
+  )
+}
+
+function SectionCard({ children, style }) {
+  return (
+    <div style={Object.assign({ background: '#fff', borderRadius: 18, padding: '28px 32px', border: '1px solid #EDE7DF', boxShadow: '0 4px 16px rgba(0,0,0,0.05)' }, style)}>
+      {children}
+    </div>
+  )
+}
+
+function SectionLabel({ number, title, subtitle }) {
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: subtitle ? 6 : 0 }}>
+        <span style={{ width: 26, height: 26, borderRadius: '50%', background: BROWN, color: '#fff', fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontFamily: 'Heebo, Arial, sans-serif' }}>{number}</span>
+        <h2 style={{ fontSize: 17, fontWeight: 800, color: '#1a1a1a', margin: 0, fontFamily: 'Heebo, Arial, sans-serif' }}>{title}</h2>
+      </div>
+      {subtitle && <p style={{ fontSize: 14, color: '#6B6B6B', margin: '6px 0 0 36px', lineHeight: 1.65, fontFamily: 'Heebo, Arial, sans-serif' }}>{subtitle}</p>}
+    </div>
+  )
+}
+
+function FieldLabel({ children, required, hint }) {
+  return (
+    <div style={{ marginBottom: 6 }}>
+      <label style={{ fontSize: 13, fontWeight: 700, color: '#2a2a2a', fontFamily: 'Heebo, Arial, sans-serif' }}>
+        {children} {required && <span style={{ color: BROWN }}>*</span>}
+      </label>
+      {hint && <p style={{ fontSize: 12, color: '#6B6B6B', margin: '3px 0 0', fontFamily: 'Heebo, Arial, sans-serif' }}>{hint}</p>}
+    </div>
+  )
+}
+
+function AITimelineAnim() {
+  const [step, setStep] = useState(0)
+  useEffect(function() {
+    var interval = setInterval(function() { setStep(function(s) { return (s + 1) % 3 }) }, 500)
+    return function() { clearInterval(interval) }
+  }, [])
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+      {[0,1,2].map(function(i) {
+        var active = i === step
+        return (
+          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ width: active ? 12 : 8, height: active ? 12 : 8, borderRadius: '50%', background: active ? BROWN : TIMELINE_COLOR, transition: 'all 0.3s', opacity: active ? 1 : 0.4 }} />
+            {i < 2 && <div style={{ width: 2, height: 20, background: TIMELINE_COLOR, opacity: 0.3 }} />}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function AILoadingAnimation() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '32px 0', gap: 6 }}>
+      <AITimelineAnim />
+      <p style={{ fontSize: 13, color: '#6B6B6B', marginTop: 12, fontFamily: 'Heebo, Arial, sans-serif' }}>מאז ועד היום כותב עבורכם...</p>
+    </div>
+  )
+}
+
+function SuccessToast({ show }) {
+  if (!show) return null
+  return (
+    <div style={{ position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)', background: '#fff', border: '1px solid #EDE7DF', borderRadius: 14, padding: '14px 24px', boxShadow: '0 8px 28px rgba(0,0,0,0.12)', zIndex: 300, textAlign: 'center', fontFamily: 'Heebo, Arial, sans-serif', minWidth: 280 }}>
+      <p style={{ fontSize: 15, fontWeight: 700, color: '#1a1a1a', margin: '0 0 4px' }}>✨ יצרנו עבורכם טיוטה ראשונית.</p>
+      <p style={{ fontSize: 13, color: '#6B6B6B', margin: 0 }}>עכשיו תנו לה את הטאץ׳ האישי שלכם.</p>
+    </div>
+  )
+}
+
+const inp = { width: '100%', padding: '11px 14px', borderRadius: 10, border: '1.5px solid #EDE7DF', fontSize: 14, fontFamily: 'Heebo, Arial, sans-serif', outline: 'none', background: '#fff', boxSizing: 'border-box', color: '#1a1a1a' }
+const chip = function(selected) {
+  return { padding: '7px 14px', borderRadius: 20, border: '1.5px solid', fontSize: 13, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif', fontWeight: 600, background: selected ? '#111' : '#fff', color: selected ? '#fff' : '#555', borderColor: selected ? '#111' : '#EDE7DF', transition: 'all 0.15s' }
+}
 
 export default function AddTour() {
   const { user, isLoaded } = useUser()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [saved, setSaved] = useState(false)
   const [guideId, setGuideId] = useState(null)
   const [guide, setGuide] = useState(null)
   const [whatsappNumber, setWhatsappNumber] = useState('')
@@ -26,56 +122,46 @@ export default function AddTour() {
   const [extraItems, setExtraItems] = useState([])
   const [meetingPoint, setMeetingPoint] = useState('')
   const [meetingLink, setMeetingLink] = useState('')
-  const [aiLoading, setAiLoading] = useState(false)
-  const [aiError, setAiError] = useState('')
+  const [selectedPeriods, setSelectedPeriods] = useState([])
   const [images, setImages] = useState([])
   const [coverIndex, setCoverIndex] = useState(0)
   const [uploadingImage, setUploadingImage] = useState(false)
   const [imageError, setImageError] = useState('')
-  const [selectedPeriods, setSelectedPeriods] = useState([])
+  const [aiLoadingField, setAiLoadingField] = useState(null)
+  const [aiError, setAiError] = useState('')
+  const [showToast, setShowToast] = useState(false)
   const meetingRef = useRef(null)
+
   const [form, setForm] = useState({
-    title: '',
-    teaser: '',
-    story: '',
-    price: '',
-    duration: '',
-    cities: '',
-    min_age: '1',
-    max_age: '99',
-    collab_code: '',
-    pets_allowed: false,
+    title: '', teaser: '', story: '', guide_bio: '',
+    price: '', duration: '', cities: '',
+    min_age: '1', max_age: '99', collab_code: '', pets_allowed: false,
   })
 
   useEffect(function() {
     if (!isLoaded || !user) return
-    fetch('/api/get-guide?clerk_id=' + user.id)
-      .then(function(r) { return r.json() })
-      .then(function(data) {
-        if (!data.found) { router.push('/join'); return }
-        setGuideId(data.airtable_id)
-        setGuide(data.guide)
-        setWhatsappNumber(data.guide.WhatsApp_Number || '')
-      })
+    fetch('/api/get-guide?clerk_id=' + user.id).then(r => r.json()).then(function(data) {
+      if (!data.found) { router.push('/join'); return }
+      setGuideId(data.airtable_id); setGuide(data.guide)
+      setWhatsappNumber(data.guide.WhatsApp_Number || '')
+    })
   }, [isLoaded, user])
 
   useEffect(function() {
+    if (typeof window === 'undefined') return
     if (!window.google) {
       var script = document.createElement('script')
       script.src = 'https://maps.googleapis.com/maps/api/js?key=' + process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY + '&libraries=places&language=he'
-      script.async = true
-      script.onload = initAutocomplete
+      script.async = true; script.onload = initAutocomplete
       document.head.appendChild(script)
-    } else {
-      initAutocomplete()
-    }
+    } else { initAutocomplete() }
   }, [])
 
   function initAutocomplete() {
     if (!meetingRef.current) return
-    var autocomplete = new window.google.maps.places.Autocomplete(meetingRef.current, { language: 'he' })
-    autocomplete.addListener('place_changed', function() {
-      var place = autocomplete.getPlace()
+    var ac = new window.google.maps.places.Autocomplete(meetingRef.current, { language: 'he' })
+    ac.addListener('place_changed', function() {
+      var place = ac.getPlace()
       setMeetingPoint(place.formatted_address || '')
       setMeetingLink(place.url || 'https://maps.google.com/?q=' + encodeURIComponent(place.formatted_address || ''))
     })
@@ -83,76 +169,46 @@ export default function AddTour() {
 
   const handleChange = function(e) {
     var val = e.target.type === 'checkbox' ? e.target.checked : e.target.value
-    if (e.target.name === 'teaser') {
-      if (e.target.value.length > 120) return
-      setTeaserCount(e.target.value.length)
-    }
+    if (e.target.name === 'teaser') { if (e.target.value.length > 140) return; setTeaserCount(e.target.value.length) }
     setForm(Object.assign({}, form, { [e.target.name]: val }))
   }
 
-  const generateWithAI = async function() {
-    if (!form.title.trim()) {
-      setAiError('יש להזין שם סיור לפני יצירת הטקסט')
-      return
-    }
-    setAiError('')
-    setAiLoading(true)
+  const generateField = async function(field) {
+    if (!form.title.trim()) { setAiError('יש להזין שם סיור לפני יצירת הטקסט'); return }
+    setAiError(''); setAiLoadingField(field)
     try {
       const res = await fetch('/api/generate-tour-text', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: form.title })
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: form.title, city: form.cities, guideName: guide?.Guide_Name || '', historicalPeriods: selectedPeriods, field })
       })
       const data = await res.json()
-      if (data.error) {
-        setAiError('לא הצלחנו ליצור טקסט. אפשר לנסות שוב או לכתוב ידנית.')
-        setAiLoading(false)
-        return
-      }
+      if (data.error) { setAiError('לא הצלחנו ליצור טקסט. אפשר לנסות שוב.'); setAiLoadingField(null); return }
       setForm(function(prev) {
-        return Object.assign({}, prev, { teaser: data.teaser || prev.teaser, story: data.story || prev.story })
+        var update = {}
+        if (data.teaser && (field==='teaser'||field==='all')) { update.teaser = data.teaser; setTeaserCount(data.teaser.length) }
+        if (data.story && (field==='story'||field==='all')) update.story = data.story
+        if (data.guide && (field==='guide'||field==='all')) update.guide_bio = data.guide
+        return Object.assign({}, prev, update)
       })
-      setTeaserCount((data.teaser || '').length)
-      setAiLoading(false)
-    } catch (err) {
-      console.error(err)
-      setAiError('לא הצלחנו ליצור טקסט. אפשר לנסות שוב או לכתוב ידנית.')
-      setAiLoading(false)
-    }
+      setShowToast(true); setTimeout(function() { setShowToast(false) }, 4000)
+    } catch(err) { setAiError('לא הצלחנו ליצור טקסט. אפשר לנסות שוב.') }
+    setAiLoadingField(null)
   }
 
   const handleImageUpload = async function(e) {
     var files = Array.from(e.target.files || [])
-    if (files.length === 0) return
-    if (images.length + files.length > 8) {
-      setImageError('ניתן להעלות עד 8 תמונות בסך הכל')
-      files = files.slice(0, Math.max(0, 8 - images.length))
-      if (files.length === 0) return
-    } else {
-      setImageError('')
-    }
+    if (!files.length) return
+    if (images.length + files.length > 8) { files = files.slice(0, Math.max(0, 8 - images.length)); setImageError('ניתן להעלות עד 8 תמונות') } else setImageError('')
     setUploadingImage(true)
-
     for (var i = 0; i < files.length; i++) {
       await new Promise(function(resolve) {
         var reader = new FileReader()
         reader.onloadend = async function() {
           try {
-            var res = await fetch('/api/upload-tour-image', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ image_base64: reader.result })
-            })
-            var data = await res.json()
-            if (data.url) {
-              setImages(function(prev) { return prev.concat({ url: data.url, public_id: data.public_id }) })
-            } else {
-              setImageError('חלק מהתמונות נכשלו בהעלאה')
-            }
-          } catch (err) {
-            console.error(err)
-            setImageError('חלק מהתמונות נכשלו בהעלאה')
-          }
+            var res = await fetch('/api/upload-tour-image', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image_base64: reader.result }) })
+            var d = await res.json()
+            if (d.url) setImages(function(prev) { return prev.concat({ url: d.url, public_id: d.public_id }) })
+          } catch(err) { setImageError('חלק מהתמונות נכשלו') }
           resolve()
         }
         reader.readAsDataURL(files[i])
@@ -163,359 +219,316 @@ export default function AddTour() {
 
   const removeImage = function(index) {
     setImages(function(prev) { return prev.filter(function(_, i) { return i !== index }) })
-    setCoverIndex(function(prev) {
-      if (index === prev) return 0
-      if (index < prev) return prev - 1
-      return prev
-    })
+    setCoverIndex(function(prev) { if (index === prev) return 0; if (index < prev) return prev - 1; return prev })
   }
 
-  const toggleDay = function(day) {
-    if (byAppointment) return
-    setSelectedDays(function(prev) {
-      return prev.includes(day) ? prev.filter(function(d) { return d !== day }) : prev.concat(day)
-    })
-  }
-
-  const toggleTime = function(time) {
-    if (byAppointment) return
-    setSelectedTimes(function(prev) {
-      return prev.includes(time) ? prev.filter(function(t) { return t !== time }) : prev.concat(time)
-    })
-  }
-
-  const toggleItem = function(item) {
-    setCheckedItems(function(prev) {
-      return prev.includes(item) ? prev.filter(function(i) { return i !== item }) : prev.concat(item)
-    })
-  }
-
-  const togglePeriod = function(period) {
-    setSelectedPeriods(function(prev) {
-      if (prev.includes(period)) return prev.filter(function(p) { return p !== period })
-      if (prev.length >= 4) return prev
-      return prev.concat(period)
-    })
-  }
-
-  const addCustomItem = function() {
-    if (!customItem.trim()) return
-    setExtraItems(function(prev) { return prev.concat(customItem.trim()) })
-    setCheckedItems(function(prev) { return prev.concat(customItem.trim()) })
-    setCustomItem('')
-  }
+  const toggleDay = function(day) { if (byAppointment) return; setSelectedDays(function(prev) { return prev.includes(day) ? prev.filter(d => d !== day) : prev.concat(day) }) }
+  const toggleTime = function(time) { if (byAppointment) return; setSelectedTimes(function(prev) { return prev.includes(time) ? prev.filter(t => t !== time) : prev.concat(time) }) }
+  const toggleItem = function(item) { setCheckedItems(function(prev) { return prev.includes(item) ? prev.filter(i => i !== item) : prev.concat(item) }) }
+  const togglePeriod = function(p) { setSelectedPeriods(function(prev) { if (prev.includes(p)) return prev.filter(x => x !== p); if (prev.length >= 4) return prev; return prev.concat(p) }) }
+  const addCustomItem = function() { if (!customItem.trim()) return; setExtraItems(function(prev){return prev.concat(customItem.trim())}); setCheckedItems(function(prev){return prev.concat(customItem.trim())}); setCustomItem('') }
 
   const handleSubmit = async function(e) {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault(); setLoading(true)
     try {
       var allItems = DEFAULT_ITEMS.concat(extraItems).filter(function(i) { return checkedItems.includes(i) })
-
-      var orderedImageUrls = []
+      var orderedUrls = []
       if (images.length > 0) {
-        var safeCoverIndex = (coverIndex >= 0 && coverIndex < images.length) ? coverIndex : 0
-        orderedImageUrls.push(images[safeCoverIndex].url)
-        images.forEach(function(img, i) {
-          if (i !== safeCoverIndex) orderedImageUrls.push(img.url)
-        })
+        var ci = (coverIndex >= 0 && coverIndex < images.length) ? coverIndex : 0
+        orderedUrls.push(images[ci].url)
+        images.forEach(function(img, i) { if (i !== ci) orderedUrls.push(img.url) })
       }
-
       const res = await fetch('/api/add-tour', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(Object.assign({}, form, {
-          guide_id: guideId,
-          guide_name: guide ? guide.Guide_Name : '',
-          is_abroad: isAbroad,
-          by_appointment: byAppointment,
-          days: byAppointment ? [] : selectedDays,
-          times: byAppointment ? [] : selectedTimes,
-          bring_items: allItems,
-          meeting_point: meetingPoint,
-          meeting_link: meetingLink,
-          image_urls: orderedImageUrls,
-          whatsapp_number: whatsappNumber,
-          historical_periods: selectedPeriods,
+          guide_id: guideId, guide_name: guide ? guide.Guide_Name : '',
+          is_abroad: isAbroad, by_appointment: byAppointment,
+          days: byAppointment ? [] : selectedDays, times: byAppointment ? [] : selectedTimes,
+          bring_items: allItems, meeting_point: meetingPoint, meeting_link: meetingLink,
+          image_urls: orderedUrls, whatsapp_number: whatsappNumber, historical_periods: selectedPeriods,
         }))
       })
       const data = await res.json()
-      if (data.id) {
-        router.push('/dashboard')
-      } else {
-        console.error(data)
-        setLoading(false)
-      }
-    } catch(err) {
-      console.error(err)
-      setLoading(false)
-    }
+      if (data.id) setSaved(true)
+      else { console.error(data); setLoading(false) }
+    } catch(err) { console.error(err); setLoading(false) }
   }
 
-  const inputStyle = { width: '100%', padding: '10px 14px', borderRadius: 6, border: '1px solid #ddd', fontSize: 15, fontFamily: 'Heebo, Arial, sans-serif', outline: 'none' }
-  const labelStyle = { display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: '#444' }
-  const sectionStyle = { marginBottom: 24, paddingBottom: 24, borderBottom: '1px solid #eee' }
+  function AIButton({ field, label }) {
+    var isLoading = aiLoadingField === field
+    return (
+      <button type="button" onClick={function() { generateField(field) }} disabled={!!aiLoadingField}
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#FBF7F1', color: BROWN, border: '1px solid #EDE7DF', padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: aiLoadingField ? 'not-allowed' : 'pointer', fontFamily: 'Heebo, Arial, sans-serif', opacity: aiLoadingField && !isLoading ? 0.5 : 1 }}>
+        {isLoading ? <AITimelineAnim /> : '✨'}
+        {isLoading ? 'כותב...' : label}
+      </button>
+    )
+  }
+
+  if (saved) return (
+    <div style={{ fontFamily: 'Heebo, Arial, sans-serif', background: CREAM, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Header />
+      <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 24px' }}>
+        <div style={{ maxWidth: 560, width: '100%', textAlign: 'center' }}>
+          <div style={{ fontSize: 52, marginBottom: 16 }}>🎉</div>
+          <h1 style={{ fontSize: 28, fontWeight: 800, color: '#1a1a1a', marginBottom: 12, letterSpacing: '-0.3px' }}>הסיור שלכם באוויר.</h1>
+          <p style={{ fontSize: 16, color: '#555', lineHeight: 1.8, marginBottom: 32 }}>עשיתם את הצעד הראשון.<br />ככל שהתיאור יהיה אישי יותר, התמונות ימחישו את החוויה והזמינות תהיה מעודכנת, כך יגדל הסיכוי שמטיילים יבחרו דווקא בכם.</p>
+          <div style={{ background: '#fff', borderRadius: 16, padding: '24px 28px', border: '1px solid #EDE7DF', textAlign: 'right', marginBottom: 28 }}>
+            {[
+              { done: true, text: 'הסיור פורסם' },
+              { done: images.length > 0, text: 'נוספה תמונה ראשית' },
+              { done: !!form.story, text: 'נוסף סיפור לסיור' },
+              { done: images.length >= 3, text: 'כדאי להוסיף עוד תמונות' },
+              { done: false, text: 'שתפו את עמוד הסיור ברשתות החברתיות' },
+            ].map(function(item, i) {
+              return (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < 4 ? '1px solid #F0EAE2' : 'none' }}>
+                  <span style={{ fontSize: 16, width: 24, textAlign: 'center', flexShrink: 0 }}>{item.done ? '✅' : '⬜'}</span>
+                  <span style={{ fontSize: 14, color: item.done ? '#1a1a1a' : '#6B6B6B', fontWeight: item.done ? 600 : 400 }}>{item.text}</span>
+                </div>
+              )
+            })}
+          </div>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+            <button onClick={function() { router.push('/dashboard') }} style={{ background: '#111', color: '#fff', padding: '12px 24px', borderRadius: 10, fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>לדשבורד ←</button>
+            <button onClick={function() { setSaved(false); setLoading(false); setForm({ title:'',teaser:'',story:'',guide_bio:'',price:'',duration:'',cities:'',min_age:'1',max_age:'99',collab_code:'',pets_allowed:false }) }} style={{ background: CREAM, color: BROWN, padding: '12px 24px', borderRadius: 10, fontSize: 14, fontWeight: 700, border: '1.5px solid #EDE7DF', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>הוסף סיור נוסף</button>
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  )
 
   return (
-    <div>
+    <div style={{ fontFamily: 'Heebo, Arial, sans-serif', background: CREAM, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Header />
-      <div style={{ maxWidth: 700, margin: '0 auto', padding: '48px 24px' }}>
-        <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 8 }}>הוסף סיור חדש</h1>
-        <p style={{ color: '#666', marginBottom: 40 }}>פרטי הסיור יופיעו בעמוד שלך באתר</p>
+      <SuccessToast show={showToast} />
+      <main style={{ flex: 1, maxWidth: 720, margin: '0 auto', padding: '40px 24px 64px', width: '100%' }}>
+        <div style={{ marginBottom: 32 }}>
+          <p style={{ fontSize: 12, color: BROWN, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 8 }}>הוספת סיור</p>
+          <h1 style={{ fontSize: 'clamp(22px,3vw,30px)', fontWeight: 800, color: '#1a1a1a', marginBottom: 6, letterSpacing: '-0.3px' }}>ספרו לנו על הסיור שלכם</h1>
+          <p style={{ fontSize: 15, color: '#6B6B6B', lineHeight: 1.7 }}>פרטי הסיור יופיעו בעמוד שלכם באתר ויעזרו למטיילים להחליט אם לפנות אליכם.</p>
+        </div>
 
-        <form onSubmit={handleSubmit}>
-
-          <div style={sectionStyle}>
-            <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle}>שם הסיור <span style={{ color: '#C4922A' }}>*</span></label>
-              <input type="text" name="title" value={form.title} onChange={handleChange} required style={inputStyle} />
+        {/* WELCOME CARD */}
+        <SectionCard style={{ background: 'linear-gradient(135deg, #FBF7F1 0%, #F7F1EA 100%)', border: '1px solid #E8DDD0', marginBottom: 16 }}>
+          <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, paddingTop: 4 }}>
+              <div style={{ width: 9, height: 9, borderRadius: '50%', background: BROWN }} />
+              <div style={{ width: 2, height: 20, background: BROWN, opacity: 0.3 }} />
+              <div style={{ width: 7, height: 7, borderRadius: '50%', background: BROWN, opacity: 0.5 }} />
+              <div style={{ width: 2, height: 20, background: BROWN, opacity: 0.3 }} />
+              <div style={{ width: 9, height: 9, borderRadius: '50%', background: BROWN }} />
             </div>
-
-            <div style={{ marginBottom: 16 }}>
-              <button type="button" onClick={generateWithAI} disabled={aiLoading}
-                style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#FDF6EA', color: '#C4922A', border: '1px solid #C4922A',
-                  padding: '8px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: aiLoading ? 'not-allowed' : 'pointer', opacity: aiLoading ? 0.6 : 1 }}>
-                ✨ {aiLoading ? 'יוצר טקסט...' : 'הצע ניסוח עם AI'}
-              </button>
-              {aiError && (
-                <p style={{ fontSize: 12, color: '#e00', marginTop: 6 }}>{aiError}</p>
-              )}
-            </div>
-
-            <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle}>
-                תיאור קצר <span style={{ color: '#C4922A' }}>*</span>
-                <span style={{ fontWeight: 400, color: teaserCount > 100 ? '#e00' : '#999', marginRight: 8 }}>{teaserCount}/120</span>
-              </label>
-              <input type="text" name="teaser" value={form.teaser} onChange={handleChange} required maxLength={120} style={inputStyle} />
-            </div>
-            <div style={{ marginBottom: 0 }}>
-              <label style={labelStyle}>סיפור הסיור <span style={{ color: '#C4922A' }}>*</span></label>
-              <textarea name="story" value={form.story} onChange={handleChange} required rows={5}
-                style={Object.assign({}, inputStyle, { resize: 'vertical' })} />
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: 13, fontWeight: 800, color: BROWN, marginBottom: 8 }}>✨ עוזר הכתיבה של מאז ועד היום</p>
+              <p style={{ fontSize: 14, color: '#444', lineHeight: 1.75, marginBottom: 10 }}>כדי לחסוך לכם זמן ולעזור לכם להציג את הסיור בצורה הטובה ביותר, בנינו עוזר כתיבה מבוסס בינה מלאכותית. הוא נועד לעזור לכם להציג את הסיור בצורה שתגרום למטיילים להבין למה כדאי להם לצאת דווקא אליו.</p>
+              <p style={{ fontSize: 14, color: '#444', lineHeight: 1.75, marginBottom: 10 }}>המטרה שלו אינה לכתוב במקומכם, אלא לתת לכם נקודת פתיחה איכותית. תוכלו לערוך, לקצר, להוסיף ולשנות כל הצעה עד שהיא תשקף בדיוק את החוויה שאתם מציעים.</p>
+              <p style={{ fontSize: 12, color: '#888', lineHeight: 1.6, padding: '10px 12px', background: 'rgba(255,255,255,0.6)', borderRadius: 8, border: '1px solid #EDE7DF' }}>לפני פרסום הסיור חשוב לקרוא את הטקסטים בעיון ולוודא שכל העובדות נכונות. מאז ועד היום אינה אחראית לאי דיוקים שנשארו לאחר אישור התוכן על ידכם.</p>
             </div>
           </div>
+        </SectionCard>
 
-          <div style={sectionStyle}>
-            <label style={labelStyle}>תמונות הסיור (עד 8)</label>
+        <TimelineDivider />
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 12 }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+
+          {/* SECTION 1 */}
+          <SectionCard>
+            <SectionLabel number="1" title="פרטי הסיור" subtitle="המידע הבסיסי שיעזור למטיילים להבין על מה מדובר." />
+            <div style={{ marginBottom: 16 }}>
+              <FieldLabel required>שם הסיור</FieldLabel>
+              <input type="text" name="title" value={form.title} onChange={handleChange} required style={inp} placeholder="למשל: עכו מתחת לפני השטח" />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+              <div>
+                <FieldLabel required>מחיר למשתתף (מינימום 55 ₪)</FieldLabel>
+                <input type="number" name="price" value={form.price} onChange={handleChange} required min="55" style={inp} placeholder="90" />
+              </div>
+              <div>
+                <FieldLabel required>משך הסיור (שעות)</FieldLabel>
+                <input type="number" name="duration" value={form.duration} onChange={handleChange} required min="0.5" step="0.5" style={inp} placeholder="3" />
+              </div>
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <FieldLabel required>יישוב / אזור</FieldLabel>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer', color: '#555', marginBottom: 10 }}>
+                <input type="checkbox" checked={isAbroad} onChange={function(e) { setIsAbroad(e.target.checked); setForm(Object.assign({}, form, { cities: e.target.checked ? 'חו"ל' : '' })) }} />
+                סיור בחו"ל
+              </label>
+              <select name="cities" value={form.cities} onChange={handleChange} required={!isAbroad} disabled={isAbroad} style={Object.assign({}, inp, { background: isAbroad ? '#F7F1EA' : '#fff', color: isAbroad ? '#999' : '#1a1a1a' })}>
+                <option value="">בחרו יישוב</option>
+                {CITIES.sort().map(function(c) { return <option key={c} value={c}>{c}</option> })}
+              </select>
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <FieldLabel hint="בחרו עד 4 תקופות">תקופות היסטוריות</FieldLabel>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {HISTORICAL_PERIODS.map(function(p) { return <button key={p} type="button" onClick={function(){togglePeriod(p)}} style={chip(selectedPeriods.includes(p))}>{p}</button> })}
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+              <div>
+                <FieldLabel>גיל מינימום</FieldLabel>
+                <select name="min_age" value={form.min_age} onChange={handleChange} style={inp}>
+                  {Array.from({length:18},function(_,i){return i+1}).map(function(n){return <option key={n} value={n}>{n}</option>})}
+                </select>
+              </div>
+              <div>
+                <FieldLabel>גיל מקסימום</FieldLabel>
+                <select name="max_age" value={form.max_age} onChange={handleChange} style={inp}>
+                  {Array.from({length:81},function(_,i){return i+19}).map(function(n){return <option key={n} value={n}>{n}</option>})}
+                </select>
+              </div>
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <FieldLabel required hint="מולא אוטומטית מהפרטים שלכם. אפשר לשנות אם רוצים מספר אחר לסיור הזה.">מספר וואטסאפ</FieldLabel>
+              <input type="tel" value={whatsappNumber} onChange={function(e){setWhatsappNumber(e.target.value)}} required style={inp} />
+            </div>
+            <div>
+              <FieldLabel hint="הקלידו כתובת — Google Maps יציע השלמות.">נקודת מפגש</FieldLabel>
+              <input ref={meetingRef} type="text" value={meetingPoint} onChange={function(e){setMeetingPoint(e.target.value)}} placeholder="הקלידו כתובת לחיפוש..." style={inp} />
+              {meetingLink && <a href={meetingLink} target="_blank" rel="noopener noreferrer" style={{ display:'inline-block', marginTop:8, fontSize:12, color:BROWN, fontWeight:700 }}>פתח ב-Google Maps ←</a>}
+            </div>
+          </SectionCard>
+
+          <TimelineDivider />
+
+          {/* SECTION 2 */}
+          <SectionCard>
+            <SectionLabel number="2" title="הסיפור שתספרו" subtitle="המילים שלכם הן הדבר הראשון שיגרום למטייל להחליט אם להמשיך לקרוא. אנחנו נעזור לכם להתחיל." />
+            {aiError && <p style={{ fontSize: 13, color: '#e00', marginBottom: 16, background: '#fff5f5', padding: '10px 14px', borderRadius: 8, border: '1px solid #fecaca' }}>{aiError}</p>}
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 6 }}>
+                <FieldLabel required>תיאור קצר</FieldLabel>
+                <AIButton field="teaser" label="הציעו ניסוח" />
+              </div>
+              <p style={{ fontSize: 12, color: '#6B6B6B', marginBottom: 8, lineHeight: 1.6 }}>המטרה היא לגרום למטייל לעצור ולהגיד: "זה נשמע כמו משהו שנרצה לעשות." אל תנסו לספר כאן את כל הסיפור.</p>
+              {aiLoadingField === 'teaser' ? <AILoadingAnimation /> : (
+                <>
+                  <input type="text" name="teaser" value={form.teaser} onChange={handleChange} required maxLength={140} style={inp} placeholder="פסקה קצרה שתגרום לאנשים לרצות לדעת עוד..." />
+                  <p style={{ fontSize: 11, color: teaserCount > 120 ? '#e00' : '#B0A89E', marginTop: 4, textAlign: 'left' }}>{teaserCount}/140</p>
+                </>
+              )}
+            </div>
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 6 }}>
+                <FieldLabel required>סיפור הסיור</FieldLabel>
+                <AIButton field="story" label="כתבו עבורי טיוטה" />
+              </div>
+              <p style={{ fontSize: 12, color: '#6B6B6B', marginBottom: 8, lineHeight: 1.6 }}>כאן מתחילה החוויה. אל תכתבו הרצאה היסטורית. כתבו כך שהמטייל ירגיש שיש משהו שהוא יפספס אם יגיע לבד.</p>
+              {aiLoadingField === 'story' ? <AILoadingAnimation /> : (
+                <textarea name="story" value={form.story} onChange={handleChange} required rows={6} style={Object.assign({}, inp, { resize: 'vertical', lineHeight: 1.8 })} placeholder="הסיפור שמסתתר מאחורי המקום..." />
+              )}
+            </div>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 6 }}>
+                <FieldLabel>על המדריך</FieldLabel>
+                <AIButton field="guide" label="הציעו תיאור" />
+              </div>
+              <p style={{ fontSize: 12, color: '#6B6B6B', marginBottom: 8, lineHeight: 1.6 }}>אנשים לא בוחרים רק מקום. הם בוחרים עם מי לחוות אותו. ספרו למה דווקא אתם יכולים להפוך את המקום הזה לחוויה שאנשים יזכרו.</p>
+              {aiLoadingField === 'guide' ? <AILoadingAnimation /> : (
+                <textarea name="guide_bio" value={form.guide_bio} onChange={handleChange} rows={4} style={Object.assign({}, inp, { resize: 'vertical', lineHeight: 1.8 })} placeholder="מה הופך אתכם למי שצריך להוביל את הסיור הזה..." />
+              )}
+            </div>
+          </SectionCard>
+
+          <TimelineDivider />
+
+          {/* SECTION 3 */}
+          <SectionCard>
+            <SectionLabel number="3" title="תמונות הסיור" subtitle='תמונות טובות לא רק מציגות מקום. הן עוזרות לאנשים לדמיין את עצמם שם. העדיפו תמונות עם אור טבעי ואנשים שחווים את המקום.' />
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
               {images.map(function(img, i) {
                 return (
-                  <div key={img.public_id} style={{ position: 'relative', width: 100, height: 100 }}>
-                    <img src={img.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8,
-                      border: i === coverIndex ? '3px solid #C4922A' : '1px solid #ddd' }} />
-                    <button type="button" onClick={function() { setCoverIndex(i) }}
-                      style={{ position: 'absolute', bottom: 2, right: 2, fontSize: 10, background: i === coverIndex ? '#C4922A' : '#fff',
-                        color: i === coverIndex ? '#fff' : '#444', border: '1px solid #ddd', borderRadius: 4, padding: '2px 6px' }}>
-                      {i === coverIndex ? 'תמונה ראשית' : 'הפוך לראשית'}
-                    </button>
-                    <button type="button" onClick={function() { removeImage(i) }}
-                      style={{ position: 'absolute', top: 2, left: 2, width: 20, height: 20, borderRadius: '50%',
-                        background: '#0A0A0A', color: '#fff', fontSize: 12, lineHeight: 1 }}>
-                      ×
-                    </button>
+                  <div key={img.public_id || i} style={{ position: 'relative', width: 100, height: 100 }}>
+                    <img src={img.url} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', borderRadius:10, border: i===coverIndex ? '3px solid '+BROWN : '1.5px solid #EDE7DF' }} />
+                    <button type="button" onClick={function(){setCoverIndex(i)}} style={{ position:'absolute', bottom:4, right:4, fontSize:9, background: i===coverIndex ? BROWN : '#fff', color: i===coverIndex ? '#fff' : '#555', border:'1px solid #ddd', borderRadius:4, padding:'2px 5px', cursor:'pointer', fontFamily:'Heebo,Arial,sans-serif', fontWeight:700 }}>{i===coverIndex ? 'ראשית' : 'הפוך'}</button>
+                    <button type="button" onClick={function(){removeImage(i)}} style={{ position:'absolute', top:4, left:4, width:20, height:20, borderRadius:'50%', background:'rgba(0,0,0,0.6)', color:'#fff', fontSize:13, lineHeight:1, border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
                   </div>
                 )
               })}
+              {images.length < 8 && (
+                <label style={{ width:100, height:100, borderRadius:10, border:'2px dashed #EDE7DF', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', cursor: uploadingImage?'not-allowed':'pointer', opacity: uploadingImage?0.6:1, background:'#FBF7F1', gap:4 }}>
+                  <span style={{ fontSize:22, color:'#C0B8AE' }}>+</span>
+                  <span style={{ fontSize:11, color:'#B0A89E', fontFamily:'Heebo,Arial,sans-serif' }}>{uploadingImage ? 'מעלה...' : 'הוסף תמונה'}</span>
+                  <input type="file" accept="image/*" multiple onChange={handleImageUpload} disabled={uploadingImage} style={{ display:'none' }} />
+                </label>
+              )}
             </div>
+            {imageError && <p style={{ fontSize:12, color:'#e00' }}>{imageError}</p>}
+          </SectionCard>
 
-            {images.length < 8 && (
-              <label style={{ display: 'inline-block', padding: '10px 20px', background: '#F5F5F5', borderRadius: 6,
-                fontSize: 13, cursor: uploadingImage ? 'not-allowed' : 'pointer', opacity: uploadingImage ? 0.6 : 1 }}>
-                {uploadingImage ? 'מעלה...' : '+ הוסף תמונה'}
-                <input type="file" accept="image/*" multiple onChange={handleImageUpload} disabled={uploadingImage} style={{ display: 'none' }} />
-              </label>
-            )}
-            {imageError && <p style={{ fontSize: 12, color: '#e00', marginTop: 6 }}>{imageError}</p>}
-          </div>
+          <TimelineDivider />
 
-          <div style={sectionStyle}>
-            <label style={labelStyle}>תקופות היסטוריות (עד 4)</label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {HISTORICAL_PERIODS.map(function(period) {
-                var selected = selectedPeriods.includes(period)
+          {/* SECTION 4 */}
+          <SectionCard>
+            <SectionLabel number="4" title="זמינות" subtitle="זמינות מעודכנת מגדילה את הסיכוי שמטיילים יפנו אליכם. תוכלו לעדכן בכל עת מהדשבורד." />
+            <label style={{ display:'flex', alignItems:'center', gap:8, fontSize:14, cursor:'pointer', marginBottom:20, color:'#555', fontFamily:'Heebo,Arial,sans-serif' }}>
+              <input type="checkbox" checked={byAppointment} onChange={function(e){ setByAppointment(e.target.checked); if(e.target.checked){setSelectedDays([]);setSelectedTimes([])} }} />
+              בתיאום מראש בלבד
+            </label>
+            <div style={{ marginBottom: 16, opacity: byAppointment ? 0.4 : 1 }}>
+              <FieldLabel>ימים זמינים</FieldLabel>
+              <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
+                {DAYS.map(function(day){ return <button key={day} type="button" onClick={function(){toggleDay(day)}} disabled={byAppointment} style={chip(selectedDays.includes(day))}>{day}</button> })}
+              </div>
+            </div>
+            <div style={{ opacity: byAppointment ? 0.4 : 1 }}>
+              <FieldLabel>שעות</FieldLabel>
+              <div style={{ display:'flex', gap:8 }}>
+                {TIMES.map(function(time){ return <button key={time} type="button" onClick={function(){toggleTime(time)}} disabled={byAppointment} style={chip(selectedTimes.includes(time))}>{time}</button> })}
+              </div>
+            </div>
+          </SectionCard>
+
+          <TimelineDivider />
+
+          {/* SECTION 5 */}
+          <SectionCard>
+            <SectionLabel number="5" title="מה להביא לסיור" subtitle="רשימה זו תופיע בעמוד הסיור ותעזור למטיילים להגיע מוכנים." />
+            <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginBottom:16 }}>
+              {DEFAULT_ITEMS.concat(extraItems).map(function(item){
+                var sel = checkedItems.includes(item)
                 return (
-                  <button key={period} type="button" onClick={function() { togglePeriod(period) }}
-                    style={{ padding: '8px 14px', borderRadius: 20, border: '1px solid', fontSize: 13, cursor: 'pointer',
-                      background: selected ? '#0A0A0A' : '#fff', color: selected ? '#fff' : '#444',
-                      borderColor: selected ? '#0A0A0A' : '#ddd' }}>
-                    {period}
+                  <button key={item} type="button" onClick={function(){toggleItem(item)}} style={{ padding:'7px 14px', borderRadius:20, border:'1.5px solid', fontSize:13, cursor:'pointer', fontFamily:'Heebo,Arial,sans-serif', fontWeight:600, background: sel ? '#FBF7F1' : '#fff', color: sel ? BROWN : '#555', borderColor: sel ? BROWN : '#EDE7DF' }}>
+                    {sel ? '✓ ' : ''}{item}
                   </button>
                 )
               })}
             </div>
-          </div>
-
-          <div style={sectionStyle}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              <div>
-                <label style={labelStyle}>מחיר למשתתף (מינימום 55) <span style={{ color: '#C4922A' }}>*</span></label>
-                <input type="number" name="price" value={form.price} onChange={handleChange} required min="55" style={inputStyle} />
-              </div>
-              <div>
-                <label style={labelStyle}>משך הסיור (שעות) <span style={{ color: '#C4922A' }}>*</span></label>
-                <input type="number" name="duration" value={form.duration} onChange={handleChange} required min="0.5" step="0.5" style={inputStyle} />
-              </div>
+            <div style={{ display:'flex', gap:8 }}>
+              <input type="text" value={customItem} onChange={function(e){setCustomItem(e.target.value)}} placeholder="הוסיפו פריט..." style={Object.assign({},inp,{flex:1})} onKeyDown={function(e){if(e.key==='Enter'){e.preventDefault();addCustomItem()}}} />
+              <button type="button" onClick={addCustomItem} style={{ padding:'11px 18px', background:'#111', color:'#fff', borderRadius:10, fontSize:13, fontWeight:700, border:'none', cursor:'pointer', fontFamily:'Heebo,Arial,sans-serif' }}>הוסף</button>
             </div>
-          </div>
+          </SectionCard>
 
-          <div style={sectionStyle}>
-            <label style={labelStyle}>יישוב/אזור <span style={{ color: '#C4922A' }}>*</span></label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12 }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, cursor: 'pointer' }}>
-                <input type="checkbox" checked={isAbroad} onChange={function(e) {
-                  setIsAbroad(e.target.checked)
-                  if (e.target.checked) setForm(Object.assign({}, form, { cities: 'חו"ל' }))
-                  else setForm(Object.assign({}, form, { cities: '' }))
-                }} />
-                סיור בחו"ל
-              </label>
-            </div>
-            <select name="cities" value={form.cities} onChange={handleChange} required={!isAbroad} disabled={isAbroad}
-              style={Object.assign({}, inputStyle, { background: isAbroad ? '#f5f5f5' : '#fff', color: isAbroad ? '#999' : '#000' })}>
-              <option value="">בחרו יישוב</option>
-              {CITIES.sort().map(function(c) { return <option key={c} value={c}>{c}</option> })}
-            </select>
-          </div>
+          <TimelineDivider />
 
-          <div style={sectionStyle}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              <div>
-                <label style={labelStyle}>גיל מינימום</label>
-                <select name="min_age" value={form.min_age} onChange={handleChange} style={inputStyle}>
-                  {Array.from({length: 18}, function(_, i) { return i + 1 }).map(function(n) {
-                    return <option key={n} value={n}>{n}</option>
-                  })}
-                </select>
-              </div>
-              <div>
-                <label style={labelStyle}>גיל מקסימום</label>
-                <select name="max_age" value={form.max_age} onChange={handleChange} style={inputStyle}>
-                  {Array.from({length: 81}, function(_, i) { return i + 19 }).map(function(n) {
-                    return <option key={n} value={n}>{n}</option>
-                  })}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div style={sectionStyle}>
-            <label style={labelStyle}>מספר וואטסאפ ליצירת קשר <span style={{ color: '#C4922A' }}>*</span></label>
-            <input type="tel" value={whatsappNumber} onChange={function(e) { setWhatsappNumber(e.target.value) }} required style={inputStyle} />
-            <p style={{ fontSize: 12, color: '#999', marginTop: 6 }}>מולא אוטומטית מהפרטים שלך. אפשר לשנות אם רוצים מספר אחר לסיור הזה (למשל מדריך נוסף)</p>
-          </div>
-
-          <div style={sectionStyle}>
-            <label style={labelStyle}>נקודת מפגש</label>
-            <input
-              ref={meetingRef}
-              type="text"
-              value={meetingPoint}
-              onChange={function(e) { setMeetingPoint(e.target.value) }}
-              placeholder="הקלידו כתובת לחיפוש..."
-              style={inputStyle}
-            />
-            {meetingLink && (
-              <a href={meetingLink} target="_blank" rel="noopener noreferrer"
-                style={{ display: 'inline-block', marginTop: 8, fontSize: 13, color: '#C4922A' }}>
-                פתח בגוגל מאפס
-              </a>
-            )}
-          </div>
-
-          <div style={sectionStyle}>
-            <label style={labelStyle}>ימים ושעות</label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, cursor: 'pointer', marginBottom: 16 }}>
-              <input type="checkbox" checked={byAppointment} onChange={function(e) {
-                setByAppointment(e.target.checked)
-                if (e.target.checked) { setSelectedDays([]); setSelectedTimes([]) }
-              }} />
-              בתיאום מראש בלבד
-            </label>
-            <div style={{ marginBottom: 12 }}>
-              <p style={{ fontSize: 13, color: '#666', marginBottom: 8 }}>ימים זמינים:</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {DAYS.map(function(day) {
-                  return (
-                    <button key={day} type="button" onClick={function() { toggleDay(day) }}
-                      style={{ padding: '6px 14px', borderRadius: 20, border: '1px solid', fontSize: 13,
-                        cursor: byAppointment ? 'not-allowed' : 'pointer',
-                        background: selectedDays.includes(day) ? '#0A0A0A' : '#fff',
-                        color: selectedDays.includes(day) ? '#fff' : '#444',
-                        borderColor: selectedDays.includes(day) ? '#0A0A0A' : '#ddd',
-                        opacity: byAppointment ? 0.4 : 1 }}>
-                      {day}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-            <div>
-              <p style={{ fontSize: 13, color: '#666', marginBottom: 8 }}>שעות:</p>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {TIMES.map(function(time) {
-                  return (
-                    <button key={time} type="button" onClick={function() { toggleTime(time) }}
-                      style={{ padding: '6px 14px', borderRadius: 20, border: '1px solid', fontSize: 13,
-                        cursor: byAppointment ? 'not-allowed' : 'pointer',
-                        background: selectedTimes.includes(time) ? '#0A0A0A' : '#fff',
-                        color: selectedTimes.includes(time) ? '#fff' : '#444',
-                        borderColor: selectedTimes.includes(time) ? '#0A0A0A' : '#ddd',
-                        opacity: byAppointment ? 0.4 : 1 }}>
-                      {time}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
-
-          <div style={sectionStyle}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, cursor: 'pointer' }}>
+          {/* SECTION 6 */}
+          <SectionCard>
+            <SectionLabel number="6" title="פרטים נוספים" />
+            <label style={{ display:'flex', alignItems:'center', gap:8, fontSize:14, cursor:'pointer', marginBottom:20, color:'#555', fontFamily:'Heebo,Arial,sans-serif' }}>
               <input type="checkbox" name="pets_allowed" checked={form.pets_allowed} onChange={handleChange} />
               מותר להביא חיות מחמד
             </label>
-          </div>
-
-          <div style={sectionStyle}>
-            <label style={labelStyle}>מה להביא לסיור?</label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
-              {DEFAULT_ITEMS.concat(extraItems).map(function(item) {
-                return (
-                  <label key={item} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer',
-                    background: checkedItems.includes(item) ? '#FDF6EA' : '#F5F5F5',
-                    border: '1px solid',
-                    borderColor: checkedItems.includes(item) ? '#C4922A' : '#ddd',
-                    padding: '6px 12px', borderRadius: 20 }}>
-                    <input type="checkbox" checked={checkedItems.includes(item)} onChange={function() { toggleItem(item) }} style={{ display: 'none' }} />
-                    {checkedItems.includes(item) ? '✓ ' : ''}{item}
-                  </label>
-                )
-              })}
+            <div>
+              <FieldLabel hint='קיבלתם קוד שת"פ מצוות מאז ועד היום? הזינו אותו כאן.'>קוד שת"פ MvH</FieldLabel>
+              <input type="text" name="collab_code" value={form.collab_code} onChange={handleChange} style={inp} placeholder="הזינו קוד אם יש" />
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <input type="text" value={customItem} onChange={function(e) { setCustomItem(e.target.value) }}
-                placeholder="הוסף פריט..."
-                style={Object.assign({}, inputStyle, { flex: 1 })}
-                onKeyDown={function(e) { if (e.key === 'Enter') { e.preventDefault(); addCustomItem() } }} />
-              <button type="button" onClick={addCustomItem}
-                style={{ padding: '10px 16px', background: '#0A0A0A', color: '#fff', borderRadius: 6, fontSize: 14, cursor: 'pointer' }}>
-                הוסף
-              </button>
-            </div>
-          </div>
+          </SectionCard>
 
-          <div style={{ marginBottom: 24 }}>
-            <p style={{ fontSize: 12, color: '#999', marginBottom: 8 }}>יש לך קוד שת"פ MvH?</p>
-            <input type="text" name="collab_code" value={form.collab_code} onChange={handleChange} style={inputStyle} />
-          </div>
+          <TimelineDivider />
 
-          <button type="submit" disabled={loading}
-            style={{ width: '100%', background: '#0A0A0A', color: '#ffffff', padding: '14px', borderRadius: 8, fontSize: 16, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}>
-            {loading ? 'שומר...' : 'פרסם סיור'}
-          </button>
+          <div style={{ textAlign: 'center' }}>
+            <button type="submit" disabled={loading} style={{ background: loading ? '#888' : '#111', color:'#fff', padding:'15px 48px', borderRadius:12, fontSize:16, fontWeight:800, border:'none', cursor: loading?'not-allowed':'pointer', fontFamily:'Heebo,Arial,sans-serif', boxShadow: loading ? 'none' : '0 8px 24px rgba(0,0,0,0.15)' }}>
+              {loading ? 'מפרסם...' : 'פרסמו את הסיור ←'}
+            </button>
+            <p style={{ fontSize:12, color:'#B0A89E', marginTop:12 }}>לאחר הפרסום תוכלו לערוך את הסיור בכל עת מהדשבורד.</p>
+          </div>
         </form>
-      </div>
+      </main>
+      <Footer />
     </div>
   )
 }
