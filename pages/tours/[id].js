@@ -180,7 +180,7 @@ return (
           {isCollab && <span style={{ background: BROWN, color: '#fff', fontSize: 13, fontWeight: 800, padding: '6px 13px', borderRadius: 20 }}>🎙 פרק מאז ועד היום</span>}
         </div>
 
-        <h1 style={{ fontSize: 'clamp(32px,5vw,56px)', fontWeight: 950, color: '#111', margin: '0 0 18px', letterSpacing: '-1.2px', lineHeight: 1.06 }}>
+        fontSize: 'clamp(20px,2.8vw,28px)', fontWeight: 700, color: '#2a2a2a', margin: '0 0 18px', letterSpacing: '-1.2px', lineHeight: 1.06 }}>
           {tour.Tour_Title}
         </h1>
 
@@ -276,9 +276,7 @@ return (
         <div style={{ background: '#fff', borderRadius: 22, padding: 24, border: '1px solid #EDE7DF', boxShadow: '0 12px 34px rgba(0,0,0,0.08)' }}>
           <p style={{ fontSize: 13, color: '#6B6B6B', marginBottom: 6, fontWeight: 800 }}>החוויה הזו מחכה לכם</p>
 
-          {isCollab ? (
-            <p style={{ fontSize: 23, fontWeight: 950, color: '#22c55e', margin: '0 0 16px' }}>ללא תשלום לחברי קהילה</p>
-          ) : hasDiscount ? (
+          {hasDiscount ? (
             <div style={{ marginBottom: 16 }}>
               <p style={{ fontSize: 13, color: '#6B6B6B', marginBottom: 4 }}>מחיר לחברי קהילה</p>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
