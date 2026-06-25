@@ -5,15 +5,15 @@ import { useUser } from '@clerk/nextjs'
 import styles from '../styles/Home.module.css'
 
 const FALLBACK_TOURS = [
-  { id: 'apolonia', Tour_Title: 'אפולוניה', Cities_Tags: 'הרצליה', Tour_Images: '/Tours-Apolonia.png', Price_Per_Person: 120, Duration_Hours: 3, Tour_Status: 'paid' },
-  { id: 'safed',    Tour_Title: 'צפת',      Cities_Tags: 'צפת',     Tour_Images: '/Tours-Safed.png',    Price_Per_Person: 120, Duration_Hours: 5, Tour_Status: 'paid' },
-  { id: 'david',   Tour_Title: 'עיר דוד',  Cities_Tags: 'ירושלים', Tour_Images: '/Tours-DavidCity.png', Price_Per_Person: 120, Duration_Hours: 3, Tour_Status: 'paid' },
-  { id: 'church',  Tour_Title: 'כנסיות ירושלים', Cities_Tags: 'ירושלים', Tour_Images: '/Tours-JLM-Church.png', Price_Per_Person: 120, Duration_Hours: 4, Tour_Status: 'paid' },
+  { id: 'apolonia', Tour_Title: 'אפולוניה', Cities_Tags: 'הרצליה', Tour_Images: '/Tours-Apolonia.png', Price_Per_Person: 120, Duration_Hours: 3, Tour_Status: 'collab' },
+  { id: 'safed',    Tour_Title: 'צפת',      Cities_Tags: 'צפת',     Tour_Images: '/Tours-Safed.png',    Price_Per_Person: 120, Duration_Hours: 5, Tour_Status: 'collab' },
+  { id: 'david',   Tour_Title: 'עיר דוד',  Cities_Tags: 'ירושלים', Tour_Images: '/Tours-DavidCity.png', Price_Per_Person: 120, Duration_Hours: 3, Tour_Status: 'collab' },
+  { id: 'church',  Tour_Title: 'כנסיות ירושלים', Cities_Tags: 'ירושלים', Tour_Images: '/Tours-JLM-Church.png', Price_Per_Person: 120, Duration_Hours: 4, Tour_Status: 'collab' },
 ]
 
 const FALLBACK_GUIDES = [
-  { id: 'daniel', Guide_Name: 'דניאל כהן', Guide_Region: 'צפון והגליל', Guide_Photo: '/Hero-Guide-M.png', Guide_Bio: 'מדריך בן 8 שנות ניסיון.', Guide_Tags: 'אנשים,טבע,גבו', Tour_Count: 12, Episode_Count: 9 },
-  { id: 'michal', Guide_Name: 'מיכל לוי',  Guide_Region: 'ירושלים והרי יהודה', Guide_Photo: '/Hero-Guide-F.png', Guide_Bio: 'אני מחברת בין אנשים, היסטוריה וסיפורים.', Guide_Tags: 'סיפורים,חברותא,היסטוריה', Tour_Count: 12, Episode_Count: 2 },
+  { id: 'daniel', Guide_Name: 'דניאל גיל', Guide_Region: 'ירושלים', Guide_Photo: '/guide-daniel.jpg', Guide_Bio: 'ירושלמי שגדל בצל החומות. מתמחה בשכבות התחתיות של ירושלים.', Guide_Tags: 'ירושלים,עיר דוד,ארכיאולוגיה' },
+  { id: 'hagai', Guide_Name: 'חגי יוחנן', Guide_Region: 'השרון והחוף', Guide_Photo: '/guide-hagai.jpg', Guide_Bio: 'ארכיאולוג שחפר באפולוניה שלושים שנה.', Guide_Tags: 'ארכיאולוגיה,צלבנים,היסטוריה ימית' },
 ]
 
 const HOW_STEPS = [
@@ -26,11 +26,12 @@ const HOW_STEPS = [
 function TourCard({ tour }) {
   const images = tour.Tour_Images ? tour.Tour_Images.split('|').filter(Boolean) : []
   const thumb = images[0] || null
-  const price = Number(tour.Price_Per_Person) || 120
+  const price = Number(tour.Price_Per_Person) || 0
   const discounted = Math.round(price * 0.9)
   const city = tour.Cities_Tags || ''
   const duration = tour.Duration_Hours || ''
   const title = tour.Tour_Title || 'סיור חדש'
+  const isCollab = tour.Tour_Status === 'collab'
 
   return (
     <a href={'/tours/' + tour.id} className={styles.tourCard}>
@@ -48,10 +49,14 @@ function TourCard({ tour }) {
             {duration && <span>🕐 {duration} שעות</span>}
           </div>
           <div className={styles.tourPriceRow}>
-            <span className={styles.tourPrice}>
-              <s>{price} ₪</s> <strong>{discounted} ₪</strong>
-              <span className={styles.forMembers}>לחברי קהילה</span>
-            </span>
+            {isCollab ? (
+              <span className={styles.tourPrice}><strong style={{ color: '#22c55e' }}>חינם לחברי קהילה</strong></span>
+            ) : (
+              <span className={styles.tourPrice}>
+                <s>{price} ₪</s> <strong>{discounted} ₪</strong>
+                <span className={styles.forMembers}>לחברי קהילה</span>
+              </span>
+            )}
             <span className={styles.tourCta}>גלו את {title} ←</span>
           </div>
         </div>
@@ -66,8 +71,6 @@ function GuideCard({ guide }) {
   const name = guide.Guide_Name || 'מדריך'
   const region = guide.Guide_Region || ''
   const bio = guide.Guide_Bio || ''
-  const tours = guide.Tour_Count || 0
-  const episodes = guide.Episode_Count || 0
 
   return (
     <article className={styles.guideCard}>
@@ -86,10 +89,6 @@ function GuideCard({ guide }) {
             {tags.map(t => <span key={t} className={styles.guideTag}>{t}</span>)}
           </div>
         )}
-        <div className={styles.guideStats}>
-          {episodes > 0 && <span>🎧 {episodes} פרקים</span>}
-          {tours > 0 && <span>🗺 {tours} סיורים</span>}
-        </div>
         <a href={'/guides/' + guide.id} className={styles.guideBtn}>לפרופיל המלא ←</a>
       </div>
     </article>
@@ -105,23 +104,27 @@ export default function Home({ tours, guides, featuredTours, featuredGuides }) {
 
   useEffect(function() {
     if (!isLoaded || !user) return
-    fetch('/api/get-guide?clerk_id=' + user.id + '&email=' + encodeURIComponent(user.emailAddresses?.[0]?.emailAddress || '')).then(function(r) { return r.json() }).then(function(d) { if (d.found) setIsGuide(true) })
-    
-    fetch('/api/get-signup?clerk_id=' + user.id).then(r => r.json()).then(d => {
-      if (d.found && d.signup && d.signup.Regions_Interest)
-        setUserRegions(d.signup.Regions_Interest.split(', ').filter(Boolean))
-    })
+    fetch('/api/get-guide?clerk_id=' + user.id + '&email=' + encodeURIComponent(user.emailAddresses?.[0]?.emailAddress || ''))
+      .then(function(r) { return r.json() })
+      .then(function(d) { if (d.found) setIsGuide(true) })
+    fetch('/api/get-signup?clerk_id=' + user.id)
+      .then(r => r.json())
+      .then(d => {
+        if (d.found && d.signup && d.signup.Regions_Interest)
+          setUserRegions(d.signup.Regions_Interest.split(', ').filter(Boolean))
+      })
   }, [isLoaded, user])
-
-  function scrollGuide(dir) {
-    if (!guidesRef.current) return
-    const w = guidesRef.current.querySelector('article')?.offsetWidth || guidesRef.current.offsetWidth / 2
-    guidesRef.current.scrollBy({ left: dir * (w + 20), behavior: 'smooth' })
-    setGuideIdx(prev => Math.max(0, Math.min((featuredGuides.length || 1) - 1, prev + dir)))
-  }
 
   const displayTours = featuredTours.length > 0 ? featuredTours : FALLBACK_TOURS
   const displayGuides = featuredGuides.length > 0 ? featuredGuides : FALLBACK_GUIDES
+
+  function scrollGuide(dir) {
+    if (!guidesRef.current) return
+    const card = guidesRef.current.querySelector('article')
+    const w = card ? card.offsetWidth + 20 : 320
+    guidesRef.current.scrollBy({ left: dir * -w, behavior: 'smooth' })
+    setGuideIdx(prev => Math.max(0, Math.min(displayGuides.length - 1, prev + dir)))
+  }
 
   return (
     <div dir="rtl" className={styles.root}>
@@ -214,11 +217,11 @@ export default function Home({ tours, guides, featuredTours, featuredGuides }) {
           <div className={styles.container}>
             <h2 className={styles.sectionTitle}>פגשו את האנשים שמספרים את הסיפורים</h2>
             <div className={styles.guidesSliderWrap}>
-              <button className={styles.guideArrow} onClick={() => scrollGuide(1)} aria-label="הקודם">›</button>
+              <button className={styles.guideArrow} onClick={() => scrollGuide(-1)} aria-label="הבא">‹</button>
               <div className={styles.guidesSlider} ref={guidesRef}>
                 {displayGuides.map(g => <GuideCard key={g.id} guide={g} />)}
               </div>
-              <button className={styles.guideArrow} onClick={() => scrollGuide(-1)} aria-label="הבא">‹</button>
+              <button className={styles.guideArrow} onClick={() => scrollGuide(1)} aria-label="הקודם">›</button>
             </div>
             <div className={styles.guidesDots}>
               {displayGuides.map((_, i) => (
@@ -300,19 +303,24 @@ export async function getServerSideProps() {
     const toursData = await toursRes.json()
     const allTours = (toursData.records || []).map(r => Object.assign({ id: r.id }, r.fields))
 
- const featuredTours = allTours
-  .filter(t => t.Tour_Status === 'paid' || t.Tour_Status === 'collab')
+    const featuredTours = allTours
+      .filter(t => t.Tour_Status === 'paid' || t.Tour_Status === 'collab')
       .sort((a, b) => new Date(b.Created_At || 0) - new Date(a.Created_At || 0))
       .slice(0, 4)
 
     let featuredGuides = []
     try {
       const guidesRes = await fetch(
-        `https://api.airtable.com/v0/${baseId}/tblGuides?pageSize=10`,
+        `https://api.airtable.com/v0/${baseId}/tblsJ5Ok1yPSgtvSj?pageSize=20&filterByFormula={Guide_Status}="active"`,
         { headers: { Authorization: `Bearer ${token}` } }
       )
       const guidesData = await guidesRes.json()
-      featuredGuides = (guidesData.records || []).map(r => Object.assign({ id: r.id }, r.fields)).slice(0, 4)
+      const allGuides = (guidesData.records || []).map(r => Object.assign({ id: r.id }, r.fields))
+      for (let i = allGuides.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allGuides[i], allGuides[j]] = [allGuides[j], allGuides[i]]
+      }
+      featuredGuides = allGuides
     } catch(e) {}
 
     const guides = [...new Set(allTours.map(t => t.Guide_Name).filter(Boolean))].sort()
