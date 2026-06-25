@@ -100,7 +100,8 @@ export default function TourPage({ tour, guideRecord, mapUrl }) {
   )
 
  const rawPhone = tour.WhatsApp_Number || guideRecord?.WhatsApp_Number || ''
-const phone = rawPhone.replace(/\D/g, '').replace(/^0/, '')
+  const phone = rawPhone.replace(/\D/g, '').replace(/^0/, '')
+  const guideFirstName = tour.Guide_Name ? tour.Guide_Name.split(' ')[0] : ''
   const fullPrice = Number(tour.Price_Per_Person) || 0
   const discountedPrice = Math.round(fullPrice * 0.9)
   const isOwnTour = guideName && guideName === tour.Guide_Name
