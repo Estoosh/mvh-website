@@ -4,30 +4,54 @@ import Header from '../../components/Header'
 import Footer from '../../components/Footer'
 
 const BROWN = '#7E4821'
+const CREAM = '#F7F1EA'
 
-function TourCard({ tour }) {
-  const images = tour.Tour_Images ? tour.Tour_Images.split('|').filter(Boolean) : []
-  const thumb = images[0] || null
+const TOUR_IMAGES = {
+  'אפולוניה': '/Tour-Apolonia.jpg',
+  'עיר דוד': '/Tour-Davidcity.jpg',
+  'עין גדי': '/Tour-EinGedi.jpg',
+  'ירושלים': '/Tour-Churches.jpg',
+  'כנסיות': '/Tour-Churches.jpg',
+  'צפת': '/Tour-Safed.jpg',
+}
+
+function getTourImage(tour) {
+  const title = tour.Tour_Title || ''
+  const city = tour.Cities_Tags || ''
+  for (const [key, val] of Object.entries(TOUR_IMAGES)) {
+    if (title.includes(key) || city.includes(key)) return val
+  }
+  return null
+}
+
+function TourRow({ tour }) {
+  const thumb = (tour.Tour_Images ? tour.Tour_Images.split('|')[0] : null) || getTourImage(tour)
   const price = Number(tour.Price_Per_Person) || 0
   const isCollab = tour.Tour_Status === 'collab'
-  const title = tour.Tour_Title || 'סיור חדש'
 
   return (
-    <a href={'/tours/' + tour.id} style={{ textDecoration: 'none', color: '#fff', display: 'block', borderRadius: 14, overflow: 'hidden', position: 'relative', height: 260, background: '#1a0d06', boxShadow: '0 8px 24px rgba(0,0,0,0.1)' }}>
-      {thumb
-        ? <img src={thumb} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', position: 'absolute', inset: 0 }} onError={e => e.target.style.display='none'} />
-        : <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(150deg,#3a1a08,#1a0d06)' }} />
-      }
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 55%, transparent 100%)' }} />
-      <div style={{ position: 'absolute', bottom: 0, right: 0, left: 0, padding: '18px 16px' }}>
-        <h3 style={{ fontFamily: 'Heebo, Arial, sans-serif', fontSize: 18, fontWeight: 900, marginBottom: 4, lineHeight: 1.2 }}>{title}</h3>
-        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', marginBottom: 10, display: 'flex', gap: 10, fontFamily: 'Heebo, Arial, sans-serif' }}>
+    <a href={'/tours/' + tour.id} style={{ textDecoration: 'none', color: 'inherit', display: 'grid', gridTemplateColumns: '180px 1fr auto', gap: 20, background: '#fff', borderRadius: 14, border: '1px solid #EDE7DF', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', alignItems: 'center' }}>
+      <div style={{ height: 140, background: '#1a0d06', flexShrink: 0 }}>
+        {thumb
+          ? <img src={thumb} alt={tour.Tour_Title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onError={e => e.target.style.display='none'} />
+          : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(150deg,#3a1a08,#1a0d06)' }} />
+        }
+      </div>
+      <div style={{ padding: '4px 0' }}>
+        <h3 style={{ fontSize: 18, fontWeight: 900, color: '#111', marginBottom: 6, letterSpacing: '-0.3px', fontFamily: 'Heebo, Arial, sans-serif' }}>{tour.Tour_Title}</h3>
+        <div style={{ display: 'flex', gap: 12, fontSize: 13, color: '#6B6B6B', marginBottom: 8, fontFamily: 'Heebo, Arial, sans-serif' }}>
           {tour.Cities_Tags && <span>📍 {tour.Cities_Tags}</span>}
           {tour.Duration_Hours && <span>🕐 {tour.Duration_Hours} שעות</span>}
         </div>
-        <span style={{ background: isCollab ? BROWN : 'rgba(255,255,255,0.15)', color: '#fff', padding: '5px 12px', borderRadius: 6, fontSize: 12, fontWeight: 700, fontFamily: 'Heebo, Arial, sans-serif' }}>
-          {isCollab ? '🎙 פרק MvH — חינם לחברי קהילה' : price + ' ₪ לאדם'}
-        </span>
+        {tour.Tour_Teaser && <p style={{ fontSize: 14, color: '#666', lineHeight: 1.6, fontFamily: 'Heebo, Arial, sans-serif', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{tour.Tour_Teaser}</p>}
+      </div>
+      <div style={{ padding: '0 20px 0 0', textAlign: 'center', flexShrink: 0 }}>
+        {isCollab ? (
+          <span style={{ display: 'block', background: '#dcfce7', color: '#16a34a', fontSize: 13, fontWeight: 800, padding: '6px 14px', borderRadius: 20, fontFamily: 'Heebo, Arial, sans-serif', whiteSpace: 'nowrap' }}>🎙 חינם לחברים</span>
+        ) : (
+          <span style={{ display: 'block', fontSize: 22, fontWeight: 900, color: BROWN, fontFamily: 'Heebo, Arial, sans-serif' }}>{price} ₪</span>
+        )}
+        <span style={{ fontSize: 12, color: BROWN, fontWeight: 700, fontFamily: 'Heebo, Arial, sans-serif', marginTop: 4, display: 'block' }}>לפרטים ←</span>
       </div>
     </a>
   )
@@ -35,12 +59,8 @@ function TourCard({ tour }) {
 
 export default function GuidePage({ guide, tours }) {
   if (!guide) return (
-    <div style={{ fontFamily: 'Heebo, Arial, sans-serif', background: '#F7F1EA', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Header />
-      <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: '#6B6B6B' }}>המדריך לא נמצא</p>
-      </main>
-      <Footer />
+    <div style={{ fontFamily: 'Heebo, Arial, sans-serif', background: CREAM, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Header /><main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: '#6B6B6B' }}>המדריך לא נמצא</p></main><Footer />
     </div>
   )
 
@@ -50,67 +70,65 @@ export default function GuidePage({ guide, tours }) {
   const firstName = name.split(' ')[0]
 
   const socialLinks = [
-    guide.Website && { label: 'אתר', href: guide.Website, icon: '🌐' },
+    guide.Website && { label: 'אתר אישי', href: guide.Website, icon: '🌐' },
     guide.Facebook && { label: 'Facebook', href: guide.Facebook, icon: '📘' },
     guide.Instagram && { label: 'Instagram', href: guide.Instagram, icon: '📷' },
     guide.TikTok && { label: 'TikTok', href: guide.TikTok, icon: '♪' },
   ].filter(Boolean)
 
   return (
-    <div style={{ fontFamily: 'Heebo, Arial, sans-serif', background: '#F7F1EA', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ fontFamily: 'Heebo, Arial, sans-serif', background: CREAM, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Head>
         <title>{name} | מאז ועד היום</title>
         <meta name="description" content={guide.Guide_Bio || ''} />
+        <style>{`@media(max-width:768px){.guide-top{grid-template-columns:1fr!important;}.tour-row{grid-template-columns:1fr!important;}}`}</style>
       </Head>
       <Header />
 
-      <div style={{ background: '#111', padding: '48px 24px 40px' }}>
-        <div style={{ maxWidth: 860, margin: '0 auto', display: 'grid', gridTemplateColumns: '200px 1fr', gap: 36, alignItems: 'center' }}>
-          <div style={{ width: 200, height: 200, borderRadius: '50%', overflow: 'hidden', border: '4px solid rgba(126,72,33,0.5)', background: '#1a0d06', flexShrink: 0 }}>
-            {photo && <img src={photo} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onError={e => e.target.style.display='none'} />}
+      <main style={{ flex: 1, maxWidth: 900, margin: '0 auto', padding: '36px 24px', width: '100%' }}>
+
+        {/* TOP */}
+        <div className="guide-top" style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: 24, marginBottom: 36, alignItems: 'start' }}>
+          <div style={{ borderRadius: 16, overflow: 'hidden', height: 280, background: '#1a0d06', boxShadow: '0 8px 28px rgba(0,0,0,0.12)' }}>
+            {photo
+              ? <img src={photo} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onError={e => e.target.style.display='none'} />
+              : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(150deg,#2a1508,#1a0d06)' }} />
+            }
           </div>
-          <div>
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 8, letterSpacing: '2px' }}>מורה דרך</p>
-            <h1 style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 900, color: '#fff', marginBottom: 10, letterSpacing: '-1px' }}>{name}</h1>
-            {guide.Guide_Region && <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', marginBottom: 14 }}>📍 {guide.Guide_Region}</p>}
-            {tags.length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {tags.map(t => (
-                  <span key={t} style={{ background: 'rgba(126,72,33,0.25)', color: '#D4956A', fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>{t}</span>
+          <div style={{ background: '#fff', borderRadius: 16, padding: '28px', border: '1px solid #EDE7DF', boxShadow: '0 4px 16px rgba(0,0,0,0.06)', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div>
+              <p style={{ fontSize: 12, color: '#6B6B6B', marginBottom: 6, letterSpacing: '1px' }}>מורה דרך</p>
+              <h1 style={{ fontSize: 'clamp(24px,3.5vw,36px)', fontWeight: 900, color: '#111', marginBottom: 8, letterSpacing: '-0.5px' }}>{name}</h1>
+              {guide.Guide_Region && <p style={{ fontSize: 14, color: '#6B6B6B', marginBottom: 14 }}>📍 {guide.Guide_Region}</p>}
+              {tags.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+                  {tags.map(t => <span key={t} style={{ background: 'rgba(126,72,33,0.08)', color: BROWN, border: '1px solid rgba(126,72,33,0.18)', fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>{t}</span>)}
+                </div>
+              )}
+              {guide.Guide_Bio && <p style={{ fontSize: 15, color: '#444', lineHeight: 1.85 }}>{guide.Guide_Bio}</p>}
+            </div>
+            {socialLinks.length > 0 && (
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 20, paddingTop: 16, borderTop: '1px solid #EDE7DF' }}>
+                {socialLinks.map(s => (
+                  <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: '#111', textDecoration: 'none', background: CREAM, border: '1px solid #EDE7DF', padding: '6px 14px', borderRadius: 20 }}>
+                    <span>{s.icon}</span>{s.label}
+                  </a>
                 ))}
               </div>
             )}
           </div>
         </div>
-      </div>
 
-      <main style={{ flex: 1, maxWidth: 860, margin: '0 auto', padding: '36px 24px', width: '100%' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: socialLinks.length > 0 ? '1fr 180px' : '1fr', gap: 24, marginBottom: 36 }}>
-          {guide.Guide_Bio && (
-            <div style={{ background: '#fff', borderRadius: 16, padding: '24px 28px', border: '1px solid #EDE7DF', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-              <p style={{ fontSize: 16, lineHeight: 1.9, color: '#444' }}>{guide.Guide_Bio}</p>
-            </div>
-          )}
-          {socialLinks.length > 0 && (
-            <div style={{ background: '#fff', borderRadius: 16, padding: '20px', border: '1px solid #EDE7DF', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <p style={{ fontSize: 12, fontWeight: 700, color: '#6B6B6B', marginBottom: 4 }}>קישורים</p>
-              {socialLinks.map(s => (
-                <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 700, color: '#111', textDecoration: 'none' }}>
-                  <span>{s.icon}</span>{s.label}
-                </a>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 20, letterSpacing: '-0.5px' }}>הסיורים של {firstName}</h2>
+        {/* TOURS */}
+        <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 16, letterSpacing: '-0.5px' }}>הסיורים של {firstName}</h2>
         {tours.length === 0 ? (
           <div style={{ background: '#fff', borderRadius: 14, padding: 40, textAlign: 'center', border: '1px solid #EDE7DF' }}>
             <p style={{ color: '#B0A89E', fontSize: 15 }}>עדיין אין סיורים פעילים</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
-            {tours.map(t => <TourCard key={t.id} tour={t} />)}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {tours.map(t => <TourRow key={t.id} tour={t} />)}
           </div>
         )}
       </main>
@@ -124,24 +142,16 @@ export async function getServerSideProps({ params }) {
     const token = process.env.AIRTABLE_TOKEN
     const baseId = process.env.AIRTABLE_BASE_ID
 
-    const guideRes = await fetch(
-      `https://api.airtable.com/v0/${baseId}/tblsJ5Ok1yPSgtvSj/${params.id}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    )
+    const guideRes = await fetch(`https://api.airtable.com/v0/${baseId}/tblsJ5Ok1yPSgtvSj/${params.id}`, { headers: { Authorization: `Bearer ${token}` } })
     if (!guideRes.ok) return { props: { guide: null, tours: [] } }
     const guideRecord = await guideRes.json()
     const guide = Object.assign({ id: guideRecord.id }, guideRecord.fields)
 
     let tours = []
     if (guide.Guide_Name) {
-      const toursRes = await fetch(
-        `https://api.airtable.com/v0/${baseId}/tbltsGvfPLMAmJ764?filterByFormula={Guide_Name}="${guide.Guide_Name}"`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
+      const toursRes = await fetch(`https://api.airtable.com/v0/${baseId}/tbltsGvfPLMAmJ764?filterByFormula={Guide_Name}="${guide.Guide_Name}"`, { headers: { Authorization: `Bearer ${token}` } })
       const toursData = await toursRes.json()
-      tours = (toursData.records || [])
-        .map(r => Object.assign({ id: r.id }, r.fields))
-        .filter(t => t.Tour_Status === 'paid' || t.Tour_Status === 'collab')
+      tours = (toursData.records || []).map(r => Object.assign({ id: r.id }, r.fields)).filter(t => t.Tour_Status === 'paid' || t.Tour_Status === 'collab')
     }
 
     return { props: { guide, tours } }
