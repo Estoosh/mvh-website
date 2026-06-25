@@ -10,12 +10,13 @@ const BROWN = '#7E4821'
 const CREAM = '#F7F1EA'
 
 const TOUR_IMAGES = {
-'אפולוניה': '/Tour-Apolonia.jpg',
-'עיר דוד': '/Tour-Davidcity.jpg',
-'עין גדי': '/Tour-EinGedi.jpg',
-'ירושלים': '/Tour-Churches.jpg',
-'כנסיות': '/Tour-Churches.jpg',
-'צפת': '/Tour-Safed.jpg',
+  'אפולוניה': '/Tours-Apolonia.jpg',
+  'עיר דוד': '/Tours-DavidCity.jpg',
+  'עין גדי': '/Tours-EinGedi.jpg',
+  'ירושלים': '/Tours-Churches.jpg',
+  'כנסיות': '/Tours-JLM-Church.jpg',
+  'צפת': '/Tours-Safed.jpg',
+}
 }
 
 function getTourImage(tour) {
