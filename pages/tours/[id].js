@@ -99,8 +99,7 @@ export default function TourPage({ tour, guideRecord, mapUrl }) {
     </div>
   )
 
-  const rawPhone = tour.WhatsApp_Number || guideRecord?.Phone_Number || ''
-const phone = rawPhone.replace(/\D/g, '').replace(/^0/, '')
+  const rawPhone = tour.WhatsApp_Number || guideRecord?.WhatsApp_Number || ''
   const guideFirstName = tour.Guide_Name ? tour.Guide_Name.split(' ')[0] : ''
   const fullPrice = Number(tour.Price_Per_Person) || 0
   const discountedPrice = Math.round(fullPrice * 0.9)
