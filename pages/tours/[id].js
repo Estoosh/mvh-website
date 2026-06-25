@@ -51,6 +51,13 @@ function InfoBox({ label, value }) {
   )
 }
 
+const WaIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="#25D366">
+    <path d="M3 21l1.65-4.95A8.95 8.95 0 0 1 3 12a9 9 0 1 1 9 9 8.95 8.95 0 0 1-4.05-.96L3 21z"/>
+    <path d="M8.5 9.5c0 3.5 2.5 6 6 6 .5 0 1-.4 1-1l-.3-1.2c-.1-.4-.5-.6-.9-.5l-1.3.4c-.7-.5-1.7-1.5-2.2-2.2l.4-1.3c.1-.4-.1-.8-.5-.9L9.5 8.5c-.6 0-1 .5-1 1z" fill="#25D366"/>
+  </svg>
+)
+
 export default function TourPage({ tour, guideRecord, mapUrl }) {
   const { user, isLoaded } = useUser()
   const [guideName, setGuideName] = useState(null)
@@ -99,7 +106,7 @@ export default function TourPage({ tour, guideRecord, mapUrl }) {
     </div>
   )
 
- const rawPhone = tour.WhatsApp_Number || guideRecord?.WhatsApp_Number || ''
+  const rawPhone = tour.WhatsApp_Number || guideRecord?.WhatsApp_Number || ''
   const phone = rawPhone.replace(/\D/g, '').replace(/^0/, '')
   const guideFirstName = tour.Guide_Name ? tour.Guide_Name.split(' ')[0] : ''
   const fullPrice = Number(tour.Price_Per_Person) || 0
@@ -120,6 +127,12 @@ export default function TourPage({ tour, guideRecord, mapUrl }) {
   const storyParagraphs = tour.Tour_Story
     ? tour.Tour_Story.split('\n').map(p => p.trim()).filter(Boolean)
     : []
+
+  const trackLead = () => fetch('/api/increment-lead', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tour_id: tour.id, current_count: tour.Lead_Count || 0 })
+  })
 
   const shareTour = async function() {
     const url = typeof window !== 'undefined' ? window.location.href : ''
@@ -199,18 +212,8 @@ export default function TourPage({ tour, guideRecord, mapUrl }) {
               </p>
             )}
 
+            {/* HERO CTAs — share + save only, no WhatsApp here */}
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-              {!isOwnTour && waLink && (
-                <a href={waLink} target="_blank" rel="noopener noreferrer"
-                  onClick={() => fetch('/api/increment-lead', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ tour_id: tour.id, current_count: tour.Lead_Count || 0 })
-                  })}
-                  style={{ background: '#25D366', color: '#fff', padding: '12px 20px', borderRadius: 999, fontSize: 15, fontWeight: 800, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8, fontFamily: 'Heebo, Arial, sans-serif' }}>
-                  שלחו וואטסאפ למדריך
-                </a>
-              )}
               <button onClick={shareTour} style={{ background: '#fff', color: BROWN, border: '1px solid #EDE7DF', padding: '12px 18px', borderRadius: 999, fontSize: 14, fontWeight: 700, fontFamily: 'Heebo, Arial, sans-serif', cursor: 'pointer' }}>
                 {copied ? 'הקישור הועתק ✓' : 'שלחו למי שיבוא איתכם'}
               </button>
@@ -250,7 +253,7 @@ export default function TourPage({ tour, guideRecord, mapUrl }) {
               </div>
             )}
 
-            {/* guide */}
+            {/* guide — WhatsApp icon only, subtle */}
             {tour.Guide_Name && (
               <div style={{ background: '#fff', border: '1px solid #EDE7DF', borderRadius: 18, overflow: 'hidden' }}>
                 <div className="guide-section" style={{ display: 'grid', gridTemplateColumns: '150px 1fr', minHeight: 190 }}>
@@ -262,22 +265,17 @@ export default function TourPage({ tour, guideRecord, mapUrl }) {
                     <p style={{ fontSize: 18, fontWeight: 700, color: '#1a1a1a', margin: '0 0 4px' }}>{tour.Guide_Name}</p>
                     {guideRecord?.Guide_Title && <p style={{ fontSize: 13, color: '#6B6B6B', margin: '0 0 10px', fontWeight: 600 }}>{guideRecord.Guide_Title}</p>}
                     {guideRecord?.Guide_bio && <p style={{ fontSize: 14, color: '#555', lineHeight: 1.75, margin: '0 0 14px' }}>{guideRecord.Guide_bio}</p>}
-                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                      {!isOwnTour && waLink && (
-                        <a href={waLink} target="_blank" rel="noopener noreferrer"
-                          onClick={() => fetch('/api/increment-lead', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ tour_id: tour.id, current_count: tour.Lead_Count || 0 })
-                          })}
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#25D366', color: '#fff', padding: '9px 16px', borderRadius: 999, fontSize: 13, fontWeight: 700, textDecoration: 'none', fontFamily: 'Heebo, Arial, sans-serif' }}>
-                          וואטסאפ למדריך
-                        </a>
-                      )}
+                    <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
                       {guideRecord?.id && (
-                        <Link href={'/guides/' + guideRecord.id} style={{ color: BROWN, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+                        <Link href={'/guides/' + guideRecord.id} style={{ color: BROWN, fontWeight: 700, fontSize: 13, textDecoration: 'none' }}>
                           הכירו את המדריך ←
                         </Link>
+                      )}
+                      {!isOwnTour && waLink && (
+                        <a href={waLink} target="_blank" rel="noopener noreferrer" onClick={trackLead}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: '#25D366', textDecoration: 'none', fontSize: 13, fontWeight: 600, fontFamily: 'Heebo, Arial, sans-serif' }}>
+                          <WaIcon /> וואטסאפ
+                        </a>
                       )}
                     </div>
                   </div>
@@ -299,6 +297,8 @@ export default function TourPage({ tour, guideRecord, mapUrl }) {
 
           {/* SIDEBAR */}
           <aside className="sticky-card" style={{ position: 'sticky', top: 88, display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+            {/* price + main WhatsApp CTA */}
             <div style={{ background: '#fff', borderRadius: 18, padding: 22, border: '1px solid #EDE7DF', boxShadow: '0 8px 28px rgba(0,0,0,0.07)' }}>
               <p style={{ fontSize: 12, color: '#6B6B6B', marginBottom: 6, fontWeight: 600 }}>מחיר לאדם</p>
 
@@ -318,14 +318,10 @@ export default function TourPage({ tour, guideRecord, mapUrl }) {
               )}
 
               {!isOwnTour && waLink && (
-                <a href={waLink} target="_blank" rel="noopener noreferrer"
-                  onClick={() => fetch('/api/increment-lead', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ tour_id: tour.id, current_count: tour.Lead_Count || 0 })
-                  })}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#25D366', color: '#fff', padding: '13px', borderRadius: 10, fontSize: 15, fontWeight: 800, textDecoration: 'none', fontFamily: 'Heebo, Arial, sans-serif', marginBottom: 10 }}>
-                  דברו עם המדריך בוואטסאפ
+                <a href={waLink} target="_blank" rel="noopener noreferrer" onClick={trackLead}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#25D366', color: '#fff', padding: '13px', borderRadius: 10, fontSize: 15, fontWeight: 800, textDecoration: 'none', fontFamily: 'Heebo, Arial, sans-serif', marginBottom: 10 }}>
+                  <WaIcon />
+                  דברו עם המדריך
                 </a>
               )}
 
@@ -346,8 +342,13 @@ export default function TourPage({ tour, guideRecord, mapUrl }) {
               </p>
             </div>
 
+            {/* map */}
             {mapUrl && mapsLink && (
-              <a href={mapsLink} target="_blank" rel="noopener noreferrer" style={{ display: 'block', borderRadius: 14, overflow: 'hidden', border: '1px solid #EDE7DF', position: 'relative', cursor: 'pointer', textDecoration: 'none' }}>
+              <a href={mapsLink} target="_blank" rel="noopener noreferrer"
+                style={{ display: 'block', borderRadius: 14, overflow: 'hidden', border: '1px solid #EDE7DF', position: 'relative', cursor: 'pointer', textDecoration: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
+                <p style={{ fontSize: 11, color: '#6B6B6B', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', padding: '12px 14px 8px', margin: 0, background: '#fff' }}>
+                  📍 מיקום הסיור
+                </p>
                 <img src={mapUrl} alt="מפה" style={{ width: '100%', display: 'block' }} />
                 <div style={{ position: 'absolute', bottom: 8, left: 8, background: 'rgba(255,255,255,0.93)', borderRadius: 6, padding: '4px 10px', fontSize: 11, fontWeight: 700, color: BROWN, fontFamily: 'Heebo, Arial, sans-serif' }}>
                   פתחו ב-Google Maps
@@ -418,7 +419,7 @@ export async function getServerSideProps({ params }) {
         const geoData = await geoRes.json()
         if (geoData.results && geoData.results.length > 0) {
           const { lat, lng } = geoData.results[0].geometry.location
-          mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=8&size=360x240&scale=2&maptype=roadmap&style=element:geometry|color:0xf5f5f5&style=element:labels.icon|visibility:off&style=element:labels.text.fill|color:0x616161&style=feature:poi|element:geometry|color:0xeeeeee&style=feature:road|element:geometry|color:0xffffff&style=feature:road.highway|element:geometry|color:0xdadada&style=feature:water|element:geometry|color:0xc9c9c9&markers=color:0x7E4821|size:mid|${lat},${lng}&key=${mapsKey}`
+          mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=8&size=360x280&scale=2&maptype=roadmap&style=element:geometry|color:0xf5f5f5&style=element:labels.icon|visibility:off&style=element:labels.text.fill|color:0x616161&style=feature:poi|element:geometry|color:0xeeeeee&style=feature:road|element:geometry|color:0xffffff&style=feature:road.highway|element:geometry|color:0xdadada&style=feature:water|element:geometry|color:0xc9c9c9&markers=color:0x7E4821|size:mid|${lat},${lng}&key=${mapsKey}`
         }
       } catch(e) {}
     }
