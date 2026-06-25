@@ -1,20 +1,88 @@
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const { title } = req.body
-  if (!title || !title.trim()) return res.status(400).json({ error: 'title required' })
+  const { title, city, guideName, historicalPeriods } = req.body
+
+  if (!title || !title.trim()) {
+    return res.status(400).json({ error: 'title required' })
+  }
 
   const apiKey = process.env.GEMINI_API_KEY
-  const prompt = `אתה כותב תוכן שיווקי לאתר MvH (מאז ועד היום) - אתר שמוכר סיורי היסטוריה בישראל. הקהל שלך לא מחפש "עוד טיול" - הוא מחפש תחושה שגילה משהו שאחרים פספסו במקום שהוא חושב שהוא מכיר. בהינתן כותרת סיור, כתוב שני דברים בעברית בלבד:
 
-1. תיאור קצר (teaser) - עד 80 תווים. Hook שמרמז על סוד או גילוי, לא תיאור גיאוגרפי. בלי מירכאות.
+  const context = [
+    city ? `אזור או עיר: ${city}` : '',
+    guideName ? `שם המדריך: ${guideName}` : '',
+    Array.isArray(historicalPeriods) && historicalPeriods.length > 0 ? `תקופות רלוונטיות: ${historicalPeriods.join(', ')}` : ''
+  ].filter(Boolean).join('\n')
 
-2. תיאור מפורט (story) - עד 1200 תווים. חובה להתחיל במשפט שמעביר את הקורא בזמן: לדמיין את עצמו עומד באותו מקום בתקופה ההיסטורית, בגוף שני רבים ("דמיינו לעצמכם ש..."), עם שנה או תקופה ספציפית ופרט חושי או מתח דרמטי. כל פעם בניסוח שונה לחלוטין - אסור לחזור על אותו משפט פתיחה פעמיים. אחרי הפתיח, ספר את הסיפור ההיסטורי מאחורי המקום בסטייל סיפורי שמסקרן, והדגש שהמדריך הוא זה שיחשוף את הסיפור הזה באופן אישי בסיור. בלי לפרט תחנות, שעות, או נקודות מפגש - זו הזמנה לחוויה, לא מדריך טיול. אל תזכיר מחיר. בלי מירכאות.
+  const prompt = `
+אתה כותב תוכן לעמוד סיור באתר "מאז ועד היום".
 
-כותרת הסיור: "${title}"
+הפלייבוק של המותג:
+מאז ועד היום לא מוכר סיורים.
+הוא עוזר לאנשים לצאת מהבית ולחיות חיים שיש בהם יותר סיפורים.
+הסיור הוא האמצעי.
+מורה הדרך הוא סטוריטלר.
+המשתמש לא מחפש הרצאה היסטורית. הוא מחפש סיבה טובה להגיד לבן או בת הזוג: "בואי נעשה את זה בשבת".
 
-החזר תשובה בפורמט JSON בלבד, בלי טקסט נוסף לפניו או אחריו, בלי markdown code fences, במבנה הזה:
-{"teaser": "...", "story": "..."}`
+המטרה שלך:
+לכתוב טקסט שמייצר סקרנות, אמון והקלה.
+לא טקסט שיווקי.
+לא טקסט של אתר תיירות.
+לא טקסט של מוזיאון.
+לא תוכנית שיעור.
+לא רשימת תחנות.
+לא סיסמאות.
+
+כתוב בעברית טבעית, בגובה העיניים, עם עומק אבל בלי להיות כבד.
+
+כותרת הסיור:
+${title}
+
+${context}
+
+החזר JSON בלבד, בלי markdown ובלי טקסט נוסף.
+
+השדות:
+
+1. teaser
+עד 120 תווים.
+זה הטקסט שמופיע באזור "למה לצאת דווקא לשם".
+המטרה: לגרום למטייל להבין למה החוויה הזו שווה יציאה מהבית.
+לא לסכם את הסיור.
+לא לכתוב "סיור מרתק".
+לא להזכיר מחיר, שעות, נקודת מפגש או לוגיסטיקה.
+כתוב משפט או שניים קצרים שמייצרים סקרנות ותחושת ערך.
+
+2. story
+עד 1200 תווים.
+זה הטקסט שמופיע באזור "הסיפור של הסיור".
+המטרה: לעזור למטייל לדמיין את החוויה.
+כתוב 3 עד 5 פסקאות קצרות.
+הטקסט צריך להסביר למה המקום הזה שווה חוויה מודרכת ולא רק ביקור עצמאי.
+הטקסט צריך להראות שיש רובד שאפשר לפספס אם מגיעים לבד.
+הטקסט צריך לרמוז שהמדריך יודע להפוך את המקום לסיפור חי.
+אל תכתוב "דמיינו לעצמכם" כברירת מחדל.
+אל תפתח בצורה דרמטית מדי.
+אל תמציא עובדות היסטוריות שאתה לא בטוח בהן.
+אם חסר מידע, כתוב בצורה כללית אבל עדיין מעניינת.
+אל תכתוב תחנות, לוחות זמנים, מחירים או הוראות לוגיסטיות.
+
+3. guide
+עד 500 תווים.
+זה הטקסט שמופיע באזור "מי יוביל אתכם".
+המטרה: לבנות אמון במדריך.
+כתוב למה מדריך כזה חשוב לחוויה הזו.
+אל תכתוב קורות חיים.
+אל תכתוב "בעל ניסיון רב".
+אל תכתוב טקסט גנרי.
+הדגש שמורה דרך טוב יודע לקחת אחריות על החוויה, לבחור מה חשוב, להסביר מה רואים, ולחבר את המקום לסיפור שאנשים ייקחו איתם הביתה.
+אם שם המדריך קיים, אפשר להשתמש בו בטבעיות.
+אם אין מספיק מידע על המדריך, כתוב טקסט כללי שמתאים לעמוד בלי להמציא פרטים אישיים.
+
+מבנה התשובה:
+{"teaser":"...","story":"...","guide":"..."}
+`
 
   const maxAttempts = 3
 
@@ -33,13 +101,17 @@ export default async function handler(req, res) {
 
       if (!response.ok) {
         const errText = await response.text()
-        console.error(`Gemini API error (attempt ${attempt}):`, errText)
+        console.error(`Gemini API error attempt ${attempt}:`, errText)
 
         const isRetryable = response.status === 503 || response.status === 429
+
         if (isRetryable && attempt < maxAttempts) {
-          await new Promise(function(r) { setTimeout(r, attempt * 1000) })
+          await new Promise(function(resolve) {
+            setTimeout(resolve, attempt * 1000)
+          })
           continue
         }
+
         return res.status(502).json({ error: 'gemini_request_failed' })
       }
 
@@ -48,6 +120,7 @@ export default async function handler(req, res) {
       const cleaned = rawText.replace(/```json|```/g, '').trim()
 
       let parsed
+
       try {
         parsed = JSON.parse(cleaned)
       } catch (e) {
@@ -55,16 +128,21 @@ export default async function handler(req, res) {
         return res.status(502).json({ error: 'gemini_parse_failed' })
       }
 
-      const teaser = (parsed.teaser || '').slice(0, 80)
+      const teaser = (parsed.teaser || '').slice(0, 120)
       const story = (parsed.story || '').slice(0, 1200)
+      const guide = (parsed.guide || '').slice(0, 500)
 
-      return res.status(200).json({ teaser, story })
+      return res.status(200).json({ teaser, story, guide })
     } catch (err) {
-      console.error(`generate-tour-text error (attempt ${attempt}):`, err)
+      console.error(`generate-tour-text error attempt ${attempt}:`, err)
+
       if (attempt === maxAttempts) {
         return res.status(500).json({ error: 'internal_error' })
       }
-      await new Promise(function(r) { setTimeout(r, attempt * 1000) })
+
+      await new Promise(function(resolve) {
+        setTimeout(resolve, attempt * 1000)
+      })
     }
   }
 }
