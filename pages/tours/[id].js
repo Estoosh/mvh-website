@@ -260,7 +260,7 @@ export default function TourPage({ tour, guideRecord, mapUrl }) {
                     <p style={{ color: BROWN, fontSize: 12, fontWeight: 700, marginBottom: 6, letterSpacing: '0.5px', textTransform: 'uppercase' }}>מי יוביל אתכם</p>
                     <p style={{ fontSize: 18, fontWeight: 700, color: '#1a1a1a', margin: '0 0 4px' }}>{tour.Guide_Name}</p>
                     {guideRecord?.Guide_Title && <p style={{ fontSize: 13, color: '#6B6B6B', margin: '0 0 10px', fontWeight: 600 }}>{guideRecord.Guide_Title}</p>}
-                    {guideRecord?.Guide_Bio && <p style={{ fontSize: 14, color: '#555', lineHeight: 1.75, margin: '0 0 14px' }}>{guideRecord.Guide_Bio}</p>}
+                    {guideRecord?.Guide_bio && <p style={{ fontSize: 14, color: '#555', lineHeight: 1.75, margin: '0 0 14px' }}>{guideRecord.Guide_bio}</p>}
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
                       {!isOwnTour && waLink && (
                         <a href={waLink} target="_blank" rel="noopener noreferrer"
