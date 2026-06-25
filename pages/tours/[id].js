@@ -180,7 +180,7 @@ return (
           {isCollab && <span style={{ background: BROWN, color: '#fff', fontSize: 13, fontWeight: 800, padding: '6px 13px', borderRadius: 20 }}>🎙 פרק מאז ועד היום</span>}
         </div>
 
-        fontSize: 'clamp(20px,2.8vw,28px)', fontWeight: 700, color: '#2a2a2a', margin: '0 0 18px', letterSpacing: '-1.2px', lineHeight: 1.06 }}>
+        <h1 style={{ fontSize: 'clamp(20px,2.8vw,28px)', fontWeight: 700, color: '#2a2a2a', margin: '0 0 18px', letterSpacing: '-0.3px', lineHeight: 1.2 }}>
           {tour.Tour_Title}
         </h1>
 
