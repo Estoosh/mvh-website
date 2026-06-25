@@ -62,7 +62,7 @@ const [copied, setCopied] = useState(false)
 useEffect(function() {
 if (!tour) return
 
-```
+
 fetch('/api/track-view', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
@@ -76,14 +76,14 @@ fetch('/api/related-tours?exclude_id=' + tour.id + '&cities=' + encodeURICompone
   .then(function(data) {
     setRelatedTours(data.tours || [])
   })
-```
+
 
 }, [tour])
 
 useEffect(function() {
 if (!isLoaded || !user) return
 
-```
+
 fetch('/api/get-guide?clerk_id=' + user.id + '&email=' + encodeURIComponent(user.emailAddresses?.[0]?.emailAddress || ''))
   .then(r => r.json())
   .then(function(data) {
@@ -98,7 +98,7 @@ fetch('/api/get-signup?clerk_id=' + user.id)
   .then(function(data) {
     if (data.found) setIsSignedUpForDiscount(true)
   })
-```
+
 
 }, [isLoaded, user])
 
@@ -136,7 +136,7 @@ const shareTour = async function() {
 const url = typeof window !== 'undefined' ? window.location.href : ''
 const text = tour.Tour_Title + ' | מאז ועד היום'
 
-```
+
 try {
   if (navigator.share) {
     await navigator.share({ title: text, text: tour.Tour_Teaser || text, url })
@@ -146,7 +146,7 @@ try {
     setTimeout(() => setCopied(false), 1800)
   }
 } catch(e) {}
-```
+
 
 }
 
@@ -161,7 +161,7 @@ return (
           }
         `}</style> </Head>
 
-```
+
   <Header />
 
   <main className="tour-shell" style={{ flex: 1, maxWidth: 1180, margin: '0 auto', padding: '40px 24px 56px', width: '100%' }}>
@@ -372,7 +372,7 @@ const token = process.env.AIRTABLE_TOKEN
 const baseId = process.env.AIRTABLE_BASE_ID
 const mapsKey = process.env.GOOGLE_MAPS_API_KEY
 
-```
+
 const tourRes = await fetch(`https://api.airtable.com/v0/${baseId}/tbltsGvfPLMAmJ764/${params.id}`, {
   headers: { Authorization: `Bearer ${token}` }
 })
@@ -413,7 +413,7 @@ if (location && mapsKey) {
 }
 
 return { props: { tour, guideRecord, mapUrl } }
-```
+
 
 } catch(e) {
 return { props: { tour: null, guideRecord: null, mapUrl: null } }
