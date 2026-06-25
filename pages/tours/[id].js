@@ -1,4 +1,3 @@
-כן. זה קובץ מלא להחלפה של עמוד הסיור, על בסיס הקוד ששלחת. הלוגיקה נשארת, ה-render שודרג. 
 
 import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
