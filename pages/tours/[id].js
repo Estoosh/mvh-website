@@ -213,7 +213,7 @@ export default function TourPage({ tour, guideRecord, mapUrl }) {
               <button onClick={shareTour} style={{ background: '#fff', color: BROWN, border: '1px solid #EDE7DF', padding: '12px 18px', borderRadius: 999, fontSize: 14, fontWeight: 700, fontFamily: 'Heebo, Arial, sans-serif', cursor: 'pointer' }}>
                 {copied ? 'הקישור הועתק ✓' : 'שלחו למי שיבוא איתכם'}
               </button>
-              <button onClick={saveTour} style={{ background: interested ? '#FBF7F1' : '#fff', color: interested ? BROWN : BROWN, border: '1px solid #EDE7DF', padding: '12px 18px', borderRadius: 999, fontSize: 14, fontWeight: 700, fontFamily: 'Heebo, Arial, sans-serif', cursor: 'pointer' }}>
+              <button onClick={saveTour} style={{ background: interested ? '#FBF7F1' : '#fff', color: BROWN, border: '1px solid #EDE7DF', padding: '12px 18px', borderRadius: 999, fontSize: 14, fontWeight: 700, fontFamily: 'Heebo, Arial, sans-serif', cursor: 'pointer' }}>
                 {interested ? '✓ נשמר' : '❤️ זה מעניין אותי'}
               </button>
             </div>
@@ -261,11 +261,24 @@ export default function TourPage({ tour, guideRecord, mapUrl }) {
                     <p style={{ fontSize: 18, fontWeight: 700, color: '#1a1a1a', margin: '0 0 4px' }}>{tour.Guide_Name}</p>
                     {guideRecord?.Guide_Title && <p style={{ fontSize: 13, color: '#6B6B6B', margin: '0 0 10px', fontWeight: 600 }}>{guideRecord.Guide_Title}</p>}
                     {guideRecord?.Guide_Bio && <p style={{ fontSize: 14, color: '#555', lineHeight: 1.75, margin: '0 0 14px' }}>{guideRecord.Guide_Bio}</p>}
-                    {guideRecord?.id && (
-                      <Link href={'/guides/' + guideRecord.id} style={{ color: BROWN, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
-                        הכירו את המדריך ←
-                      </Link>
-                    )}
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                      {!isOwnTour && waLink && (
+                        <a href={waLink} target="_blank" rel="noopener noreferrer"
+                          onClick={() => fetch('/api/increment-lead', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ tour_id: tour.id, current_count: tour.Lead_Count || 0 })
+                          })}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#25D366', color: '#fff', padding: '9px 16px', borderRadius: 999, fontSize: 13, fontWeight: 700, textDecoration: 'none', fontFamily: 'Heebo, Arial, sans-serif' }}>
+                          וואטסאפ למדריך
+                        </a>
+                      )}
+                      {guideRecord?.id && (
+                        <Link href={'/guides/' + guideRecord.id} style={{ color: BROWN, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+                          הכירו את המדריך ←
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
