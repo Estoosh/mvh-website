@@ -194,15 +194,20 @@ export default function AddTour() {
     entrance_fee_included: false, entrance_fee_amount: '',
   })
 
-  useEffect(function() {
-    if (!isLoaded || !user) return
-    fetch('/api/get-guide?clerk_id=' + user.id).then(r => r.json()).then(function(data) {
+useEffect(function() {
+  if (!isLoaded || !user) return
+  const email = user.emailAddresses?.[0]?.emailAddress || ''
+  fetch('/api/get-guide?clerk_id=' + user.id + '&email=' + encodeURIComponent(email))
+    .then(r => r.json())
+    .then(function(data) {
+      console.log('[add-tour] get-guide response:', data)
+      console.log('[add-tour] WhatsApp_Number:', data?.guide?.WhatsApp_Number)
       if (!data.found) { router.push('/join'); return }
       setGuideId(data.airtable_id)
       setGuide(data.guide)
       setWhatsappNumber(data.guide.WhatsApp_Number || '')
     })
-  }, [isLoaded, user])
+}, [isLoaded, user])
 
   useEffect(function() {
     if (typeof window === 'undefined') return
