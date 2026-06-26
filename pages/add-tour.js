@@ -132,6 +132,9 @@ export default function AddTour() {
   const [showToast, setShowToast] = useState(false)
   const meetingRef = useRef(null)
 
+  // האם המשתמש כבר מילא שם + סיפור + תיאור מדריך
+  const aiHelperVisible = form => !!(form.title.trim() && form.story.trim() && form.guide_bio.trim())
+
   const [form, setForm] = useState({
     title: '', teaser: '', story: '', guide_bio: '',
     price: '', duration: '', cities: '',
@@ -310,25 +313,6 @@ export default function AddTour() {
           <p style={{ fontSize: 15, color: '#6B6B6B', lineHeight: 1.7 }}>פרטי הסיור יופיעו בעמוד שלכם באתר ויעזרו למטיילים להחליט אם לפנות אליכם.</p>
         </div>
 
-        {/* WELCOME CARD */}
-        <SectionCard style={{ background: 'linear-gradient(135deg, #FBF7F1 0%, #F7F1EA 100%)', border: '1px solid #E8DDD0', marginBottom: 16 }}>
-          <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, paddingTop: 4 }}>
-              <div style={{ width: 9, height: 9, borderRadius: '50%', background: BROWN }} />
-              <div style={{ width: 2, height: 20, background: BROWN, opacity: 0.3 }} />
-              <div style={{ width: 7, height: 7, borderRadius: '50%', background: BROWN, opacity: 0.5 }} />
-              <div style={{ width: 2, height: 20, background: BROWN, opacity: 0.3 }} />
-              <div style={{ width: 9, height: 9, borderRadius: '50%', background: BROWN }} />
-            </div>
-            <div style={{ flex: 1 }}>
-              <p style={{ fontSize: 13, fontWeight: 800, color: BROWN, marginBottom: 8 }}>✨ עוזר הכתיבה של מאז ועד היום</p>
-              <p style={{ fontSize: 14, color: '#444', lineHeight: 1.75, marginBottom: 10 }}>כדי לחסוך לכם זמן ולעזור לכם להציג את הסיור בצורה הטובה ביותר, בנינו עוזר כתיבה מבוסס בינה מלאכותית. הוא נועד לעזור לכם להציג את הסיור בצורה שתגרום למטיילים להבין למה כדאי להם לצאת דווקא אליו.</p>
-              <p style={{ fontSize: 14, color: '#444', lineHeight: 1.75, marginBottom: 10 }}>המטרה שלו אינה לכתוב במקומכם, אלא לתת לכם נקודת פתיחה איכותית. תוכלו לערוך, לקצר, להוסיף ולשנות כל הצעה עד שהיא תשקף בדיוק את החוויה שאתם מציעים.</p>
-              <p style={{ fontSize: 12, color: '#888', lineHeight: 1.6, padding: '10px 12px', background: 'rgba(255,255,255,0.6)', borderRadius: 8, border: '1px solid #EDE7DF' }}>לפני פרסום הסיור חשוב לקרוא את הטקסטים בעיון ולוודא שכל העובדות נכונות. מאז ועד היום אינה אחראית לאי דיוקים שנשארו לאחר אישור התוכן על ידכם.</p>
-            </div>
-          </div>
-        </SectionCard>
-
         <TimelineDivider />
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -394,41 +378,59 @@ export default function AddTour() {
 
           <TimelineDivider />
 
-          {/* SECTION 2 */}
+          {/* SECTION 2 — סיפור + AI helper אחרי שהמדריך מילא */}
           <SectionCard>
-            <SectionLabel number="2" title="הסיפור שתספרו" subtitle="המילים שלכם הן הדבר הראשון שיגרום למטייל להחליט אם להמשיך לקרוא. אנחנו נעזור לכם להתחיל." />
+            <SectionLabel number="2" title="הסיפור שתספרו" subtitle="המילים שלכם הן הדבר הראשון שיגרום למטייל להחליט אם להמשיך לקרוא." />
             {aiError && <p style={{ fontSize: 13, color: '#e00', marginBottom: 16, background: '#fff5f5', padding: '10px 14px', borderRadius: 8, border: '1px solid #fecaca' }}>{aiError}</p>}
+
+            {/* שם סיור כבר מולא למעלה — כאן מתחילים מסיפור */}
             <div style={{ marginBottom: 24 }}>
+              <FieldLabel required hint="כתבו כך שהמטייל ירגיש שיש משהו שהוא יפספס אם יגיע לבד.">סיפור הסיור</FieldLabel>
+              {aiLoadingField === 'story' ? <AILoadingAnimation /> : (
+                <textarea name="story" value={form.story} onChange={handleChange} required rows={6} style={Object.assign({}, inp, { resize: 'vertical', lineHeight: 1.8 })} placeholder="הסיפור שמסתתר מאחורי המקום..." />
+              )}
+            </div>
+
+            <div style={{ marginBottom: 24 }}>
+              <FieldLabel hint="אנשים לא בוחרים רק מקום. הם בוחרים עם מי לחוות אותו.">למה דווקא אתם מתאימים להוביל את הסיור הזה?</FieldLabel>
+              {aiLoadingField === 'guide' ? <AILoadingAnimation /> : (
+                <textarea name="guide_bio" value={form.guide_bio} onChange={handleChange} rows={4} style={Object.assign({}, inp, { resize: 'vertical', lineHeight: 1.8 })} placeholder="מה הופך אתכם למי שצריך להוביל את הסיור הזה..." />
+              )}
+            </div>
+
+            {/* AI HELPER — מופיע רק אחרי שמילאו סיפור + תיאור מדריך */}
+            {aiHelperVisible(form) && (
+              <div style={{ background: 'linear-gradient(135deg, #FBF7F1 0%, #F7F1EA 100%)', border: '1px solid #E8DDD0', borderRadius: 14, padding: '20px 22px', marginBottom: 24 }}>
+                <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, paddingTop: 2 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: BROWN }} />
+                    <div style={{ width: 2, height: 16, background: BROWN, opacity: 0.3 }} />
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: BROWN, opacity: 0.5 }} />
+                    <div style={{ width: 2, height: 16, background: BROWN, opacity: 0.3 }} />
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: BROWN }} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: 13, fontWeight: 800, color: BROWN, marginBottom: 6 }}>✨ עוזר הכתיבה של מאז ועד היום</p>
+                    <p style={{ fontSize: 13, color: '#444', lineHeight: 1.7, marginBottom: 6 }}>ראינו שכבר השקעתם מחשבה. עכשיו תנו לנו לעזור לכם להציג את זה בצורה הטובה ביותר.</p>
+                    <p style={{ fontSize: 13, color: '#444', lineHeight: 1.7, marginBottom: 10 }}>הוא לא נועד לכתוב במקומכם — אלא לתת לכם נקודת פתיחה טובה יותר. תוכלו לערוך ולשנות כל הצעה.</p>
+                    <p style={{ fontSize: 11, color: '#888', lineHeight: 1.6, padding: '8px 10px', background: 'rgba(255,255,255,0.6)', borderRadius: 6, border: '1px solid #EDE7DF' }}>לפני פרסום חשוב לוודא שכל העובדות נכונות. האחריות הסופית על הנכונות היא שלכם.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* תיאור קצר — עם AI button */}
+            <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 6 }}>
                 <FieldLabel required>תיאור קצר</FieldLabel>
                 <AIButton field="teaser" label="הציעו ניסוח" />
               </div>
-              <p style={{ fontSize: 12, color: '#6B6B6B', marginBottom: 8, lineHeight: 1.6 }}>המטרה היא לגרום למטייל לעצור ולהגיד: "זה נשמע כמו משהו שנרצה לעשות." אל תנסו לספר כאן את כל הסיפור.</p>
+              <p style={{ fontSize: 12, color: '#6B6B6B', marginBottom: 8, lineHeight: 1.6 }}>המטרה היא לגרום למטייל לעצור ולהגיד: "זה נשמע כמו משהו שנרצה לעשות."</p>
               {aiLoadingField === 'teaser' ? <AILoadingAnimation /> : (
                 <>
                   <input type="text" name="teaser" value={form.teaser} onChange={handleChange} required maxLength={140} style={inp} placeholder="פסקה קצרה שתגרום לאנשים לרצות לדעת עוד..." />
                   <p style={{ fontSize: 11, color: teaserCount > 120 ? '#e00' : '#B0A89E', marginTop: 4, textAlign: 'left' }}>{teaserCount}/140</p>
                 </>
-              )}
-            </div>
-            <div style={{ marginBottom: 24 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 6 }}>
-                <FieldLabel required>סיפור הסיור</FieldLabel>
-                <AIButton field="story" label="כתבו עבורי טיוטה" />
-              </div>
-              <p style={{ fontSize: 12, color: '#6B6B6B', marginBottom: 8, lineHeight: 1.6 }}>כאן מתחילה החוויה. אל תכתבו הרצאה היסטורית. כתבו כך שהמטייל ירגיש שיש משהו שהוא יפספס אם יגיע לבד.</p>
-              {aiLoadingField === 'story' ? <AILoadingAnimation /> : (
-                <textarea name="story" value={form.story} onChange={handleChange} required rows={6} style={Object.assign({}, inp, { resize: 'vertical', lineHeight: 1.8 })} placeholder="הסיפור שמסתתר מאחורי המקום..." />
-              )}
-            </div>
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 6 }}>
-                <FieldLabel>על המדריך</FieldLabel>
-                <AIButton field="guide" label="הציעו תיאור" />
-              </div>
-              <p style={{ fontSize: 12, color: '#6B6B6B', marginBottom: 8, lineHeight: 1.6 }}>אנשים לא בוחרים רק מקום. הם בוחרים עם מי לחוות אותו. ספרו למה דווקא אתם יכולים להפוך את המקום הזה לחוויה שאנשים יזכרו.</p>
-              {aiLoadingField === 'guide' ? <AILoadingAnimation /> : (
-                <textarea name="guide_bio" value={form.guide_bio} onChange={handleChange} rows={4} style={Object.assign({}, inp, { resize: 'vertical', lineHeight: 1.8 })} placeholder="מה הופך אתכם למי שצריך להוביל את הסיור הזה..." />
               )}
             </div>
           </SectionCard>
