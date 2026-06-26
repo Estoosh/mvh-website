@@ -195,7 +195,11 @@ export default function AddTour() {
   })
 
 useEffect(function() {
-  if (!isLoaded || !user) return
+  if (!isLoaded) return
+  if (!user) {
+    router.push('/sign-in?redirect_url=' + encodeURIComponent('/add-tour' + window.location.search))
+    return
+  }
   const email = user.emailAddresses?.[0]?.emailAddress || ''
   fetch('/api/get-guide?clerk_id=' + user.id + '&email=' + encodeURIComponent(email))
     .then(r => r.json())
