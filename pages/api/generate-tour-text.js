@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const { title, city, guideName, historicalPeriods } = req.body
+  const { title, city, guideName, publicProfileLink, historicalPeriods } = req.body
 
   if (!title || !title.trim()) {
     return res.status(400).json({ error: 'title required' })
@@ -12,6 +12,7 @@ export default async function handler(req, res) {
   const context = [
     city ? `אזור או עיר: ${city}` : '',
     guideName ? `שם המדריך: ${guideName}` : '',
+    publicProfileLink ? `פרופיל ציבורי של המדריך לרפרנס: ${publicProfileLink}` : '',
     Array.isArray(historicalPeriods) && historicalPeriods.length > 0 ? `תקופות רלוונטיות: ${historicalPeriods.join(', ')}` : ''
   ].filter(Boolean).join('\n')
 
@@ -74,7 +75,8 @@ ${context}
 אל תכתוב קורות חיים.
 אל תכתוב רשימת תפקידים.
 אל תמציא הישגים.
-אם שם המדריך קיים, אפשר להשתמש בו בטבעיות.
+אם שם המדריך קיים, השתמש בו בטבעיות.
+אם יש פרופיל ציבורי של המדריך — השתמש במידע שמופיע שם כדי לתאר את הזווית הייחודית שלו.
 הדגש שמורה דרך טוב יודע לקחת אחריות על החוויה, לבחור מה חשוב, להסביר מה רואים, ולחבר את המקום לסיפור שאנשים ייקחו איתם הביתה.
 
 כל משפט צריך לעזור לענות על שאלה אחת:
@@ -93,25 +95,18 @@ ${context}
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }]
-          })
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         }
       )
 
       if (!response.ok) {
         const errText = await response.text()
         console.error(`Gemini API error attempt ${attempt}:`, errText)
-
         const isRetryable = response.status === 503 || response.status === 429
-
         if (isRetryable && attempt < maxAttempts) {
-          await new Promise(function(resolve) {
-            setTimeout(resolve, attempt * 1000)
-          })
+          await new Promise(function(resolve) { setTimeout(resolve, attempt * 1000) })
           continue
         }
-
         return res.status(502).json({ error: 'gemini_request_failed' })
       }
 
@@ -120,7 +115,6 @@ ${context}
       const cleaned = rawText.replace(/```json|```/g, '').trim()
 
       let parsed
-
       try {
         parsed = JSON.parse(cleaned)
       } catch (e) {
@@ -128,21 +122,15 @@ ${context}
         return res.status(502).json({ error: 'gemini_parse_failed' })
       }
 
-      const teaser = (parsed.teaser || '').slice(0, 140)
-      const story = (parsed.story || '').slice(0, 1100)
-      const guide = (parsed.guide || '').slice(0, 400)
-
-      return res.status(200).json({ teaser, story, guide })
+      return res.status(200).json({
+        teaser: (parsed.teaser || '').slice(0, 140),
+        story: (parsed.story || '').slice(0, 1100),
+        guide: (parsed.guide || '').slice(0, 400),
+      })
     } catch (err) {
       console.error(`generate-tour-text error attempt ${attempt}:`, err)
-
-      if (attempt === maxAttempts) {
-        return res.status(500).json({ error: 'internal_error' })
-      }
-
-      await new Promise(function(resolve) {
-        setTimeout(resolve, attempt * 1000)
-      })
+      if (attempt === maxAttempts) return res.status(500).json({ error: 'internal_error' })
+      await new Promise(function(resolve) { setTimeout(resolve, attempt * 1000) })
     }
   }
 }
