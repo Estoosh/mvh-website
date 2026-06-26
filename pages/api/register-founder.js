@@ -30,8 +30,19 @@ export default async function handler(req, res) {
       })
     })
 
-    const data = await createRes.json()
-    if (!createRes.ok) return res.status(500).json({ error: 'airtable_error', detail: data })
+    const rawText = await createRes.text()
+    console.log('Airtable response:', rawText)
+
+    let data
+    try {
+      data = JSON.parse(rawText)
+    } catch(e) {
+      return res.status(500).json({ error: 'parse_error', detail: rawText })
+    }
+
+    if (!createRes.ok) {
+      return res.status(500).json({ error: 'airtable_error', detail: data })
+    }
 
     return res.status(200).json({
       success: true,
@@ -39,6 +50,6 @@ export default async function handler(req, res) {
       record_id: data.id
     })
   } catch(err) {
-    return res.status(500).json({ error: 'internal_error' })
+    return res.status(500).json({ error: 'internal_error', message: err.message })
   }
 }
