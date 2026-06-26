@@ -5,31 +5,6 @@ export default async function handler(req, res) {
   if (!publicInput?.trim()) return res.status(400).json({ error: 'missing_input' })
 
   const apiKey = process.env.GEMINI_API_KEY
-  let contextContent = publicInput.trim()
-
-  // אם זה URL — ננסה לשלוף את התוכן
-  const isUrl = publicInput.trim().startsWith('http')
-  if (isUrl) {
-    try {
-      const pageRes = await fetch(publicInput.trim(), {
-        headers: { 'User-Agent': 'Mozilla/5.0', 'Accept-Language': 'he,en' },
-        signal: AbortSignal.timeout(6000)
-      })
-      const html = await pageRes.text()
-      // מנקים HTML ושומרים רק טקסט
-      const text = html
-        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-        .replace(/<[^>]+>/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim()
-        .slice(0, 3000)
-      if (text.length > 100) contextContent = text
-    } catch(err) {
-      // אם הfetch נכשל — נמשיך עם ה-URL עצמו
-      contextContent = publicInput.trim()
-    }
-  }
 
   const prompt = `
 אתה לא כותב קורות חיים.
@@ -38,8 +13,8 @@ export default async function handler(req, res) {
 
 שם המדריך: ${name || 'לא ידוע'}
 
-מידע ציבורי שנמצא עבור המדריך:
-${contextContent}
+טקסט שהמדריך סיפק על עצמו:
+${publicInput.trim()}
 
 המטרה: לייצר טיוטת פרופיל שתעזור למטייל להבין:
 - איזה סוג סיפורים האדם הזה אוהב לספר
@@ -55,10 +30,10 @@ ${contextContent}
 אסור להשתמש בביטויים:
 בעל ניסיון רב, שנים רבות בתחום, מומחה ל, מרצה ומדריך, חיבור אנושי, חוויה בלתי נשכחת, מסע בזמן, לוקח אתכם למסע.
 
-אם המידע שסופק לא מספיק כדי להסיק מה מייחד את האדם הזה, החזר בדיוק:
+אם הטקסט שסופק לא מספיק כדי להסיק מה מייחד את האדם הזה, החזר בדיוק:
 NOT_ENOUGH_PUBLIC_INFORMATION
 
-אל תמציא עובדות, תפקידים, הישגים או ניסיון שלא מופיעים במידע שסופק.
+אל תמציא עובדות, תפקידים, הישגים או ניסיון שלא מופיעים בטקסט שסופק.
 החזר את הטקסט בלבד, ללא הסברים וללא JSON.
 `
 
@@ -71,6 +46,7 @@ NOT_ENOUGH_PUBLIC_INFORMATION
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
       }
     )
+
     const data = await response.json()
     const text = (data?.candidates?.[0]?.content?.parts?.[0]?.text || '').trim()
 
