@@ -4,15 +4,58 @@ import Link from 'next/link'
 
 const BROWN = '#7E4821'
 const CREAM = '#F7F1EA'
+const TIMELINE = '#C98A52'
+const BRAND = '#B97A45'
 
 function TimelineDot() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0, flexShrink: 0, paddingTop: 4 }}>
-      <div style={{ width: 9, height: 9, borderRadius: '50%', background: BROWN }} />
-      <div style={{ width: 2, height: 20, background: BROWN, opacity: 0.3 }} />
-      <div style={{ width: 7, height: 7, borderRadius: '50%', background: BROWN, opacity: 0.5 }} />
-      <div style={{ width: 2, height: 20, background: BROWN, opacity: 0.3 }} />
-      <div style={{ width: 9, height: 9, borderRadius: '50%', background: BROWN }} />
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+      <div style={{ width: 9, height: 9, borderRadius: '50%', background: TIMELINE }} />
+      <div style={{ width: 2, height: 24, background: TIMELINE, opacity: 0.3 }} />
+      <div style={{ width: 7, height: 7, borderRadius: '50%', background: TIMELINE, opacity: 0.5 }} />
+      <div style={{ width: 2, height: 24, background: TIMELINE, opacity: 0.3 }} />
+      <div style={{ width: 9, height: 9, borderRadius: '50%', background: TIMELINE }} />
+    </div>
+  )
+}
+
+function StepBadge({ number }) {
+  return (
+    <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#8A5A32', color: '#fff', fontSize: 14, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontFamily: 'Heebo, Arial, sans-serif' }}>
+      {number}
+    </div>
+  )
+}
+
+function Card({ children, style }) {
+  return (
+    <div style={Object.assign({
+      background: '#fff', borderRadius: 20, padding: '36px 32px',
+      border: '1px solid #EDE7DF',
+      boxShadow: '0 12px 40px rgba(0,0,0,0.06)',
+      animation: 'fadeUp 350ms ease forwards',
+    }, style)}>
+      {children}
+    </div>
+  )
+}
+
+function AITimelineAnim() {
+  const [step, setStep] = useState(0)
+  if (typeof window !== 'undefined') {
+    setTimeout(function() { setStep(function(s) { return (s + 1) % 3 }) }, 500)
+  }
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+      {[0,1,2].map(function(i) {
+        var active = i === step
+        return (
+          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ width: active ? 12 : 8, height: active ? 12 : 8, borderRadius: '50%', background: active ? BROWN : TIMELINE, transition: 'all 0.3s', opacity: active ? 1 : 0.4 }} />
+            {i < 2 && <div style={{ width: 2, height: 20, background: TIMELINE, opacity: 0.3 }} />}
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -26,6 +69,12 @@ export default function Founders() {
   const [error, setError] = useState('')
   const [founderNumber, setFounderNumber] = useState(null)
   const [recordId, setRecordId] = useState(null)
+  const [bioChoice, setBioChoice] = useState(null)
+  const [bioLink, setBioLink] = useState('')
+  const [bioText, setBioText] = useState('')
+  const [bioGenerated, setBioGenerated] = useState('')
+  const [bioLoading, setBioLoading] = useState(false)
+  const [bioCount, setBioCount] = useState(0)
 
   const handleChange = function(e) {
     setForm(Object.assign({}, form, { [e.target.name]: e.target.value }))
@@ -56,48 +105,76 @@ export default function Founders() {
     setLoading(false)
   }
 
+  const generateBio = async function() {
+    setBioLoading(true)
+    try {
+      const res = await fetch('/api/generate-tour-text', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: form.name, guideName: form.name, field: 'guide' })
+      })
+      const data = await res.json()
+      if (data.guide) { setBioGenerated(data.guide); setBioText(data.guide) }
+    } catch(err) {}
+    setBioLoading(false)
+  }
+
   return (
     <div dir="rtl" style={{ fontFamily: 'Heebo, Arial, sans-serif', background: CREAM, minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 24px' }}>
       <Head>
         <title>קהילת המייסדים | מאז ועד היום</title>
-        <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;700;900&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
+        <style>{`
+          @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
       </Head>
 
-      <div style={{ maxWidth: 520, width: '100%' }}>
-        <Link href="/" style={{ display: 'block', textAlign: 'center', marginBottom: 40 }}>
-          <img src="/Logo-black.png" alt="מאז ועד היום" style={{ height: 64, width: 'auto' }} onError={e => e.target.style.display='none'} />
+      <div style={{ maxWidth: 540, width: '100%' }}>
+        <Link href="/" style={{ display: 'block', textAlign: 'center', marginBottom: 36 }}>
+          <img src="/Logo-black.png" alt="מאז ועד היום" style={{ height: 60, width: 'auto' }} onError={e => e.target.style.display='none'} />
         </Link>
 
         {/* SCREEN 1 — WELCOME */}
         {screen === 'welcome' && (
-          <div style={{ background: '#fff', borderRadius: 20, padding: '40px 36px', border: '1px solid #EDE7DF', boxShadow: '0 8px 32px rgba(0,0,0,0.06)' }}>
-            <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', marginBottom: 32 }}>
+          <Card>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
               <TimelineDot />
-              <div>
-                <h1 style={{ fontSize: 22, fontWeight: 800, color: '#1a1a1a', marginBottom: 20, lineHeight: 1.35 }}>
-                  אם קיבלתם את הלינק הזה, כנראה שמישהו חושב שאתם מסוג האנשים שיכולים לעזור לנו לבנות משהו חדש.
-                </h1>
-                <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85, marginBottom: 16 }}>
-                  אנחנו מאמינים שאנשים לא יוצאים מהבית בשביל עובדות. הם יוצאים בשביל סיפורים.
-                </p>
-                <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85 }}>
-                  ואנחנו מחפשים אנשים שיודעים לקחת מקום ולהפוך אותו לסיפור.
-                </p>
-              </div>
+              <StepBadge number="1" />
             </div>
+            <h1 style={{ fontSize: 20, fontWeight: 800, color: '#1a1a1a', marginBottom: 16, lineHeight: 1.4 }}>
+              אם קיבלתם את הלינק הזה, כנראה שמישהו חושב שאתם מסוג האנשים שיכולים לעזור לנו לבנות משהו חדש.
+            </h1>
+            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85, marginBottom: 14 }}>
+              אנחנו מאמינים שאנשים לא יוצאים מהבית בשביל עובדות. הם יוצאים בשביל סיפורים.
+            </p>
+            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85, marginBottom: 28 }}>
+              ואנחנו מחפשים אנשים שיודעים לקחת מקום ולהפוך אותו לסיפור.
+            </p>
             <button onClick={function() { setScreen('register') }}
               style={{ width: '100%', background: '#111', color: '#fff', padding: '15px', borderRadius: 12, fontSize: 16, fontWeight: 800, border: 'none', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
               כן, אני רוצה להצטרף לדור הראשון ←
             </button>
-          </div>
+          </Card>
         )}
 
         {/* SCREEN 2 — REGISTER */}
         {screen === 'register' && (
-          <div style={{ background: '#fff', borderRadius: 20, padding: '40px 36px', border: '1px solid #EDE7DF', boxShadow: '0 8px 32px rgba(0,0,0,0.06)' }}>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1a1a1a', marginBottom: 8 }}>כמה פרטים בסיסיים</h2>
-            <p style={{ fontSize: 14, color: '#6B6B6B', marginBottom: 28, lineHeight: 1.65 }}>
-              בהמשך ההרשמה נבקש מכם פרטים בסיסיים כדי להקים פרופיל מדריך ולשלוח לכם עדכונים על תוכנית המייסדים. תוכלו לבקש לעדכן או למחוק את הפרטים שלכם בכל שלב.
+          <Card>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+              <TimelineDot />
+              <StepBadge number="2" />
+            </div>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1a1a1a', marginBottom: 8 }}>
+              ברוכים הבאים לדור הראשון של <span style={{ color: BRAND, fontWeight: 700 }}>מאז ועד היום</span>.
+            </h2>
+            <p style={{ fontSize: 14, color: '#6B6B6B', marginBottom: 24, lineHeight: 1.7 }}>
+              אנחנו פותחים בימים אלו את קהילת המייסדים הראשונה של <span style={{ color: BRAND, fontWeight: 700 }}>מאז ועד היום</span>. לפני שנעלה לאוויר אנחנו מזמינים קבוצה קטנה של מורי דרך לעזור לנו לעצב את הדור הראשון של המוצר. זה מתחיל בשלושה פרטים פשוטים.
+            </p>
+            <p style={{ fontSize: 12, color: '#888', marginBottom: 20, lineHeight: 1.6, padding: '10px 12px', background: '#FBF7F1', borderRadius: 8, border: '1px solid #EDE7DF' }}>
+              בהמשך ההרשמה נבקש מכם פרטים בסיסיים כדי להקים פרופיל מדריך ולשלוח לכם עדכונים. תוכלו לבקש לעדכן או למחוק את הפרטים שלכם בכל שלב.
             </p>
             <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div>
@@ -114,78 +191,160 @@ export default function Founders() {
               </div>
               {error && <p style={{ fontSize: 13, color: '#e00', background: '#fff5f5', padding: '10px 14px', borderRadius: 8, border: '1px solid #fecaca' }}>{error}</p>}
               <button type="submit" disabled={loading}
-                style={{ width: '100%', background: loading ? '#888' : '#111', color: '#fff', padding: '15px', borderRadius: 12, fontSize: 16, fontWeight: 800, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'Heebo, Arial, sans-serif', marginTop: 8 }}>
-                {loading ? 'שומר...' : 'המשך ←'}
+                style={{ width: '100%', background: loading ? '#888' : '#111', color: '#fff', padding: '15px', borderRadius: 12, fontSize: 16, fontWeight: 800, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'Heebo, Arial, sans-serif', marginTop: 4 }}>
+                {loading ? 'שומר...' : 'המשיכו ←'}
               </button>
             </form>
-          </div>
+          </Card>
         )}
 
-        {/* SCREEN 3 — SUCCESS */}
+        {/* SCREEN 3 — SUCCESS + BIO CHOICE */}
         {screen === 'success' && (
-          <div style={{ background: '#fff', borderRadius: 20, padding: '40px 36px', border: '1px solid #EDE7DF', boxShadow: '0 8px 32px rgba(0,0,0,0.06)', textAlign: 'center' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
+          <Card>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
               <TimelineDot />
+              <StepBadge number="3" />
             </div>
             {founderNumber && (
-              <p style={{ fontSize: 13, fontWeight: 700, color: BROWN, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 8 }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: BRAND, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 10 }}>
                 Founder #{founderNumber}
               </p>
             )}
-            <h2 style={{ fontSize: 24, fontWeight: 800, color: '#1a1a1a', marginBottom: 12, lineHeight: 1.3 }}>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1a1a1a', marginBottom: 10, lineHeight: 1.3 }}>
               כל מקום טוב מתחיל בסיפור טוב.
             </h2>
-            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85, marginBottom: 8 }}>
-              זה הסיפור הראשון של מאז ועד היום.
+            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.8, marginBottom: 6 }}>
+              זה הסיפור הראשון של <span style={{ color: BRAND, fontWeight: 700 }}>מאז ועד היום</span>.
             </p>
-            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85, marginBottom: 36 }}>
+            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.8, marginBottom: 24 }}>
               תודה שאתם חלק ממנו.
             </p>
-            <button onClick={function() { setScreen('benefit') }}
-              style={{ width: '100%', background: '#111', color: '#fff', padding: '15px', borderRadius: 12, fontSize: 16, fontWeight: 800, border: 'none', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
-              המשך ←
-            </button>
-          </div>
-        )}
-
-        {/* SCREEN 4 — BENEFIT */}
-        {screen === 'benefit' && (
-          <div style={{ background: '#fff', borderRadius: 20, padding: '40px 36px', border: '1px solid #EDE7DF', boxShadow: '0 8px 32px rgba(0,0,0,0.06)' }}>
-            <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', marginBottom: 32 }}>
-              <TimelineDot />
-              <div>
-                <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1a1a1a', marginBottom: 20, lineHeight: 1.4 }}>
-                  כחלק מתוכנית המייסדים של מאז ועד היום, אנחנו נפרסם בפלטפורמה סיור אחד שלכם, ללא עלות וללא הגבלת זמן.
-                </h2>
-                <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85, marginBottom: 12 }}>
-                  ההטבה מותנית בהעלאת הסיור לפני מועד ההשקה, שמתוכנן לשבועות הקרובים.
-                </p>
-                <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85 }}>
-                  זו הזדמנות שלכם להוביל את הקהילה ולעזור לנו לחבר אליכם יותר מטיילים שמחפשים חוויה, סיור או סיפור טוב.
-                </p>
+            <p style={{ fontSize: 14, color: '#6B6B6B', lineHeight: 1.7, marginBottom: 24 }}>
+              יום אחד יצטרפו לכאן עוד מאות מורי דרך. אבל כרגע אנחנו עדיין בונים את הפרק הראשון. בואו נתחיל מכם.
+            </p>
+            <div style={{ borderTop: '1px solid #EDE7DF', paddingTop: 20, marginBottom: 16 }}>
+              <p style={{ fontSize: 14, fontWeight: 700, color: '#2a2a2a', marginBottom: 14 }}>איך תרצו להציג את עצמכם?</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <button onClick={function() { setBioChoice('ai'); setScreen('bio-ai') }}
+                  style={{ width: '100%', background: '#FBF7F1', color: BROWN, border: '1.5px solid #EDE7DF', padding: '13px', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
+                  ✨ הציעו לי טיוטה לפרופיל
+                </button>
+                <button onClick={function() { setBioChoice('manual'); setScreen('bio-manual') }}
+                  style={{ width: '100%', background: '#fff', color: '#555', border: '1.5px solid #EDE7DF', padding: '13px', borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
+                  אכתוב בעצמי
+                </button>
               </div>
             </div>
+          </Card>
+        )}
+
+        {/* SCREEN 4A — BIO AI */}
+        {screen === 'bio-ai' && (
+          <Card>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+              <TimelineDot />
+              <StepBadge number="4" />
+            </div>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1a1a1a', marginBottom: 10 }}>איך אנשים מחפשים אתכם היום?</h2>
+            <p style={{ fontSize: 14, color: '#6B6B6B', lineHeight: 1.7, marginBottom: 20 }}>
+              אפשר להדביק אתר, פייסבוק, אינסטגרם, טיקטוק, לינקדאין, או פשוט שם מלא. נשתמש רק במידע ציבורי כדי להציע טיוטה ראשונית לפרופיל שלכם.
+            </p>
+            <input type="text" value={bioLink} onChange={function(e) { setBioLink(e.target.value) }}
+              placeholder="https://... או שם מלא" style={Object.assign({}, inp, { marginBottom: 16 })} />
+            {bioLoading ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px 0' }}>
+                <AITimelineAnim />
+                <p style={{ fontSize: 13, color: '#6B6B6B', marginTop: 12, fontFamily: 'Heebo, Arial, sans-serif' }}>יוצרים עבורכם טיוטה...</p>
+              </div>
+            ) : bioGenerated ? (
+              <div>
+                <textarea value={bioText} onChange={function(e) { setBioText(e.target.value); setBioCount(e.target.value.length) }}
+                  rows={5} style={Object.assign({}, inp, { resize: 'vertical', lineHeight: 1.8, marginBottom: 6 })} />
+                <p style={{ fontSize: 11, color: '#B0A89E', textAlign: 'left', marginBottom: 16 }}>{bioCount}/400</p>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button onClick={function() { setScreen('benefit') }}
+                    style={{ flex: 1, background: '#111', color: '#fff', padding: '13px', borderRadius: 10, fontSize: 15, fontWeight: 800, border: 'none', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
+                    אישור ←
+                  </button>
+                  <button onClick={generateBio}
+                    style={{ flex: 1, background: '#FBF7F1', color: BROWN, border: '1.5px solid #EDE7DF', padding: '13px', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
+                    נסו שוב
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button onClick={generateBio}
+                style={{ width: '100%', background: '#111', color: '#fff', padding: '14px', borderRadius: 10, fontSize: 15, fontWeight: 800, border: 'none', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
+                ✨ צרו לי טיוטה
+              </button>
+            )}
+          </Card>
+        )}
+
+        {/* SCREEN 4B — BIO MANUAL */}
+        {screen === 'bio-manual' && (
+          <Card>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+              <TimelineDot />
+              <StepBadge number="4" />
+            </div>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1a1a1a', marginBottom: 10 }}>ספרו לנו בכמה מילים מי אתם.</h2>
+            <p style={{ fontSize: 14, color: '#6B6B6B', lineHeight: 1.7, marginBottom: 20 }}>
+              לא קורות חיים. לא רשימת תפקידים. רק הסיפור שתרצו שאנשים יכירו דרכו אתכם.
+            </p>
+            <textarea value={bioText} onChange={function(e) { if (e.target.value.length <= 500) { setBioText(e.target.value); setBioCount(e.target.value.length) } }}
+              rows={6} style={Object.assign({}, inp, { resize: 'vertical', lineHeight: 1.8, marginBottom: 6 })} placeholder="הסיפור שלכם..." />
+            <p style={{ fontSize: 11, color: bioCount > 450 ? '#e00' : '#B0A89E', textAlign: 'left', marginBottom: 16 }}>{bioCount}/500</p>
+            <button onClick={function() { setScreen('benefit') }} disabled={!bioText.trim()}
+              style={{ width: '100%', background: bioText.trim() ? '#111' : '#ccc', color: '#fff', padding: '14px', borderRadius: 10, fontSize: 15, fontWeight: 800, border: 'none', cursor: bioText.trim() ? 'pointer' : 'not-allowed', fontFamily: 'Heebo, Arial, sans-serif' }}>
+              המשיכו ←
+            </button>
+          </Card>
+        )}
+
+        {/* SCREEN 5 — BENEFIT */}
+        {screen === 'benefit' && (
+          <Card>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+              <TimelineDot />
+              <StepBadge number="5" />
+            </div>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1a1a1a', marginBottom: 16, lineHeight: 1.4 }}>
+              כל מקום טוב מתחיל בסיפור טוב.<br />הגיע הזמן לסיפור הראשון שלכם.
+            </h2>
+            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85, marginBottom: 12 }}>
+              כחלק מתוכנית המייסדים של <span style={{ color: BRAND, fontWeight: 700 }}>מאז ועד היום</span>, תוכלו לפרסם את הסיור הראשון שלכם בפלטפורמה ללא עלות וללא הגבלת זמן.
+            </p>
+            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85, marginBottom: 12 }}>
+              ההטבה נשמרת למייסדים שמעלים את הסיור לפני מועד ההשקה.
+            </p>
+            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85, marginBottom: 28 }}>
+              הסיור הזה יהיה חלק מהדור הראשון של הסיפורים שירכיבו את הקהילה.
+            </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <a href={'/add-tour?founder=true&record_id=' + (recordId || '')}
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#111', color: '#fff', padding: '15px', borderRadius: 12, fontSize: 16, fontWeight: 800, textDecoration: 'none', fontFamily: 'Heebo, Arial, sans-serif' }}>
-                הוסיפו את הסיור הראשון שלכם ←
+                הכניסו את הסיפור הראשון שלכם ←
               </a>
               <button onClick={function() { setScreen('later') }}
                 style={{ width: '100%', background: CREAM, color: BROWN, padding: '14px', borderRadius: 12, fontSize: 15, fontWeight: 700, border: '1.5px solid #EDE7DF', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
                 אשלים את זה בהמשך
               </button>
             </div>
-          </div>
+          </Card>
         )}
 
-        {/* SCREEN 5 — LATER */}
+        {/* SCREEN 6 — LATER */}
         {screen === 'later' && (
-          <div style={{ background: '#fff', borderRadius: 20, padding: '40px 36px', border: '1px solid #EDE7DF', boxShadow: '0 8px 32px rgba(0,0,0,0.06)', textAlign: 'center' }}>
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1a1a1a', marginBottom: 16, lineHeight: 1.35 }}>מעולה.</h2>
+          <Card style={{ textAlign: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+              <TimelineDot />
+            </div>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1a1a1a', marginBottom: 12 }}>מעולה.</h2>
             <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85 }}>
               שמרנו לכם את ההטבה. כשתהיו מוכנים, היא תחכה לכם כאן עד יום ההשקה.
             </p>
-          </div>
+          </Card>
         )}
       </div>
     </div>
