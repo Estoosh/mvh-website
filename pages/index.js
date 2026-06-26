@@ -14,52 +14,51 @@ export default function PreLaunch() {
           * { box-sizing: border-box; margin: 0; padding: 0; }
           body { overflow-x: hidden; }
           @media (max-width: 768px) {
-            .hero-text { text-align: center !important; align-items: center !important; padding: 0 24px !important; }
-            .hero-h1 { font-size: 38px !important; }
-            .hero-sub { font-size: 20px !important; }
+            .hero-text { text-align: center !important; align-items: center !important; padding: 0 24px !important; right: auto !important; left: auto !important; }
+            .hero-h1 { font-size: 36px !important; }
+            .hero-sub { font-size: 18px !important; }
             .hero-cta { width: 100% !important; max-width: 320px !important; }
-            .hero-overlay { background: linear-gradient(180deg, rgba(248,244,238,0.88) 0%, rgba(248,244,238,0.72) 50%, rgba(248,244,238,0.55) 100%) !important; }
+            .hero-overlay { background: rgba(248,244,238,0.88) !important; }
             .hero-bg { background-position: 72% center !important; }
-            .hero-logo { padding: 24px 24px !important; }
           }
         `}</style>
       </Head>
 
       {/* BG IMAGE */}
       <div className="hero-bg" style={{
-        position: 'fixed', inset: 0, zIndex: 0,
+        position: 'absolute', inset: 0, zIndex: 0,
         backgroundImage: 'url(/Hero-Prelaunch.jpg)',
         backgroundSize: 'cover',
         backgroundPosition: 'center center',
         backgroundRepeat: 'no-repeat',
       }} />
 
-      {/* OVERLAY — עדין */}
+      {/* OVERLAY */}
       <div className="hero-overlay" style={{
-        position: 'fixed', inset: 0, zIndex: 1,
-        background: 'linear-gradient(90deg, rgba(248,244,238,0.72) 0%, rgba(248,244,238,0.55) 28%, rgba(248,244,238,0.25) 48%, rgba(248,244,238,0.05) 72%, rgba(248,244,238,0.00) 100%)',
+        position: 'absolute', inset: 0, zIndex: 1,
+        background: 'linear-gradient(270deg, rgba(248,244,238,0.00) 0%, rgba(248,244,238,0.25) 40%, rgba(248,244,238,0.70) 62%, rgba(248,244,238,0.88) 100%)',
       }} />
 
       {/* CONTENT */}
       <div style={{ position: 'relative', zIndex: 2, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 
         {/* LOGO — שמאל עליון */}
-        <div className="hero-logo" style={{ padding: '28px 40px' }}>
+        <div style={{ padding: '28px 40px', display: 'flex', justifyContent: 'flex-end' }}>
           <img src="/Logo-black.png" alt="מאז ועד היום" style={{ height: 64, width: 'auto' }} onError={e => e.target.style.display='none'} />
         </div>
 
-        {/* HERO TEXT */}
+        {/* HERO TEXT — שמאל */}
         <div className="hero-text" style={{
           flex: 1, display: 'flex', flexDirection: 'column',
           alignItems: 'flex-start', justifyContent: 'center',
-          maxWidth: 480, padding: '0 40px 64px',
+          maxWidth: 480, padding: '0 0 64px 40px',
         }}>
 
           <h1 className="hero-h1" style={{
-            fontSize: 'clamp(28px,3.2vw,44px)',
+            fontSize: 'clamp(26px,3vw,42px)',
             fontWeight: 900, color: '#1a1a1a',
             lineHeight: 1.2, marginBottom: 16,
-            letterSpacing: '-0.3px',
+            letterSpacing: '-0.3px', textAlign: 'right',
           }}>
             אנחנו בונים פלטפורמה<br />
             שמחברת בין אנשים<br />
@@ -68,9 +67,9 @@ export default function PreLaunch() {
           </h1>
 
           <p className="hero-sub" style={{
-            fontSize: 'clamp(15px,1.6vw,19px)',
+            fontSize: 'clamp(14px,1.5vw,18px)',
             color: '#3a3a3a', lineHeight: 1.7,
-            marginBottom: 20, fontWeight: 400,
+            marginBottom: 20, fontWeight: 400, textAlign: 'right',
           }}>
             לבין מורי דרך שיודעים להפוך<br />מקום לסיפור.
           </p>
@@ -84,11 +83,11 @@ export default function PreLaunch() {
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#C98A52' }} />
           </div>
 
-          <p style={{ fontSize: 15, color: BROWN, fontWeight: 600, marginBottom: 16 }}>
+          <p style={{ fontSize: 15, color: BROWN, fontWeight: 600, marginBottom: 16, textAlign: 'right' }}>
             נעלה לאוויר בקרוב.
           </p>
 
-          <p style={{ fontSize: 14, color: '#555', lineHeight: 1.7, marginBottom: 18 }}>
+          <p style={{ fontSize: 14, color: '#555', lineHeight: 1.7, marginBottom: 18, textAlign: 'right' }}>
             אם קיבלתם הזמנה לקהילת המייסדים,<br />תוכלו להיכנס מכאן:
           </p>
 
