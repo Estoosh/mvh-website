@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const { title, city, guideName, publicProfileLink, historicalPeriods } = req.body
+  const { title, city, guideName, guideBio, guideContext, historicalPeriods } = req.body
 
   if (!title || !title.trim()) {
     return res.status(400).json({ error: 'title required' })
@@ -12,7 +12,8 @@ export default async function handler(req, res) {
   const context = [
     city ? `אזור או עיר: ${city}` : '',
     guideName ? `שם המדריך: ${guideName}` : '',
-    publicProfileLink ? `פרופיל ציבורי של המדריך לרפרנס: ${publicProfileLink}` : '',
+    guideBio ? `ביוגרפיה של המדריך (זהות וקול): ${guideBio}` : '',
+    guideContext ? `למה המדריך מתאים לסיור הזה ספציפית: ${guideContext}` : '',
     Array.isArray(historicalPeriods) && historicalPeriods.length > 0 ? `תקופות רלוונטיות: ${historicalPeriods.join(', ')}` : ''
   ].filter(Boolean).join('\n')
 
@@ -70,14 +71,14 @@ ${context}
 220 עד 350 תווים.
 מקסימום 400 תווים.
 2 פסקאות קצרות.
-זה הטקסט של "מי יוביל אתכם".
-המטרה היא לבנות אמון במדריך.
+זה הטקסט של "מי יוביל אתכם" — ספציפי לסיור הזה.
+המטרה היא לבנות אמון במדריך ולהסביר למה דווקא הוא מתאים לסיור הזה.
+השתמש בביוגרפיה רק כדי להבין את הקול והסמכות של המדריך.
+השתמש ב"למה המדריך מתאים לסיור" כדי לחבר בין המדריך לסיור הספציפי.
+אל תחזור על הביוגרפיה — כתוב משהו שמסביר את הרלוונטיות.
 אל תכתוב קורות חיים.
-אל תכתוב רשימת תפקידים.
 אל תמציא הישגים.
 אם שם המדריך קיים, השתמש בו בטבעיות.
-אם יש פרופיל ציבורי של המדריך — השתמש במידע שמופיע שם כדי לתאר את הזווית הייחודית שלו.
-הדגש שמורה דרך טוב יודע לקחת אחריות על החוויה, לבחור מה חשוב, להסביר מה רואים, ולחבר את המקום לסיפור שאנשים ייקחו איתם הביתה.
 
 כל משפט צריך לעזור לענות על שאלה אחת:
 "למה שארצה לצאת מהבית בשביל זה?"
