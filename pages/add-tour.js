@@ -8,7 +8,31 @@ const BROWN = '#7E4821'
 const CREAM = '#F7F1EA'
 const TIMELINE_COLOR = '#C8A582'
 
-const CITIES = ["אילת","אשדוד","אשקלון","באר שבע","באר יעקב","בית שאן","בית שמש","בני ברק","גבעתיים","דימונה","הוד השרון","הרצליה","חדרה","חולון","חיפה","טבריה","טירת כרמל","יבנה","יהוד","ירושלים","כפר סבא","כרמיאל","לוד","מודיעין","נהריה","נס ציונה","נצרת","נתיבות","נתניה","עכו","עפולה","פתח תקווה","צפת","קריית אתא","קריית גת","קריית מוצקין","קריית שמונה","ראש העין","ראשון לציון","רהט","רחובות","רמלה","רמת גן","רמת השרון","רעננה","שדרות","תל אביב","עין גדי","מצדה","קומראן","ים המלח","השרון","גליל עליון","גליל מערבי","גולן","נגב","ערבה","שפלה","שרון"]
+const CITIES = [
+  "אבו גוש","אבן יהודה","אופקים","אור יהודה","אור עקיבא","אילת","אכסאל","אל-עזריה","אלעד","אלקנה",
+  "אנתבה","אפרת","אריאל","אשדוד","אשקלון","באקה אל-גרביה","באר יעקב","באר שבע","באר שבע","בית אל",
+  "בית גן","בית דגן","בית זית","בית חנינא","בית ינאי","בית לחם הגלילית","בית שאן","בית שמש","בני ברק",
+  "בני עי\"ש","בסמת טבעון","בפועה","ביתר עילית","גבעת שמואל","גבעתיים","גדרה","גולן","גן יבנה","גני תקווה",
+  "גנות","דאלית אל-כרמל","דימונה","דליה","דלתון","דמון","הוד השרון","הרצליה","זיכרון יעקב","חדרה",
+  "חולון","חיפה","טבריה","טול כרם","טירה","טירת כרמל","טירת יהודה","יבנה","יהוד","יוקנעם",
+  "ירושלים","כאבול","כוכב יאיר","כפר יונה","כפר סבא","כפר שמריהו","כרמיאל","לוד","מבשרת ציון",
+  "מגדל העמק","מודיעין","מודיעין עילית","מעלה אדומים","מעלה גלבוע","מעלות תרשיחא","מצדה","מצפה רמון",
+  "מרכז","נהריה","נוף הגליל","נס ציונה","נצרת","נצרת עילית","נתיבות","נתניה","סח'נין","עכו","עפולה",
+  "ערד","פתח תקווה","צפת","קריית אתא","קריית ביאליק","קריית גת","קריית מוצקין","קריית שמונה","קריית ים",
+  "ראש העין","ראש פינה","ראשון לציון","רהט","רחובות","רמלה","רמת גן","רמת השרון","רעננה","שדרות",
+  "שפרעם","תל אביב","תל מונד",
+  // אזורים וטבע
+  "אגם כינרת","אילות","אפיקים","ארבל","ארץ המצוקים","בקעת הירדן","בקעת כנרות","גליל עליון","גליל מערבי",
+  "גליל תחתון","גולן","גן לאומי","גן לאומי עין גדי","הגלבוע","הכרמל","המכתש הגדול","המכתש הקטן",
+  "הנגב הצפוני","הערבה","הר הכרמל","הר הנגב","הר מירון","הר תבור","הרי יהודה","הרי ירושלים",
+  "ואדי קלט","זכרון יעקב","חוף הכרמל","חוף הצוק","חוף דור","חוף מדיטרני","חולה","טבע","יהודה ושומרון",
+  "יער בן שמן","יער ירושלים","ים המלח","ים כינרת","ים תיכון","ימה של גלילי","יעבץ","ירדן",
+  "כוכב הירדן","כנרת","לבנון","מדבר יהודה","מדבר נגב","מדבר פארן","מדבר סיני","מדרשת בן גוריון",
+  "מכתש רמון","מצוקי דרגות","מצוקי ערד","מצפה שלם","מצפה רמון","נגב","נחל דוד","נחל פרת",
+  "נחל צאלים","נחל ערוגות","ניצנה","עין גדי","עין עבדת","עמק האלה","עמק המעיינות","עמק יזרעאל",
+  "עמק הירדן","פארק הירדן","קומראן","קיסריה","רמות","שומרון","שפלה","שרון","תל דן","תל מגידו",
+]
+
 const DAYS = ["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"]
 const TIMES = ['בוקר','אחה"צ','ערב']
 const DEFAULT_ITEMS = ["מים","כובע","קרם הגנה","תכשיר נגד יתושים","נעלי הליכה","בגדים נוחים","אוכל קל","מטען לטלפון","מצלמה","כסף מזומן"]
@@ -104,6 +128,40 @@ const chip = function(selected) {
   return { padding: '7px 14px', borderRadius: 20, border: '1.5px solid', fontSize: 13, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif', fontWeight: 600, background: selected ? '#111' : '#fff', color: selected ? '#fff' : '#555', borderColor: selected ? '#111' : '#EDE7DF', transition: 'all 0.15s' }
 }
 
+function CityAutocomplete({ value, onChange }) {
+  const [query, setQuery] = useState(value || '')
+  const [open, setOpen] = useState(false)
+  const filtered = query.length >= 1 ? CITIES.filter(c => c.includes(query)).slice(0, 8) : []
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <input
+        type="text"
+        value={query}
+        onChange={function(e) { setQuery(e.target.value); onChange(''); setOpen(true) }}
+        onFocus={function() { setOpen(true) }}
+        onBlur={function() { setTimeout(function() { setOpen(false) }, 150) }}
+        placeholder="הקלידו שם יישוב או אזור..."
+        style={inp}
+      />
+      {open && filtered.length > 0 && (
+        <div style={{ position: 'absolute', top: '100%', right: 0, left: 0, background: '#fff', border: '1.5px solid #EDE7DF', borderRadius: 10, zIndex: 50, boxShadow: '0 8px 24px rgba(0,0,0,0.1)', maxHeight: 240, overflowY: 'auto' }}>
+          {filtered.map(function(c) {
+            return (
+              <div key={c} onMouseDown={function() { setQuery(c); onChange(c); setOpen(false) }}
+                style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 14, fontFamily: 'Heebo, Arial, sans-serif', borderBottom: '1px solid #F7F1EA' }}
+                onMouseEnter={function(e) { e.target.style.background = '#FBF7F1' }}
+                onMouseLeave={function(e) { e.target.style.background = '#fff' }}>
+                {c}
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function AddTour() {
   const { user, isLoaded } = useUser()
   const router = useRouter()
@@ -111,6 +169,7 @@ export default function AddTour() {
   const [saved, setSaved] = useState(false)
   const [guideId, setGuideId] = useState(null)
   const [guide, setGuide] = useState(null)
+  const [publicProfileLink, setPublicProfileLink] = useState('')
   const [whatsappNumber, setWhatsappNumber] = useState('')
   const [teaserCount, setTeaserCount] = useState(0)
   const [isAbroad, setIsAbroad] = useState(false)
@@ -131,44 +190,65 @@ export default function AddTour() {
   const [aiError, setAiError] = useState('')
   const [showToast, setShowToast] = useState(false)
   const meetingRef = useRef(null)
-
-  // האם המשתמש כבר מילא שם + סיפור + תיאור מדריך
-  const aiHelperVisible = form => !!(form.title.trim() && form.story.trim() && form.guide_bio.trim())
+  const mapsLoaded = useRef(false)
 
   const [form, setForm] = useState({
     title: '', teaser: '', story: '', guide_bio: '',
     price: '', duration: '', cities: '',
     min_age: '1', max_age: '99', collab_code: '', pets_allowed: false,
+    entrance_fee_included: false, entrance_fee_amount: '',
   })
 
   useEffect(function() {
     if (!isLoaded || !user) return
     fetch('/api/get-guide?clerk_id=' + user.id).then(r => r.json()).then(function(data) {
       if (!data.found) { router.push('/join'); return }
-      setGuideId(data.airtable_id); setGuide(data.guide)
+      setGuideId(data.airtable_id)
+      setGuide(data.guide)
       setWhatsappNumber(data.guide.WhatsApp_Number || '')
+      setPublicProfileLink(data.guide.Public_Profile_Link || '')
     })
   }, [isLoaded, user])
 
-  useEffect(function() {
-    if (typeof window === 'undefined') return
-    if (!window.google) {
-      var script = document.createElement('script')
-      script.src = 'https://maps.googleapis.com/maps/api/js?key=' + process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY + '&libraries=places&language=he'
-      script.async = true; script.onload = initAutocomplete
-      document.head.appendChild(script)
-    } else { initAutocomplete() }
-  }, [])
-
   function initAutocomplete() {
-    if (!meetingRef.current) return
-    var ac = new window.google.maps.places.Autocomplete(meetingRef.current, { language: 'he' })
+    if (!meetingRef.current || mapsLoaded.current) return
+    if (!window.google || !window.google.maps) return
+    mapsLoaded.current = true
+    var ac = new window.google.maps.places.Autocomplete(meetingRef.current, {
+      language: 'he',
+      componentRestrictions: { country: 'il' }
+    })
     ac.addListener('place_changed', function() {
       var place = ac.getPlace()
       setMeetingPoint(place.formatted_address || '')
       setMeetingLink(place.url || 'https://maps.google.com/?q=' + encodeURIComponent(place.formatted_address || ''))
     })
   }
+
+  useEffect(function() {
+    if (typeof window === 'undefined') return
+    if (window.google && window.google.maps) {
+      initAutocomplete()
+      return
+    }
+    var existing = document.querySelector('script[data-gmaps]')
+    if (existing) {
+      existing.addEventListener('load', initAutocomplete)
+      return
+    }
+    var script = document.createElement('script')
+    script.setAttribute('data-gmaps', '1')
+    script.src = 'https://maps.googleapis.com/maps/api/js?key=' + process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY + '&libraries=places&language=he'
+    script.async = true
+    script.onload = function() { setTimeout(initAutocomplete, 100) }
+    document.head.appendChild(script)
+  }, [])
+
+  useEffect(function() {
+    if (meetingRef.current && window.google && window.google.maps) {
+      initAutocomplete()
+    }
+  }, [meetingRef.current])
 
   const handleChange = function(e) {
     var val = e.target.type === 'checkbox' ? e.target.checked : e.target.value
@@ -182,7 +262,14 @@ export default function AddTour() {
     try {
       const res = await fetch('/api/generate-tour-text', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: form.title, city: form.cities, guideName: guide?.Guide_Name || '', historicalPeriods: selectedPeriods, field })
+        body: JSON.stringify({
+          title: form.title,
+          city: form.cities,
+          guideName: guide?.Guide_Name || '',
+          publicProfileLink: publicProfileLink,
+          historicalPeriods: selectedPeriods,
+          field
+        })
       })
       const data = await res.json()
       if (data.error) { setAiError('לא הצלחנו ליצור טקסט. אפשר לנסות שוב.'); setAiLoadingField(null); return }
@@ -249,6 +336,8 @@ export default function AddTour() {
           days: byAppointment ? [] : selectedDays, times: byAppointment ? [] : selectedTimes,
           bring_items: allItems, meeting_point: meetingPoint, meeting_link: meetingLink,
           image_urls: orderedUrls, whatsapp_number: whatsappNumber, historical_periods: selectedPeriods,
+          entrance_fee_included: form.entrance_fee_included,
+          entrance_fee_amount: form.entrance_fee_included ? (Number(form.entrance_fee_amount) || 0) : 0,
         }))
       })
       const data = await res.json()
@@ -294,7 +383,7 @@ export default function AddTour() {
           </div>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
             <button onClick={function() { router.push('/dashboard') }} style={{ background: '#111', color: '#fff', padding: '12px 24px', borderRadius: 10, fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>לדשבורד ←</button>
-            <button onClick={function() { setSaved(false); setLoading(false); setForm({ title:'',teaser:'',story:'',guide_bio:'',price:'',duration:'',cities:'',min_age:'1',max_age:'99',collab_code:'',pets_allowed:false }) }} style={{ background: CREAM, color: BROWN, padding: '12px 24px', borderRadius: 10, fontSize: 14, fontWeight: 700, border: '1.5px solid #EDE7DF', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>הוסף סיור נוסף</button>
+            <button onClick={function() { setSaved(false); setLoading(false); setForm({ title:'',teaser:'',story:'',guide_bio:'',price:'',duration:'',cities:'',min_age:'1',max_age:'99',collab_code:'',pets_allowed:false,entrance_fee_included:false,entrance_fee_amount:'' }) }} style={{ background: CREAM, color: BROWN, padding: '12px 24px', borderRadius: 10, fontSize: 14, fontWeight: 700, border: '1.5px solid #EDE7DF', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>הוסף סיור נוסף</button>
           </div>
         </div>
       </main>
@@ -310,7 +399,7 @@ export default function AddTour() {
         <div style={{ marginBottom: 32 }}>
           <p style={{ fontSize: 12, color: BROWN, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 8 }}>הוספת סיור</p>
           <h1 style={{ fontSize: 'clamp(22px,3vw,30px)', fontWeight: 800, color: '#1a1a1a', marginBottom: 6, letterSpacing: '-0.3px' }}>ספרו לנו על הסיור שלכם</h1>
-          <p style={{ fontSize: 15, color: '#6B6B6B', lineHeight: 1.7 }}>פרטי הסיור יופיעו בעמוד שלכם באתר ויעזרו למטיילים להחליט אם לפנות אליכם.</p>
+          <p style={{ fontSize: 15, color: '#6B6B6B', lineHeight: 1.7 }}>פרטי הסיורים שלכם יהיו חלק מהעמוד שלכם ויאפשרו למטיילים להבין איך יכולה להיראות החוויה שלהם.</p>
         </div>
 
         <TimelineDivider />
@@ -334,23 +423,41 @@ export default function AddTour() {
                 <input type="number" name="duration" value={form.duration} onChange={handleChange} required min="0.5" step="0.5" style={inp} placeholder="3" />
               </div>
             </div>
+
+            {/* דמי כניסה */}
+            <div style={{ marginBottom: 16, background: '#FBF7F1', borderRadius: 10, padding: '14px 16px', border: '1px solid #EDE7DF' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, cursor: 'pointer', color: '#2a2a2a', fontFamily: 'Heebo, Arial, sans-serif', marginBottom: form.entrance_fee_included ? 12 : 0 }}>
+                <input type="checkbox" name="entrance_fee_included" checked={form.entrance_fee_included} onChange={handleChange} />
+                הסיור כולל דמי כניסה לאתרים
+              </label>
+              {form.entrance_fee_included && (
+                <div>
+                  <FieldLabel hint="הזינו את עלות דמי הכניסה הנוספת למשתתף (בשקלים)">עלות דמי כניסה למשתתף (₪)</FieldLabel>
+                  <input type="number" name="entrance_fee_amount" value={form.entrance_fee_amount} onChange={handleChange} min="0" style={inp} placeholder="25" />
+                </div>
+              )}
+            </div>
+
             <div style={{ marginBottom: 16 }}>
               <FieldLabel required>יישוב / אזור</FieldLabel>
               <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer', color: '#555', marginBottom: 10 }}>
                 <input type="checkbox" checked={isAbroad} onChange={function(e) { setIsAbroad(e.target.checked); setForm(Object.assign({}, form, { cities: e.target.checked ? 'חו"ל' : '' })) }} />
                 סיור בחו"ל
               </label>
-              <select name="cities" value={form.cities} onChange={handleChange} required={!isAbroad} disabled={isAbroad} style={Object.assign({}, inp, { background: isAbroad ? '#F7F1EA' : '#fff', color: isAbroad ? '#999' : '#1a1a1a' })}>
-                <option value="">בחרו יישוב</option>
-                {CITIES.sort().map(function(c) { return <option key={c} value={c}>{c}</option> })}
-              </select>
+              {isAbroad ? (
+                <input type="text" value='חו"ל' disabled style={Object.assign({}, inp, { background: '#F7F1EA', color: '#999' })} />
+              ) : (
+                <CityAutocomplete value={form.cities} onChange={function(val) { setForm(Object.assign({}, form, { cities: val })) }} />
+              )}
             </div>
+
             <div style={{ marginBottom: 16 }}>
               <FieldLabel hint="בחרו עד 4 תקופות">תקופות היסטוריות</FieldLabel>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {HISTORICAL_PERIODS.map(function(p) { return <button key={p} type="button" onClick={function(){togglePeriod(p)}} style={chip(selectedPeriods.includes(p))}>{p}</button> })}
               </div>
             </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
               <div>
                 <FieldLabel>גיל מינימום</FieldLabel>
@@ -365,24 +472,36 @@ export default function AddTour() {
                 </select>
               </div>
             </div>
+
             <div style={{ marginBottom: 16 }}>
               <FieldLabel required hint="מולא אוטומטית מהפרטים שלכם. אפשר לשנות אם רוצים מספר אחר לסיור הזה.">מספר וואטסאפ</FieldLabel>
               <input type="tel" value={whatsappNumber} onChange={function(e){setWhatsappNumber(e.target.value)}} required style={inp} />
             </div>
+
             <div>
               <FieldLabel hint="הקלידו כתובת — Google Maps יציע השלמות.">נקודת מפגש</FieldLabel>
-              <input ref={meetingRef} type="text" value={meetingPoint} onChange={function(e){setMeetingPoint(e.target.value)}} placeholder="הקלידו כתובת לחיפוש..." style={inp} />
+              <input
+                ref={function(el) {
+                  meetingRef.current = el
+                  if (el && window.google && window.google.maps) initAutocomplete()
+                }}
+                type="text"
+                value={meetingPoint}
+                onChange={function(e){setMeetingPoint(e.target.value)}}
+                placeholder="הקלידו כתובת לחיפוש..."
+                style={inp}
+              />
               {meetingLink && <a href={meetingLink} target="_blank" rel="noopener noreferrer" style={{ display:'inline-block', marginTop:8, fontSize:12, color:BROWN, fontWeight:700 }}>פתח ב-Google Maps ←</a>}
             </div>
           </SectionCard>
 
           <TimelineDivider />
 
-{/* SECTION 2 */}
+          {/* SECTION 2 */}
           <SectionCard>
-            <SectionLabel number="2" title="הסיפור שתספרו" subtitle="המילים שלכם הן הדבר הראשון שיגרום למטייל להחליט אם להמשיך לקרוא." />
+            <SectionLabel number="2" title="הסיפור שתספרו" subtitle="בואו נוסיף כאן כמה מילים על החוויה שמצפה למי שמצטרף לסיור איתכם." />
 
-            {/* WELCOME CARD — בתוך אזור הסיפור */}
+            {/* WELCOME CARD */}
             <div style={{ background: 'linear-gradient(135deg, #FBF7F1 0%, #F7F1EA 100%)', border: '1px solid #E8DDD0', borderRadius: 14, padding: '20px 22px', marginBottom: 24 }}>
               <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, paddingTop: 2 }}>
@@ -402,7 +521,6 @@ export default function AddTour() {
 
             {aiError && <p style={{ fontSize: 13, color: '#e00', marginBottom: 16, background: '#fff5f5', padding: '10px 14px', borderRadius: 8, border: '1px solid #fecaca' }}>{aiError}</p>}
 
-            {/* תיאור קצר */}
             <div style={{ marginBottom: 24 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 6 }}>
                 <FieldLabel required>תיאור קצר</FieldLabel>
@@ -417,7 +535,6 @@ export default function AddTour() {
               )}
             </div>
 
-            {/* סיפור הסיור */}
             <div style={{ marginBottom: 24 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 6 }}>
                 <FieldLabel required>סיפור הסיור</FieldLabel>
@@ -429,7 +546,6 @@ export default function AddTour() {
               )}
             </div>
 
-            {/* על המדריך */}
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 6 }}>
                 <FieldLabel>על המדריך</FieldLabel>
@@ -446,7 +562,7 @@ export default function AddTour() {
 
           {/* SECTION 3 */}
           <SectionCard>
-            <SectionLabel number="3" title="תמונות הסיור" subtitle='תמונות טובות לא רק מציגות מקום. הן עוזרות לאנשים לדמיין את עצמם שם. העדיפו תמונות עם אור טבעי ואנשים שחווים את המקום.' />
+            <SectionLabel number="3" title="תמונות הסיור" subtitle='תמונות טובות לא רק מציגות מקום — הן עוזרות לאנשים לדמיין את עצמם שם. העדיפו תמונות עם אור טבעי ואנשים שחווים את המקום. יש להעלות תמונות שאתם צילמתם או שיש לכם את הזכויות להשתמש בהן מטעם הצלם והמצולמים.' />
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
               {images.map(function(img, i) {
                 return (
