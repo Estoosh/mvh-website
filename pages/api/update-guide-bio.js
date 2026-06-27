@@ -1,9 +1,65 @@
 export default async function handler(req, res) {
-  return res.status(200).json({
-    method: req.method,
-    body: req.body,
-    record_id: req.body?.record_id,
-    bio: req.body?.bio,
-    bioLength: req.body?.bio?.length || 0
-  })
+  if (req.method !== 'POST') {
+    return res.status(405).json({ success: false, error: 'Method not allowed' })
+  }
+
+  const { record_id, bio } = req.body
+
+  if (!record_id || !bio || !String(bio).trim()) {
+    return res.status(400).json({
+      success: false,
+      error: 'missing_record_id_or_bio'
+    })
+  }
+
+  const token = process.env.AIRTABLE_TOKEN
+  const baseId = process.env.AIRTABLE_BASE_ID
+  const guidesTable = 'tblsJ5Ok1yPSgtvSj'
+
+  if (!token || !baseId) {
+    return res.status(500).json({
+      success: false,
+      error: 'missing_airtable_config'
+    })
+  }
+
+  try {
+    const response = await fetch(
+      `https://api.airtable.com/v0/${baseId}/${guidesTable}/${record_id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          fields: {
+            Guide_Bio: String(bio).trim()
+          }
+        })
+      }
+    )
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      return res.status(502).json({
+        success: false,
+        error: 'airtable_update_failed',
+        airtable: data
+      })
+    }
+
+    return res.status(200).json({
+      success: true,
+      record_id: data.id,
+      Guide_Bio: data.fields?.Guide_Bio || ''
+    })
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      error: 'internal_error',
+      message: err.message
+    })
+  }
 }
