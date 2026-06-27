@@ -1,6 +1,6 @@
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/router'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { loadGoogleMaps } from '../lib/loadGoogleMaps'
@@ -128,24 +128,18 @@ function CityAutocomplete({ value, onChange }) {
   const [query, setQuery] = useState(value || '')
   const [open, setOpen] = useState(false)
   const filtered = query.length >= 1 ? CITIES.filter(c => c.includes(query)).slice(0, 8) : []
-
   return (
     <div style={{ position: 'relative' }}>
-      <input
-        type="text"
-        value={query}
+      <input type="text" value={query}
         onChange={function(e) { setQuery(e.target.value); onChange(''); setOpen(true) }}
         onFocus={function() { setOpen(true) }}
         onBlur={function() { setTimeout(function() { setOpen(false) }, 150) }}
-        placeholder="הקלידו שם יישוב או אזור..."
-        style={inp}
-      />
+        placeholder="הקלידו שם יישוב או אזור..." style={inp} />
       {open && filtered.length > 0 && (
         <div style={{ position: 'absolute', top: '100%', right: 0, left: 0, background: '#fff', border: '1.5px solid #EDE7DF', borderRadius: 10, zIndex: 50, boxShadow: '0 8px 24px rgba(0,0,0,0.1)', maxHeight: 240, overflowY: 'auto' }}>
           {filtered.map(function(c) {
             return (
-              <div key={c}
-                onMouseDown={function() { setQuery(c); onChange(c); setOpen(false) }}
+              <div key={c} onMouseDown={function() { setQuery(c); onChange(c); setOpen(false) }}
                 style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 14, fontFamily: 'Heebo, Arial, sans-serif', borderBottom: '1px solid #F7F1EA' }}
                 onMouseEnter={function(e) { e.currentTarget.style.background = '#FBF7F1' }}
                 onMouseLeave={function(e) { e.currentTarget.style.background = '#fff' }}>
@@ -194,40 +188,13 @@ export default function AddTour() {
     entrance_fee_included: false, entrance_fee_amount: '',
   })
 
-useEffect(function() {
-  if (!router.isReady) return
-  const recordId = router.query.record_id
-  const isFounder = router.query.founder === 'true'
+  // משיכת פרטי מדריך
+  useEffect(function() {
+    if (!router.isReady) return
+    const recordId = router.query.record_id
+    const isFounder = router.query.founder === 'true'
 
-  if (isFounder && recordId) {
-    fetch('/api/get-guide?record_id=' + recordId)
-      .then(r => r.json())
-      .then(function(data) {
-  console.log('[add-tour] get-guide response:', data)
-  console.log('[add-tour] Guide_Bio:', data?.guide?.Guide_Bio)
-  console.log('[add-tour] WhatsApp_Number:', data?.guide?.WhatsApp_Number)
-  if (!data.found) { router.push('/join'); return }
-  setGuideId(data.airtable_id)
-  setGuide(data.guide)
-  setWhatsappNumber(data.guide.WhatsApp_Number || '')
-  setForm(function(prev) {
-    return Object.assign({}, prev, {
-      guide_context: data.guide.Guide_Bio || ''
-    })
-  })
-})
-    return
-  }
-
-  if (!isLoaded) return
-  if (!user) {
-    router.push('/sign-in?redirect_url=' + encodeURIComponent('/add-tour' + window.location.search))
-    return
-  }
-  const email = user.emailAddresses?.[0]?.emailAddress || ''
-  fetch('/api/get-guide?clerk_id=' + user.id + '&email=' + encodeURIComponent(email))
-    .then(r => r.json())
-    .then(function(data) {
+    function applyGuideData(data) {
       if (!data.found) { router.push('/join'); return }
       setGuideId(data.airtable_id)
       setGuide(data.guide)
@@ -237,25 +204,44 @@ useEffect(function() {
           guide_context: data.guide.Guide_Bio || ''
         })
       })
-    })
-}, [router.isReady, isLoaded, user])
+    }
 
+    if (isFounder && recordId) {
+      fetch('/api/get-guide?record_id=' + recordId)
+        .then(r => r.json())
+        .then(applyGuideData)
+      return
+    }
+
+    if (!isLoaded) return
+    if (!user) {
+      router.push('/sign-in?redirect_url=' + encodeURIComponent('/add-tour' + window.location.search))
+      return
+    }
+    const email = user.emailAddresses?.[0]?.emailAddress || ''
+    fetch('/api/get-guide?clerk_id=' + user.id + '&email=' + encodeURIComponent(email))
+      .then(r => r.json())
+      .then(applyGuideData)
+  }, [router.isReady, isLoaded, user])
+
+  // Google Maps
   useEffect(function() {
-  if (!meetingInput) return
-  loadGoogleMaps().then(function() {
-    var ac = new window.google.maps.places.Autocomplete(meetingInput, {
-      language: 'he',
-      componentRestrictions: { country: 'il' }
+    if (!meetingInput) return
+    loadGoogleMaps().then(function() {
+      var ac = new window.google.maps.places.Autocomplete(meetingInput, {
+        language: 'he',
+        componentRestrictions: { country: 'il' }
+      })
+      ac.addListener('place_changed', function() {
+        var place = ac.getPlace()
+        setMeetingPoint(place.formatted_address || '')
+        setMeetingLink(place.url || 'https://maps.google.com/?q=' + encodeURIComponent(place.formatted_address || ''))
+      })
+    }).catch(function(err) {
+      console.error('Google Maps load error:', err)
     })
-    ac.addListener('place_changed', function() {
-      var place = ac.getPlace()
-      setMeetingPoint(place.formatted_address || '')
-      setMeetingLink(place.url || 'https://maps.google.com/?q=' + encodeURIComponent(place.formatted_address || ''))
-    })
-  }).catch(function(err) {
-    console.error('Google Maps load error:', err)
-  })
-}, [meetingInput])
+  }, [meetingInput])
+
   const handleChange = function(e) {
     var val = e.target.type === 'checkbox' ? e.target.checked : e.target.value
     if (e.target.name === 'teaser') { if (e.target.value.length > 140) return; setTeaserCount(e.target.value.length) }
@@ -438,7 +424,6 @@ useEffect(function() {
                 <input type="number" name="duration" value={form.duration} onChange={handleChange} required min="0.5" step="0.5" style={inp} placeholder="3" />
               </div>
             </div>
-
             <div style={{ marginBottom: 16, background: '#FBF7F1', borderRadius: 10, padding: '14px 16px', border: '1px solid #EDE7DF' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, cursor: 'pointer', color: '#2a2a2a', fontFamily: 'Heebo, Arial, sans-serif', marginBottom: form.entrance_fee_included ? 12 : 0 }}>
                 <input type="checkbox" name="entrance_fee_included" checked={form.entrance_fee_included} onChange={handleChange} />
@@ -451,7 +436,6 @@ useEffect(function() {
                 </div>
               )}
             </div>
-
             <div style={{ marginBottom: 16 }}>
               <FieldLabel required>יישוב / אזור</FieldLabel>
               <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer', color: '#555', marginBottom: 10 }}>
@@ -464,14 +448,12 @@ useEffect(function() {
                 <CityAutocomplete value={form.cities} onChange={function(val) { setForm(Object.assign({}, form, { cities: val })) }} />
               )}
             </div>
-
             <div style={{ marginBottom: 16 }}>
               <FieldLabel hint="בחרו עד 4 תקופות">תקופות היסטוריות</FieldLabel>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {HISTORICAL_PERIODS.map(function(p) { return <button key={p} type="button" onClick={function(){togglePeriod(p)}} style={chip(selectedPeriods.includes(p))}>{p}</button> })}
               </div>
             </div>
-
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
               <div>
                 <FieldLabel>גיל מינימום</FieldLabel>
@@ -486,12 +468,10 @@ useEffect(function() {
                 </select>
               </div>
             </div>
-
             <div style={{ marginBottom: 16 }}>
               <FieldLabel required hint="מולא אוטומטית מהפרטים שלכם. אפשר לשנות אם רוצים מספר אחר לסיור הזה.">מספר וואטסאפ</FieldLabel>
               <input type="tel" value={whatsappNumber} onChange={function(e){setWhatsappNumber(e.target.value)}} required style={inp} />
             </div>
-
             <div>
               <FieldLabel hint="הקלידו כתובת — Google Maps יציע השלמות.">נקודת מפגש</FieldLabel>
               <input ref={setMeetingInput} type="text" value={meetingPoint} onChange={function(e){setMeetingPoint(e.target.value)}} placeholder="הקלידו כתובת לחיפוש..." style={inp} />
@@ -504,7 +484,6 @@ useEffect(function() {
           {/* SECTION 2 */}
           <SectionCard>
             <SectionLabel number="2" title="הסיפור שתספרו" subtitle="בואו נוסיף כאן כמה מילים על החוויה שמצפה למי שמצטרף לסיור איתכם." />
-
             <div style={{ background: 'linear-gradient(135deg, #FBF7F1 0%, #F7F1EA 100%)', border: '1px solid #E8DDD0', borderRadius: 14, padding: '20px 22px', marginBottom: 24 }}>
               <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, paddingTop: 2 }}>
@@ -521,9 +500,7 @@ useEffect(function() {
                 </div>
               </div>
             </div>
-
             {aiError && <p style={{ fontSize: 13, color: '#e00', marginBottom: 16, background: '#fff5f5', padding: '10px 14px', borderRadius: 8, border: '1px solid #fecaca' }}>{aiError}</p>}
-
             <div style={{ marginBottom: 24 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 6 }}>
                 <FieldLabel required>תיאור קצר</FieldLabel>
@@ -537,7 +514,6 @@ useEffect(function() {
                 </>
               )}
             </div>
-
             <div style={{ marginBottom: 24 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 6 }}>
                 <FieldLabel required>סיפור הסיור</FieldLabel>
@@ -548,7 +524,6 @@ useEffect(function() {
                 <textarea name="story" value={form.story} onChange={handleChange} required rows={6} style={Object.assign({}, inp, { resize: 'vertical', lineHeight: 1.8 })} placeholder="הסיפור שמסתתר מאחורי המקום..." />
               )}
             </div>
-
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 6 }}>
                 <FieldLabel>למה דווקא אתם מתאימים להוביל את הסיור הזה?</FieldLabel>
