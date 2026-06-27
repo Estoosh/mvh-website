@@ -86,34 +86,37 @@ export default function Founders() {
   }
 
   const generateBio = async function() {
-    const input = profileInput.trim()
-    console.log('[generateBio] input:', input)
-    if (!input) {
-      setBioError('יש להזין טקסט לפני יצירת הטיוטה')
-      return
-    }
-    setBioError('')
-    setBioLoading(true)
-    try {
-      const res = await fetch('/api/generate-founder-bio', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: form.name, profileInput: input })
+  const input = profileInput.trim()
+  console.log('[generateBio] input:', input)
+  if (!input) {
+    setBioError('יש להזין טקסט לפני יצירת הטיוטה')
+    return
+  }
+  setBioError('')
+  setBioLoading(true)
+  try {
+    const res = await fetch('/api/generate-founder-bio', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        profileInput: input
       })
-      const data = await res.json()
-      console.log('[generateBio] response:', data)
-      if (data.bio) {
-        setBioText(data.bio)
-        setBioCount(data.bio.length)
-        setBioGenerated(true)
-      } else {
-        setBioError('לא הצלחנו ליצור טיוטה. אפשר לנסות שוב או לכתוב בעצמכם.')
-      }
-    } catch(err) {
-      console.error('[generateBio] error:', err)
-      setBioError('משהו השתבש. אפשר לנסות שוב.')
+    })
+    const data = await res.json()
+    console.log('[generateBio] response:', data)
+    if (data.bio) {
+      setBioText(data.bio)
+      setBioCount(data.bio.length)
+      setBioGenerated(true)
+    } else {
+      setBioError('לא הצלחנו ליצור טיוטה. אפשר לנסות שוב או לכתוב בעצמכם.')
     }
-    setBioLoading(false)
+  } catch(err) {
+    console.error('[generateBio] error:', err)
+    setBioError('משהו השתבש. אפשר לנסות שוב.')
+  }
+  setBioLoading(false)
+}
   }
 
   const saveBioAndContinue = async function() {
