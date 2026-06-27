@@ -288,16 +288,12 @@ export default function Founders() {
               </div>
             )}
 
-            {!bioLoading && bioGenerated && !bioNotEnough && (
-              <div>
-                <textarea value={bioText} onChange={function(e) { if (e.target.value.length <= 400) { setBioText(e.target.value); setBioCount(e.target.value.length) } }}
-                  rows={5} style={Object.assign({}, inp, { resize: 'vertical', lineHeight: 1.8, marginBottom: 6 })} />
-                <p style={{ fontSize: 11, color: '#B0A89E', textAlign: 'left', marginBottom: 16 }}>{bioCount}/400</p>
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <button onClick={function() { setScreen('benefit') }}
-                    style={{ flex: 1, background: '#111', color: '#fff', padding: '13px', borderRadius: 10, fontSize: 15, fontWeight: 800, border: 'none', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
-                    אישור ←
-                  </button>
+        {!bioLoading && !bioGenerated && !bioNotEnough && (
+  <button onClick={generateBio} disabled={!bioLink.trim()}
+    style={{ width: '100%', background: bioLink.trim() ? '#111' : '#ccc', color: '#fff', padding: '14px', borderRadius: 10, fontSize: 15, fontWeight: 800, border: 'none', cursor: bioLink.trim() ? 'pointer' : 'not-allowed', fontFamily: 'Heebo, Arial, sans-serif' }}>
+    ✨ צרו לי טיוטה
+  </button>
+)}
                   <button onClick={generateBio}
                     style={{ flex: 1, background: '#FBF7F1', color: BROWN, border: '1.5px solid #EDE7DF', padding: '13px', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
                     נסו שוב
