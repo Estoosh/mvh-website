@@ -200,7 +200,6 @@ useEffect(function() {
   const isFounder = router.query.founder === 'true'
 
   if (isFounder && recordId) {
-    // מייסד שמגיע מ-/founders — מושך לפי record_id ישירות
     fetch('/api/get-guide?record_id=' + recordId)
       .then(r => r.json())
       .then(function(data) {
@@ -208,11 +207,15 @@ useEffect(function() {
         setGuideId(data.airtable_id)
         setGuide(data.guide)
         setWhatsappNumber(data.guide.WhatsApp_Number || '')
+        setForm(function(prev) {
+          return Object.assign({}, prev, {
+            guide_context: data.guide.Guide_Bio || ''
+          })
+        })
       })
     return
   }
 
-  // מדריך רגיל — דרך Clerk
   if (!isLoaded) return
   if (!user) {
     router.push('/sign-in?redirect_url=' + encodeURIComponent('/add-tour' + window.location.search))
@@ -224,13 +227,13 @@ useEffect(function() {
     .then(function(data) {
       if (!data.found) { router.push('/join'); return }
       setGuideId(data.airtable_id)
-setGuide(data.guide)
-setWhatsappNumber(data.guide.WhatsApp_Number || '')
-setForm(function(prev) {
-  return Object.assign({}, prev, {
-    guide_context: data.guide.Guide_Bio || ''
-  })
-})
+      setGuide(data.guide)
+      setWhatsappNumber(data.guide.WhatsApp_Number || '')
+      setForm(function(prev) {
+        return Object.assign({}, prev, {
+          guide_context: data.guide.Guide_Bio || ''
+        })
+      })
     })
 }, [router.isReady, isLoaded, user])
 
