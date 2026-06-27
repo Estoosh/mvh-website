@@ -1,65 +1,89 @@
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+  if (req.method !== 'POST') {
+    return res.status(405).json({ success: false, error: 'method_not_allowed' })
+  }
 
-  const { name, email, phone, invite_source } = req.body
+  const { name, email, phone, invite_source } = req.body || {}
 
-  console.log('[register-founder] body received:', {
-    name,
-    email,
-    phone,
-    invite_source,
-  })
+  const cleanName = typeof name === 'string' ? name.trim() : ''
+  const cleanEmail = typeof email === 'string' ? email.trim().toLowerCase() : ''
+  const cleanPhone = typeof phone === 'string' ? phone.trim() : ''
+  const cleanInviteSource = typeof invite_source === 'string' ? invite_source.trim() : 'unknown'
 
-  if (!name || !email || !phone) return res.status(400).json({ error: 'missing_fields' })
+  if (!cleanName || !cleanEmail || !cleanPhone) {
+    return res.status(400).json({
+      success: false,
+      error: 'missing_fields'
+    })
+  }
 
-  const token = process.env.AIRTABLE_TOKEN
-  const baseId = process.env.AIRTABLE_BASE_ID
+  const token =
+    process.env.AIRTABLE_TOKEN ||
+    process.env.AIRTABLE_API_KEY ||
+    process.env.AIRTABLE_ACCESS_TOKEN
+
+  const baseId =
+    process.env.AIRTABLE_BASE_ID ||
+    process.env.AIRTABLE_BASE
+
+  const guidesTable = 'tblsJ5Ok1yPSgtvSj'
+
+  if (!token || !baseId) {
+    return res.status(500).json({
+      success: false,
+      error: 'missing_airtable_config',
+      hasToken: Boolean(token),
+      hasBaseId: Boolean(baseId)
+    })
+  }
 
   const payload = {
-    Guide_Name: name,
-    Email: email,
-    WhatsApp_Number: phone,
+    Guide_Name: cleanName,
+    Email: cleanEmail,
+    WhatsApp_Number: cleanPhone,
     Guide_Status: 'pending',
     Founder_Status: 'Founder',
     Founder_Stage: 'registered',
+    Guide_bio: ''
   }
 
-  console.log('[register-founder] airtable payload:', payload)
-
   try {
-    const createRes = await fetch(`https://api.airtable.com/v0/${baseId}/tblsJ5Ok1yPSgtvSj`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fields: payload })
-    })
+    const createRes = await fetch(
+      `https://api.airtable.com/v0/${baseId}/${guidesTable}`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ fields: payload })
+      }
+    )
 
-    const rawText = await createRes.text()
-    let data
-    try { data = JSON.parse(rawText) } catch(e) {
-      return res.status(500).json({ error: 'parse_error', detail: rawText })
-    }
+    const data = await createRes.json()
 
     if (!createRes.ok) {
-      console.error('[register-founder] airtable error:', data)
-      return res.status(500).json({ error: 'airtable_error', detail: data })
+      return res.status(502).json({
+        success: false,
+        error: 'airtable_create_failed',
+        airtable: data
+      })
     }
-
-    console.log('[register-founder] created record:', {
-      id: data.id,
-      Guide_Name: data.fields?.Guide_Name,
-      Email: data.fields?.Email,
-      WhatsApp_Number: data.fields?.WhatsApp_Number,
-      Founder_Status: data.fields?.Founder_Status,
-      Founder_Number: data.fields?.Founder_Number,
-    })
 
     return res.status(200).json({
       success: true,
+      record_id: data.id,
       founder_number: data.fields?.Founder_Number || null,
-      record_id: data.id
+      guide: {
+        id: data.id,
+        ...data.fields
+      }
     })
-  } catch(err) {
-    console.error('[register-founder] internal error:', err.message)
-    return res.status(500).json({ error: 'internal_error', message: err.message })
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      error: 'internal_error',
+      message: err.message
+    })
   }
 }
