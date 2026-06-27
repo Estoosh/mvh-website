@@ -359,39 +359,173 @@ export default function AddTour() {
     )
   }
 
-  if (saved) return (
-    <div style={{ fontFamily: 'Heebo, Arial, sans-serif', background: CREAM, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Header />
-      <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 24px' }}>
-        <div style={{ maxWidth: 560, width: '100%', textAlign: 'center' }}>
-          <div style={{ fontSize: 52, marginBottom: 16 }}>🎉</div>
-          <h1 style={{ fontSize: 28, fontWeight: 800, color: '#1a1a1a', marginBottom: 12, letterSpacing: '-0.3px' }}>הסיור שלכם באוויר.</h1>
-          <p style={{ fontSize: 16, color: '#555', lineHeight: 1.8, marginBottom: 32 }}>עשיתם את הצעד הראשון.<br />ככל שהתיאור יהיה אישי יותר, התמונות ימחישו את החוויה והזמינות תהיה מעודכנת, כך יגדל הסיכוי שמטיילים יבחרו דווקא בכם.</p>
-          <div style={{ background: '#fff', borderRadius: 16, padding: '24px 28px', border: '1px solid #EDE7DF', textAlign: 'right', marginBottom: 28 }}>
-            {[
-              { done: true, text: 'הסיור פורסם' },
-              { done: images.length > 0, text: 'נוספה תמונה ראשית' },
-              { done: !!form.story, text: 'נוסף סיפור לסיור' },
-              { done: images.length >= 3, text: 'כדאי להוסיף עוד תמונות' },
-              { done: false, text: 'שתפו את עמוד הסיור ברשתות החברתיות' },
-            ].map(function(item, i) {
-              return (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < 4 ? '1px solid #F0EAE2' : 'none' }}>
-                  <span style={{ fontSize: 16, width: 24, textAlign: 'center', flexShrink: 0 }}>{item.done ? '✅' : '⬜'}</span>
-                  <span style={{ fontSize: 14, color: item.done ? '#1a1a1a' : '#6B6B6B', fontWeight: item.done ? 600 : 400 }}>{item.text}</span>
+if (saved) {
+    const isFounder = router.query.founder === 'true'
+    const founderNum = router.query.founder_number
+
+    if (isFounder) return (
+      <div dir="rtl" style={{ fontFamily: 'Heebo, Arial, sans-serif', background: '#F7F1EA', minHeight: '100vh' }}>
+        <style>{`
+          @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          .founder-card { animation: fadeUp 600ms ease forwards; }
+          @media (max-width: 768px) {
+            .hero-img { height: 260px !important; }
+            .founder-card { width: calc(100% - 32px) !important; margin-top: -80px !important; padding: 28px 20px !important; }
+            .timeline-side { display: none !important; }
+            .timeline-mobile { display: flex !important; }
+            .illustration { width: 220px !important; }
+            .cta-btn { width: 100% !important; }
+          }
+        `}</style>
+
+        <div className="hero-img" style={{ width: '100%', height: '42vh', position: 'relative', overflow: 'hidden' }}>
+          <img src="/founder_hero.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%', background: 'linear-gradient(to top, #F7F1EA 0%, transparent 100%)' }} />
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '0 16px 80px' }}>
+          <div className="founder-card" style={{
+            background: '#fff', borderRadius: 24, maxWidth: 760, width: '100%',
+            marginTop: -100, position: 'relative', zIndex: 2,
+            boxShadow: '0 24px 64px rgba(0,0,0,0.10)',
+            border: '1px solid #EDE7DF', padding: '44px 40px',
+            display: 'flex', gap: 40, alignItems: 'flex-start'
+          }}>
+
+            <div className="timeline-side" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, paddingTop: 8 }}>
+              {[
+                { label: 'הצטרפתם לדור הראשון', done: true },
+                { label: 'הפרופיל נשמר', done: true },
+                { label: 'הסיור נשמר לבדיקה', done: true },
+                { label: 'ניפגש בהשקה', done: false },
+              ].map(function(step, i) {
+                return (
+                  <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{
+                        width: 28, height: 28, borderRadius: '50%',
+                        background: step.done ? '#B97A45' : '#fff',
+                        border: '2px solid #B97A45',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 13, color: '#fff', flexShrink: 0
+                      }}>
+                        {step.done ? '✓' : '✦'}
+                      </div>
+                      <span style={{ fontSize: 12, color: '#7E4821', fontWeight: step.done ? 700 : 500, whiteSpace: 'nowrap', fontFamily: 'Heebo, Arial, sans-serif' }}>
+                        {step.label}
+                      </span>
+                    </div>
+                    {i < 3 && <div style={{ width: 2, height: 28, background: '#C8A582', opacity: 0.4, margin: '2px 0 2px 0' }} />}
+                  </div>
+                )
+              })}
+            </div>
+
+            <div style={{ flex: 1, textAlign: 'right' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+                <img src="/Logo-black.png" alt="מאז ועד היום" style={{ height: 56, width: 'auto' }} onError={function(e) { e.target.style.display='none' }} />
+              </div>
+
+              {founderNum && (
+                <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, color: '#B97A45', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 12 }}>
+                  Founder #{founderNum}
+                </p>
+              )}
+
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6, marginBottom: 20 }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#C8A582' }} />
+                <div style={{ width: 24, height: 1, background: '#C8A582' }} />
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#C8A582' }} />
+              </div>
+
+              <h1 style={{ fontSize: 'clamp(22px,3vw,32px)', fontWeight: 900, color: '#1A1A1A', marginBottom: 16, lineHeight: 1.3, textAlign: 'center' }}>
+                הסיפור הראשון שלכם נשמר.
+              </h1>
+
+              <p style={{ fontSize: 16, color: '#555', lineHeight: 1.9, marginBottom: 8, textAlign: 'center' }}>
+                יום אחד יהיו כאן עוד מאות סיורים.
+              </p>
+              <p style={{ fontSize: 16, color: '#555', lineHeight: 1.9, marginBottom: 20, textAlign: 'center' }}>
+                אבל הסיור שלכם יהיה חלק מהדור הראשון.
+              </p>
+              <p style={{ fontSize: 16, color: '#555', lineHeight: 1.9, marginBottom: 28, textAlign: 'center' }}>
+                תודה שאתם עוזרים לנו לכתוב את הפרק הראשון של{' '}
+                <span style={{ color: '#B97A45', fontWeight: 700 }}>מאז ועד היום</span>.
+              </p>
+
+              <div className="timeline-mobile" style={{ display: 'none', flexDirection: 'column', gap: 8, marginBottom: 24, padding: '16px', background: '#FBF7F1', borderRadius: 12, border: '1px solid #EDE7DF' }}>
+                {[
+                  { label: 'הצטרפתם לדור הראשון', done: true },
+                  { label: 'הפרופיל נשמר', done: true },
+                  { label: 'הסיור נשמר לבדיקה', done: true },
+                  { label: 'ניפגש בהשקה', done: false },
+                ].map(function(step, i) {
+                  return (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{
+                        width: 24, height: 24, borderRadius: '50%',
+                        background: step.done ? '#B97A45' : '#fff',
+                        border: '2px solid #B97A45',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 11, color: '#fff', flexShrink: 0
+                      }}>
+                        {step.done ? '✓' : '✦'}
+                      </div>
+                      <span style={{ fontSize: 13, color: '#7E4821', fontWeight: step.done ? 700 : 500, fontFamily: 'Heebo, Arial, sans-serif' }}>
+                        {step.label}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+
+              <div style={{ marginBottom: 24, borderRadius: 14, overflow: 'hidden', border: '1px solid #EDE7DF' }}>
+                <img src="/founder_baner.png" alt="" style={{ width: '100%', display: 'block' }} onError={function(e) { e.target.style.display='none' }} />
+                <div style={{ background: '#E8DDD0', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <span style={{ fontSize: 28 }}>✉️</span>
+                  <p style={{ fontSize: 14, color: '#555', lineHeight: 1.7, margin: 0, fontFamily: 'Heebo, Arial, sans-serif' }}>
+                    לקראת ההשקה נשלח לכם מייל עם{' '}
+                    <strong style={{ color: '#B97A45' }}>גישה מלאה לחשבון</strong>{' '}
+                    ולסיור שהעליתם.
+                  </p>
                 </div>
-              )
-            })}
-          </div>
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-            <button onClick={function() { router.push('/dashboard') }} style={{ background: '#111', color: '#fff', padding: '12px 24px', borderRadius: 10, fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>לדשבורד ←</button>
-            <button onClick={function() { setSaved(false); setLoading(false); setForm({ title:'',teaser:'',story:'',guide_context:'',price:'',duration:'',cities:'',min_age:'1',max_age:'99',collab_code:'',pets_allowed:false,entrance_fee_included:false,entrance_fee_amount:'' }) }} style={{ background: CREAM, color: BROWN, padding: '12px 24px', borderRadius: 10, fontSize: 14, fontWeight: 700, border: '1.5px solid #EDE7DF', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>הוסף סיור נוסף</button>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
+                <img className="illustration" src="/founder_footer.png" alt="" style={{ width: 320, maxWidth: '100%', opacity: 0.9 }} onError={function(e) { e.target.style.display='none' }} />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <button className="cta-btn" onClick={function() { window.location.href = '/' }}
+                  style={{ background: '#B97A45', color: '#fff', padding: '0 48px', height: 54, borderRadius: 14, fontSize: 16, fontWeight: 800, border: 'none', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif', boxShadow: '0 8px 24px rgba(185,122,69,0.25)' }}>
+                  ניפגש בהשקה ✦
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </main>
-      <Footer />
-    </div>
-  )
+      </div>
+    )
+
+    return (
+      <div style={{ fontFamily: 'Heebo, Arial, sans-serif', background: CREAM, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <Header />
+        <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 24px' }}>
+          <div style={{ maxWidth: 560, width: '100%', textAlign: 'center' }}>
+            <div style={{ fontSize: 52, marginBottom: 16 }}>🎉</div>
+            <h1 style={{ fontSize: 28, fontWeight: 800, color: '#1a1a1a', marginBottom: 12 }}>הסיור שלכם באוויר.</h1>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+              <button onClick={function() { router.push('/dashboard') }} style={{ background: '#111', color: '#fff', padding: '12px 24px', borderRadius: 10, fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>לדשבורד ←</button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
 
   return (
     <div style={{ fontFamily: 'Heebo, Arial, sans-serif', background: CREAM, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
