@@ -195,6 +195,24 @@ export default function AddTour() {
   })
 
 useEffect(function() {
+  if (!router.isReady) return
+  const recordId = router.query.record_id
+  const isFounder = router.query.founder === 'true'
+
+  if (isFounder && recordId) {
+    // מייסד שמגיע מ-/founders — מושך לפי record_id ישירות
+    fetch('/api/get-guide?record_id=' + recordId)
+      .then(r => r.json())
+      .then(function(data) {
+        if (!data.found) { router.push('/join'); return }
+        setGuideId(data.airtable_id)
+        setGuide(data.guide)
+        setWhatsappNumber(data.guide.WhatsApp_Number || '')
+      })
+    return
+  }
+
+  // מדריך רגיל — דרך Clerk
   if (!isLoaded) return
   if (!user) {
     router.push('/sign-in?redirect_url=' + encodeURIComponent('/add-tour' + window.location.search))
@@ -204,14 +222,12 @@ useEffect(function() {
   fetch('/api/get-guide?clerk_id=' + user.id + '&email=' + encodeURIComponent(email))
     .then(r => r.json())
     .then(function(data) {
-      console.log('[add-tour] get-guide response:', data)
-      console.log('[add-tour] WhatsApp_Number:', data?.guide?.WhatsApp_Number)
       if (!data.found) { router.push('/join'); return }
       setGuideId(data.airtable_id)
       setGuide(data.guide)
       setWhatsappNumber(data.guide.WhatsApp_Number || '')
     })
-}, [isLoaded, user])
+}, [router.isReady, isLoaded, user])
 
   useEffect(function() {
     if (typeof window === 'undefined') return
