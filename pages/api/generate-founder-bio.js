@@ -5,35 +5,74 @@ export default async function handler(req, res) {
 
   const { profileInput } = req.body
 
-  console.log('[generate-founder-bio] profileInput received:', profileInput)
-
   if (!profileInput || !profileInput.trim()) {
     return res.status(400).json({ error: 'profile_input_required' })
   }
 
   const cleanInput = profileInput.trim()
+  const isUrl = cleanInput.startsWith('http')
+  const isShortText = cleanInput.split(' ').length <= 4
+
+  // אם זה טקסט ארוך — שולחים ישירות ל-Gemini בלי search
+  if (!isUrl && !isShortText) {
+    return generateFromText(cleanInput, res)
+  }
+
+  // אם זה URL או שם קצר — מריצים web search דרך Anthropic API
+  const searchQuery = isUrl ? cleanInput : cleanInput + ' מורה דרך'
+
+  try {
+    const searchRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{
+          role: 'user',
+          content: `חפש מידע על "${searchQuery}" וסכם בעברית מה אתה יודע על האדם הזה כמורה דרך. אם לא מצאת מידע רלוונטי, אמור זאת במפורש.`
+        }]
+      })
+    })
+
+    const searchData = await searchRes.json()
+    console.log('[generate-founder-bio] search response type:', searchData?.content?.map(c => c.type))
+
+    const textBlocks = (searchData?.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n')
+    console.log('[generate-founder-bio] search summary:', textBlocks.slice(0, 300))
+
+    const contextToUse = textBlocks.length > 50 ? textBlocks : cleanInput
+    return generateFromText(contextToUse, res)
+
+  } catch(err) {
+    console.error('[generate-founder-bio] search error:', err.message)
+    return generateFromText(cleanInput, res)
+  }
+}
+
+async function generateFromText(contextText, res) {
   const apiKey = process.env.GEMINI_API_KEY
 
   const prompt = `
-אתה כותב טיוטת פרופיל למורה דרך באתר "מאז ועד היום".
+אתה כותב טיוטת Bio למורה דרך באתר "מאז ועד היום".
 
-חשוב מאוד:
-הטקסט היחיד שמותר לך להשתמש בו הוא הטקסט הבא שהמשתמש כתב בשדה הנוכחי.
-אסור להשתמש בשם המשתמש.
-אסור להשתמש במידע משדות קודמים.
-אסור להשלים פרטים שלא מופיעים בטקסט.
-אסור להניח מי האדם.
+מידע על המדריך:
+${contextText}
 
-טקסט המשתמש:
-${cleanInput}
+כללים:
+- השתמש רק במידע שמופיע לעיל.
+- אל תמציא פרטים, תפקידים, הישגים או ניסיון.
+- אל תכתוב ביוגרפיה גנרית.
+- המטרה: לעזור למטייל להבין איזה סוג מספר סיפורים האדם הזה, ומה יגרום לו לרצות לצאת איתו.
+- אם המידע דל, כתוב טיוטה צנועה ובסוף הצע: "רוצים שנדייק? הוסיפו משפט אחד על מה שאתם אוהבים לספר."
 
-כתוב בעברית טבעית, קצרה ואנושית.
-לא קורות חיים.
-לא רשימת תפקידים.
-לא שיווק גנרי.
-המטרה היא לעזור למטייל להבין איזה סוג מספר סיפורים האדם הזה.
+כתוב 2 פסקאות קצרות.
+220 עד 350 תווים סה"כ.
+מקסימום 400 תווים.
 
-אם אין מספיק מידע, כתוב טיוטה צנועה שמבוססת רק על מה שיש, בלי להמציא.
+אסור להשתמש בביטויים:
+בעל ניסיון רב, חוויה בלתי נשכחת, מסע מרתק, חיבור אנושי, מומחה בתחומו, מורה דרך מוסמך, לוקח אתכם למסע.
 
 החזר JSON בלבד, ללא markdown:
 {"bio":"..."}
@@ -51,20 +90,19 @@ ${cleanInput}
 
     const data = await response.json()
     const rawText = (data?.candidates?.[0]?.content?.parts?.[0]?.text || '').trim()
-    console.log('[generate-founder-bio] gemini raw:', rawText)
+    console.log('[generate-founder-bio] gemini raw:', rawText.slice(0, 200))
 
     const cleaned = rawText.replace(/```json|```/g, '').trim()
     let parsed
     try {
       parsed = JSON.parse(cleaned)
     } catch(e) {
-      console.error('[generate-founder-bio] parse error:', cleaned)
       return res.status(200).json({ bio: cleaned.slice(0, 400) })
     }
 
     return res.status(200).json({ bio: (parsed.bio || '').slice(0, 400) })
   } catch(err) {
-    console.error('[generate-founder-bio] error:', err.message)
+    console.error('[generate-founder-bio] gemini error:', err.message)
     return res.status(500).json({ error: 'internal_error' })
   }
 }
