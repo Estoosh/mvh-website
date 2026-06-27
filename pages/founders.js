@@ -40,27 +40,6 @@ function Card({ children, style }) {
   )
 }
 
-function AITimelineAnim() {
-  const [step, setStep] = useState(0)
-  useState(function() {
-    var interval = setInterval(function() { setStep(function(s) { return (s + 1) % 3 }) }, 500)
-    return function() { clearInterval(interval) }
-  })
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
-      {[0,1,2].map(function(i) {
-        var active = i === step
-        return (
-          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ width: active ? 12 : 8, height: active ? 12 : 8, borderRadius: '50%', background: active ? BROWN : TIMELINE, transition: 'all 0.3s', opacity: active ? 1 : 0.4 }} />
-            {i < 2 && <div style={{ width: 2, height: 20, background: TIMELINE, opacity: 0.3 }} />}
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
 const inp = { width: '100%', padding: '12px 14px', borderRadius: 10, border: '1.5px solid #EDE7DF', fontSize: 15, fontFamily: 'Heebo, Arial, sans-serif', outline: 'none', background: '#fff', boxSizing: 'border-box', color: '#1a1a1a' }
 
 export default function Founders() {
@@ -70,12 +49,12 @@ export default function Founders() {
   const [error, setError] = useState('')
   const [founderNumber, setFounderNumber] = useState(null)
   const [recordId, setRecordId] = useState(null)
-  const [bioLink, setBioLink] = useState('')
+  const [profileInput, setProfileInput] = useState('')
   const [bioText, setBioText] = useState('')
-  const [bioGenerated, setBioGenerated] = useState('')
+  const [bioGenerated, setBioGenerated] = useState(false)
   const [bioLoading, setBioLoading] = useState(false)
   const [bioCount, setBioCount] = useState(0)
-  const [bioNotEnough, setBioNotEnough] = useState(false)
+  const [bioError, setBioError] = useState('')
 
   const handleChange = function(e) {
     setForm(Object.assign({}, form, { [e.target.name]: e.target.value }))
@@ -107,27 +86,46 @@ export default function Founders() {
   }
 
   const generateBio = async function() {
-    if (!bioLink.trim()) return
+    const input = profileInput.trim()
+    console.log('[generateBio] input:', input)
+    if (!input) {
+      setBioError('יש להזין טקסט לפני יצירת הטיוטה')
+      return
+    }
+    setBioError('')
     setBioLoading(true)
-    setBioNotEnough(false)
     try {
       const res = await fetch('/api/generate-founder-bio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: form.name, publicInput: bioLink })
+        body: JSON.stringify({ name: form.name, profileInput: input })
       })
       const data = await res.json()
-      if (data.not_enough) {
-        setBioNotEnough(true)
-        setBioGenerated('')
-        setBioText('')
-      } else if (data.bio) {
-        setBioGenerated(data.bio)
+      console.log('[generateBio] response:', data)
+      if (data.bio) {
         setBioText(data.bio)
         setBioCount(data.bio.length)
+        setBioGenerated(true)
+      } else {
+        setBioError('לא הצלחנו ליצור טיוטה. אפשר לנסות שוב או לכתוב בעצמכם.')
       }
-    } catch(err) {}
+    } catch(err) {
+      console.error('[generateBio] error:', err)
+      setBioError('משהו השתבש. אפשר לנסות שוב.')
+    }
     setBioLoading(false)
+  }
+
+  const saveBioAndContinue = async function() {
+    if (!bioText.trim() || !recordId) { setScreen('benefit'); return }
+    try {
+      await fetch('/api/update-guide-bio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ record_id: recordId, bio: bioText })
+      })
+    } catch(err) {}
+    setScreen('benefit')
   }
 
   return (
@@ -256,45 +254,57 @@ export default function Founders() {
               <TimelineDot />
               <StepBadge number="4" />
             </div>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1a1a1a', marginBottom: 10 }}>איך אנשים מחפשים אתכם היום?</h2>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1a1a1a', marginBottom: 10 }}>ספרו לנו קצת על עצמכם</h2>
             <p style={{ fontSize: 14, color: '#6B6B6B', lineHeight: 1.7, marginBottom: 20 }}>
-              אפשר להדביק אתר, פייסבוק, אינסטגרם, טיקטוק, לינקדאין, או פשוט שם מלא. נשתמש רק במידע ציבורי כדי להציע טיוטה ראשונית לפרופיל שלכם.
+              אפשר להדביק כאן טקסט קיים שכתבתם על עצמכם, קטע מאתר, פוסט, פרופיל מקצועי או כמה משפטים חופשיים. נשתמש בזה כדי להציע טיוטה ראשונית לפרופיל שלכם.
             </p>
-            <input type="text" value={bioLink} onChange={function(e) { setBioLink(e.target.value) }}
-              placeholder="https://... או שם מלא" style={Object.assign({}, inp, { marginBottom: 16 })} />
+
+            <textarea
+              value={profileInput}
+              onChange={function(e) { setProfileInput(e.target.value) }}
+              rows={5}
+              placeholder="למשל: אני מדריך סיורים בירושלים כבר 15 שנה. מתמחה בתקופת הצלבנים ואוהב לספר את הסיפורים שמסתתרים מאחורי הכותלים..."
+              style={Object.assign({}, inp, { resize: 'vertical', lineHeight: 1.8, marginBottom: 16 })}
+            />
+
+            {bioError && (
+              <p style={{ fontSize: 13, color: '#e00', background: '#fff5f5', padding: '10px 14px', borderRadius: 8, border: '1px solid #fecaca', marginBottom: 16 }}>
+                {bioError}
+              </p>
+            )}
 
             {bioLoading && (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px 0' }}>
-                <AITimelineAnim />
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+                  {[0,1,2].map(function(i) {
+                    return (
+                      <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: TIMELINE, opacity: 0.6 }} />
+                        {i < 2 && <div style={{ width: 2, height: 20, background: TIMELINE, opacity: 0.3 }} />}
+                      </div>
+                    )
+                  })}
+                </div>
                 <p style={{ fontSize: 13, color: '#6B6B6B', marginTop: 12, fontFamily: 'Heebo, Arial, sans-serif' }}>יוצרים עבורכם טיוטה...</p>
               </div>
             )}
 
-            {!bioLoading && bioNotEnough && (
-              <div style={{ marginBottom: 16 }}>
-                <p style={{ fontSize: 13, color: '#888', background: '#FBF7F1', padding: '12px 14px', borderRadius: 8, border: '1px solid #EDE7DF', marginBottom: 12 }}>
-                  לא מצאנו מספיק מידע ציבורי. תוכלו לנסות קישור אחר או לכתוב בעצמכם.
-                </p>
+            {!bioLoading && bioGenerated && (
+              <div>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#2a2a2a', marginBottom: 6 }}>הטיוטה שלכם:</label>
+                <textarea
+                  value={bioText}
+                  onChange={function(e) { if (e.target.value.length <= 400) { setBioText(e.target.value); setBioCount(e.target.value.length) } }}
+                  rows={5}
+                  style={Object.assign({}, inp, { resize: 'vertical', lineHeight: 1.8, marginBottom: 6 })}
+                />
+                <p style={{ fontSize: 11, color: '#B0A89E', textAlign: 'left', marginBottom: 16 }}>{bioCount}/400</p>
                 <div style={{ display: 'flex', gap: 10 }}>
-                  <button onClick={generateBio}
-                    style={{ flex: 1, background: '#FBF7F1', color: BROWN, border: '1.5px solid #EDE7DF', padding: '12px', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
-                    נסו קישור אחר
+                  <button onClick={saveBioAndContinue}
+                    style={{ flex: 1, background: '#111', color: '#fff', padding: '13px', borderRadius: 10, fontSize: 15, fontWeight: 800, border: 'none', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
+                    אישור ←
                   </button>
-                  <button onClick={function() { setScreen('bio-manual') }}
-                    style={{ flex: 1, background: '#fff', color: '#555', border: '1.5px solid #EDE7DF', padding: '12px', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
-                    אכתוב בעצמי
-                  </button>
-                </div>
-              </div>
-            )}
-
-        {!bioLoading && !bioGenerated && !bioNotEnough && (
-  <button onClick={generateBio} disabled={!bioLink.trim()}
-    style={{ width: '100%', background: bioLink.trim() ? '#111' : '#ccc', color: '#fff', padding: '14px', borderRadius: 10, fontSize: 15, fontWeight: 800, border: 'none', cursor: bioLink.trim() ? 'pointer' : 'not-allowed', fontFamily: 'Heebo, Arial, sans-serif' }}>
-    ✨ צרו לי טיוטה
-  </button>
-)}
-                  <button onClick={generateBio}
+                  <button onClick={function() { setBioGenerated(false); setBioText('') }}
                     style={{ flex: 1, background: '#FBF7F1', color: BROWN, border: '1.5px solid #EDE7DF', padding: '13px', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
                     נסו שוב
                   </button>
@@ -302,9 +312,9 @@ export default function Founders() {
               </div>
             )}
 
-            {!bioLoading && !bioGenerated && !bioNotEnough && (
-              <button onClick={generateBio} disabled={!bioLink.trim()}
-                style={{ width: '100%', background: bioLink.trim() ? '#111' : '#ccc', color: '#fff', padding: '14px', borderRadius: 10, fontSize: 15, fontWeight: 800, border: 'none', cursor: bioLink.trim() ? 'pointer' : 'not-allowed', fontFamily: 'Heebo, Arial, sans-serif' }}>
+            {!bioLoading && !bioGenerated && (
+              <button onClick={generateBio} disabled={!profileInput.trim()}
+                style={{ width: '100%', background: profileInput.trim() ? '#111' : '#ccc', color: '#fff', padding: '14px', borderRadius: 10, fontSize: 15, fontWeight: 800, border: 'none', cursor: profileInput.trim() ? 'pointer' : 'not-allowed', fontFamily: 'Heebo, Arial, sans-serif' }}>
                 ✨ צרו לי טיוטה
               </button>
             )}
@@ -325,7 +335,7 @@ export default function Founders() {
             <textarea value={bioText} onChange={function(e) { if (e.target.value.length <= 500) { setBioText(e.target.value); setBioCount(e.target.value.length) } }}
               rows={6} style={Object.assign({}, inp, { resize: 'vertical', lineHeight: 1.8, marginBottom: 6 })} placeholder="הסיפור שלכם..." />
             <p style={{ fontSize: 11, color: bioCount > 450 ? '#e00' : '#B0A89E', textAlign: 'left', marginBottom: 16 }}>{bioCount}/500</p>
-            <button onClick={function() { setScreen('benefit') }} disabled={!bioText.trim()}
+            <button onClick={saveBioAndContinue} disabled={!bioText.trim()}
               style={{ width: '100%', background: bioText.trim() ? '#111' : '#ccc', color: '#fff', padding: '14px', borderRadius: 10, fontSize: 15, fontWeight: 800, border: 'none', cursor: bioText.trim() ? 'pointer' : 'not-allowed', fontFamily: 'Heebo, Arial, sans-serif' }}>
               המשיכו ←
             </button>
