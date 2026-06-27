@@ -1,25 +1,33 @@
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ success: false, error: 'Method not allowed' })
+    return res.status(405).json({ success: false, error: 'method_not_allowed' })
   }
 
-  const { record_id, bio } = req.body
+  const { record_id, bio } = req.body || {}
 
-  if (!record_id || !bio || !String(bio).trim()) {
-    return res.status(400).json({
-      success: false,
-      error: 'missing_record_id_or_bio'
-    })
+  if (!record_id || !String(record_id).startsWith('rec')) {
+    return res.status(400).json({ success: false, error: 'invalid_record_id' })
   }
 
-  const token = process.env.AIRTABLE_TOKEN
-  const baseId = process.env.AIRTABLE_BASE_ID
+  const cleanBio = typeof bio === 'string' ? bio.trim() : ''
+
+  const token =
+    process.env.AIRTABLE_API_KEY ||
+    process.env.AIRTABLE_TOKEN ||
+    process.env.AIRTABLE_ACCESS_TOKEN
+
+  const baseId =
+    process.env.AIRTABLE_BASE_ID ||
+    process.env.AIRTABLE_BASE
+
   const guidesTable = 'tblsJ5Ok1yPSgtvSj'
 
   if (!token || !baseId) {
     return res.status(500).json({
       success: false,
-      error: 'missing_airtable_config'
+      error: 'missing_airtable_config',
+      hasToken: Boolean(token),
+      hasBaseId: Boolean(baseId)
     })
   }
 
@@ -34,7 +42,7 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           fields: {
-            Guide_Bio: String(bio).trim()
+            Guide_bio: cleanBio
           }
         })
       }
@@ -53,7 +61,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       record_id: data.id,
-      Guide_Bio: data.fields?.Guide_Bio || ''
+      Guide_bio: data.fields?.Guide_bio || ''
     })
   } catch (err) {
     return res.status(500).json({
