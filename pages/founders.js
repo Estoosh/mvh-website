@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
 
@@ -6,6 +6,7 @@ const BROWN = '#7E4821'
 const CREAM = '#F7F1EA'
 const TIMELINE = '#C98A52'
 const BRAND = '#B97A45'
+const DRAFT_KEY = 'mvh_founder_onboarding_draft'
 
 function TimelineDot() {
   return (
@@ -30,17 +31,30 @@ function StepBadge({ number }) {
 function Card({ children, style }) {
   return (
     <div style={Object.assign({
-      background: '#fff', borderRadius: 20, padding: '36px 32px',
+      background: '#fff',
+      borderRadius: 20,
+      padding: '36px 32px',
       border: '1px solid #EDE7DF',
       boxShadow: '0 12px 40px rgba(0,0,0,0.06)',
-      animation: 'fadeUp 350ms ease forwards',
+      animation: 'fadeUp 350ms ease forwards'
     }, style)}>
       {children}
     </div>
   )
 }
 
-const inp = { width: '100%', padding: '12px 14px', borderRadius: 10, border: '1.5px solid #EDE7DF', fontSize: 15, fontFamily: 'Heebo, Arial, sans-serif', outline: 'none', background: '#fff', boxSizing: 'border-box', color: '#1a1a1a' }
+const inp = {
+  width: '100%',
+  padding: '12px 14px',
+  borderRadius: 10,
+  border: '1.5px solid #EDE7DF',
+  fontSize: 15,
+  fontFamily: 'Heebo, Arial, sans-serif',
+  outline: 'none',
+  background: '#fff',
+  boxSizing: 'border-box',
+  color: '#1a1a1a'
+}
 
 export default function Founders() {
   const [screen, setScreen] = useState('welcome')
@@ -56,79 +70,152 @@ export default function Founders() {
   const [bioCount, setBioCount] = useState(0)
   const [bioError, setBioError] = useState('')
 
+  useEffect(function() {
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY)
+      if (!saved) return
+      const draft = JSON.parse(saved)
+
+      if (draft.screen) setScreen(draft.screen)
+      if (draft.form) setForm(draft.form)
+      if (draft.founderNumber) setFounderNumber(draft.founderNumber)
+      if (draft.recordId) setRecordId(draft.recordId)
+      if (draft.profileInput) setProfileInput(draft.profileInput)
+      if (draft.bioText) {
+        setBioText(draft.bioText)
+        setBioCount(draft.bioText.length)
+      }
+      if (draft.bioGenerated) setBioGenerated(draft.bioGenerated)
+    } catch (err) {
+      console.error('[founders] failed to restore draft:', err)
+    }
+  }, [])
+
+  useEffect(function() {
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({
+        screen,
+        form,
+        founderNumber,
+        recordId,
+        profileInput,
+        bioText,
+        bioGenerated
+      }))
+    } catch (err) {
+      console.error('[founders] failed to save draft:', err)
+    }
+  }, [screen, form, founderNumber, recordId, profileInput, bioText, bioGenerated])
+
   const handleChange = function(e) {
     setForm(Object.assign({}, form, { [e.target.name]: e.target.value }))
   }
 
   const handleRegister = async function(e) {
     e.preventDefault()
+
     if (!form.name.trim() || !form.email.trim() || !form.phone.trim()) {
       setError('יש למלא את כל השדות')
       return
     }
+
     setError('')
     setLoading(true)
+
     try {
       const res = await fetch('/api/register-founder', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: form.name, email: form.email, phone: form.phone, invite_source: 'unknown' })
       })
+
       const data = await res.json()
-      if (!data.success) { setError('משהו השתבש. אפשר לנסות שוב.'); setLoading(false); return }
+
+      if (!data.success) {
+        setError('משהו השתבש. אפשר לנסות שוב.')
+        setLoading(false)
+        return
+      }
+
       setFounderNumber(data.founder_number)
       setRecordId(data.record_id)
       setScreen('success')
     } catch(err) {
       setError('משהו השתבש. אפשר לנסות שוב.')
     }
+
     setLoading(false)
   }
 
   const generateBio = async function() {
-  const input = profileInput.trim()
-  console.log('[generateBio] input:', input)
-  if (!input) {
-    setBioError('יש להזין טקסט לפני יצירת הטיוטה')
-    return
-  }
-  setBioError('')
-  setBioLoading(true)
-  try {
-    const res = await fetch('/api/generate-founder-bio', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        profileInput: input
-      })
-    })
-    const data = await res.json()
-    console.log('[generateBio] response:', data)
-    if (data.bio) {
-      setBioText(data.bio)
-      setBioCount(data.bio.length)
-      setBioGenerated(true)
-    } else {
-      setBioError('לא הצלחנו ליצור טיוטה. אפשר לנסות שוב או לכתוב בעצמכם.')
-    }
-  } catch(err) {
-    console.error('[generateBio] error:', err)
-    setBioError('משהו השתבש. אפשר לנסות שוב.')
-  }
-  setBioLoading(false)
-}
-  
+    const input = profileInput.trim()
 
-  const saveBioAndContinue = async function() {
-    if (!bioText.trim() || !recordId) { setScreen('benefit'); return }
+    if (!input) {
+      setBioError('יש להזין טקסט לפני יצירת הטיוטה')
+      return
+    }
+
+    setBioError('')
+    setBioLoading(true)
+
     try {
-      await fetch('/api/update-guide-bio', {
+      const res = await fetch('/api/generate-founder-bio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ record_id: recordId, bio: bioText })
+        body: JSON.stringify({ profileInput: input })
       })
-    } catch(err) {}
-    setScreen('benefit')
+
+      const data = await res.json()
+
+      if (data.bio) {
+        setBioText(data.bio)
+        setBioCount(data.bio.length)
+        setBioGenerated(true)
+      } else {
+        setBioError('לא הצלחנו ליצור טיוטה. אפשר לנסות שוב או לכתוב בעצמכם.')
+      }
+    } catch(err) {
+      console.error('[generateBio] error:', err)
+      setBioError('משהו השתבש. אפשר לנסות שוב.')
+    }
+
+    setBioLoading(false)
+  }
+
+  const saveBioAndContinue = async function() {
+    const cleanBio = bioText.trim()
+
+    if (!cleanBio) {
+      setBioError('יש לכתוב או לאשר טיוטת פרופיל לפני שממשיכים')
+      return
+    }
+
+    if (!recordId) {
+      setBioError('לא מצאנו את רשומת המייסד. נסו לרענן או להירשם שוב.')
+      return
+    }
+
+    setBioError('')
+
+    try {
+      const res = await fetch('/api/update-guide-bio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ record_id: recordId, bio: cleanBio })
+      })
+
+      const data = await res.json()
+
+      if (!res.ok || !data.success) {
+        setBioError('לא הצלחנו לשמור את הפרופיל. נסו שוב.')
+        return
+      }
+
+      setScreen('benefit')
+    } catch(err) {
+      console.error('[saveBioAndContinue] error:', err)
+      setBioError('לא הצלחנו לשמור את הפרופיל. נסו שוב.')
+    }
   }
 
   return (
@@ -149,7 +236,6 @@ export default function Founders() {
           <img src="/Logo-black.png" alt="מאז ועד היום" style={{ height: 60, width: 'auto' }} onError={e => e.target.style.display='none'} />
         </Link>
 
-        {/* SCREEN 1 — WELCOME */}
         {screen === 'welcome' && (
           <Card>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
@@ -172,7 +258,6 @@ export default function Founders() {
           </Card>
         )}
 
-        {/* SCREEN 2 — REGISTER */}
         {screen === 'register' && (
           <Card>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
@@ -210,18 +295,13 @@ export default function Founders() {
           </Card>
         )}
 
-        {/* SCREEN 3 — SUCCESS + BIO CHOICE */}
         {screen === 'success' && (
           <Card>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
               <TimelineDot />
               <StepBadge number="3" />
             </div>
-            {founderNumber && (
-              <p style={{ fontSize: 13, fontWeight: 700, color: BRAND, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 10 }}>
-                Founder #{founderNumber}
-              </p>
-            )}
+            {founderNumber && <p style={{ fontSize: 13, fontWeight: 700, color: BRAND, marginBottom: 10 }}>Founder #{founderNumber}</p>}
             <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1a1a1a', marginBottom: 10, lineHeight: 1.3 }}>
               כל מקום טוב מתחיל בסיפור טוב.
             </h2>
@@ -237,12 +317,10 @@ export default function Founders() {
             <div style={{ borderTop: '1px solid #EDE7DF', paddingTop: 20 }}>
               <p style={{ fontSize: 14, fontWeight: 700, color: '#2a2a2a', marginBottom: 14 }}>איך תרצו להציג את עצמכם?</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <button onClick={function() { setScreen('bio-ai') }}
-                  style={{ width: '100%', background: '#FBF7F1', color: BROWN, border: '1.5px solid #EDE7DF', padding: '13px', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
+                <button onClick={function() { setScreen('bio-ai') }} style={{ width: '100%', background: '#FBF7F1', color: BROWN, border: '1.5px solid #EDE7DF', padding: '13px', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
                   ✨ הציעו לי טיוטה לפרופיל
                 </button>
-                <button onClick={function() { setScreen('bio-manual') }}
-                  style={{ width: '100%', background: '#fff', color: '#555', border: '1.5px solid #EDE7DF', padding: '13px', borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
+                <button onClick={function() { setScreen('bio-manual') }} style={{ width: '100%', background: '#fff', color: '#555', border: '1.5px solid #EDE7DF', padding: '13px', borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
                   אכתוב בעצמי
                 </button>
               </div>
@@ -250,7 +328,6 @@ export default function Founders() {
           </Card>
         )}
 
-        {/* SCREEN 4A — BIO AI */}
         {screen === 'bio-ai' && (
           <Card>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
@@ -259,72 +336,34 @@ export default function Founders() {
             </div>
             <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1a1a1a', marginBottom: 10 }}>ספרו לנו קצת על עצמכם</h2>
             <p style={{ fontSize: 14, color: '#6B6B6B', lineHeight: 1.7, marginBottom: 20 }}>
-              אפשר להדביק כאן טקסט קיים שכתבתם על עצמכם, קטע מאתר, פוסט, פרופיל מקצועי או כמה משפטים חופשיים. נשתמש בזה כדי להציע טיוטה ראשונית לפרופיל שלכם.
+              אפשר לכתוב שם מלא, להדביק טקסט קיים שכתבתם על עצמכם, קטע מאתר, פוסט, פרופיל מקצועי או כמה משפטים חופשיים.
             </p>
-
-            <textarea
-              value={profileInput}
-              onChange={function(e) { setProfileInput(e.target.value) }}
-              rows={5}
-              placeholder="למשל: אני מדריך סיורים בירושלים כבר 15 שנה. מתמחה בתקופת הצלבנים ואוהב לספר את הסיפורים שמסתתרים מאחורי הכותלים..."
-              style={Object.assign({}, inp, { resize: 'vertical', lineHeight: 1.8, marginBottom: 16 })}
-            />
-
-            {bioError && (
-              <p style={{ fontSize: 13, color: '#e00', background: '#fff5f5', padding: '10px 14px', borderRadius: 8, border: '1px solid #fecaca', marginBottom: 16 }}>
-                {bioError}
-              </p>
-            )}
-
-            {bioLoading && (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px 0' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
-                  {[0,1,2].map(function(i) {
-                    return (
-                      <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: TIMELINE, opacity: 0.6 }} />
-                        {i < 2 && <div style={{ width: 2, height: 20, background: TIMELINE, opacity: 0.3 }} />}
-                      </div>
-                    )
-                  })}
-                </div>
-                <p style={{ fontSize: 13, color: '#6B6B6B', marginTop: 12, fontFamily: 'Heebo, Arial, sans-serif' }}>יוצרים עבורכם טיוטה...</p>
-              </div>
-            )}
-
+            <textarea value={profileInput} onChange={function(e) { setProfileInput(e.target.value) }} rows={5} placeholder="למשל: יוסי סטפנסקי או טקסט קצר עליכם..." style={Object.assign({}, inp, { resize: 'vertical', lineHeight: 1.8, marginBottom: 16 })} />
+            {bioError && <p style={{ fontSize: 13, color: '#e00', background: '#fff5f5', padding: '10px 14px', borderRadius: 8, border: '1px solid #fecaca', marginBottom: 16 }}>{bioError}</p>}
+            {bioLoading && <p style={{ textAlign: 'center', fontSize: 14, color: '#6B6B6B', padding: '24px 0' }}>יוצרים עבורכם טיוטה...</p>}
             {!bioLoading && bioGenerated && (
               <div>
                 <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#2a2a2a', marginBottom: 6 }}>הטיוטה שלכם:</label>
-                <textarea
-                  value={bioText}
-                  onChange={function(e) { if (e.target.value.length <= 400) { setBioText(e.target.value); setBioCount(e.target.value.length) } }}
-                  rows={5}
-                  style={Object.assign({}, inp, { resize: 'vertical', lineHeight: 1.8, marginBottom: 6 })}
-                />
-                <p style={{ fontSize: 11, color: '#B0A89E', textAlign: 'left', marginBottom: 16 }}>{bioCount}/400</p>
+                <textarea value={bioText} onChange={function(e) { if (e.target.value.length <= 800) { setBioText(e.target.value); setBioCount(e.target.value.length) } }} rows={7} style={Object.assign({}, inp, { resize: 'vertical', lineHeight: 1.8, marginBottom: 6 })} />
+                <p style={{ fontSize: 11, color: '#B0A89E', textAlign: 'left', marginBottom: 16 }}>{bioCount}/800</p>
                 <div style={{ display: 'flex', gap: 10 }}>
-                  <button onClick={saveBioAndContinue}
-                    style={{ flex: 1, background: '#111', color: '#fff', padding: '13px', borderRadius: 10, fontSize: 15, fontWeight: 800, border: 'none', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
+                  <button onClick={saveBioAndContinue} style={{ flex: 1, background: '#111', color: '#fff', padding: '13px', borderRadius: 10, fontSize: 15, fontWeight: 800, border: 'none', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
                     אישור ←
                   </button>
-                  <button onClick={function() { setBioGenerated(false); setBioText('') }}
-                    style={{ flex: 1, background: '#FBF7F1', color: BROWN, border: '1.5px solid #EDE7DF', padding: '13px', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
+                  <button onClick={function() { setBioGenerated(false); setBioText(''); setBioCount(0) }} style={{ flex: 1, background: '#FBF7F1', color: BROWN, border: '1.5px solid #EDE7DF', padding: '13px', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
                     נסו שוב
                   </button>
                 </div>
               </div>
             )}
-
             {!bioLoading && !bioGenerated && (
-              <button onClick={generateBio} disabled={!profileInput.trim()}
-                style={{ width: '100%', background: profileInput.trim() ? '#111' : '#ccc', color: '#fff', padding: '14px', borderRadius: 10, fontSize: 15, fontWeight: 800, border: 'none', cursor: profileInput.trim() ? 'pointer' : 'not-allowed', fontFamily: 'Heebo, Arial, sans-serif' }}>
+              <button onClick={generateBio} disabled={!profileInput.trim()} style={{ width: '100%', background: profileInput.trim() ? '#111' : '#ccc', color: '#fff', padding: '14px', borderRadius: 10, fontSize: 15, fontWeight: 800, border: 'none', cursor: profileInput.trim() ? 'pointer' : 'not-allowed', fontFamily: 'Heebo, Arial, sans-serif' }}>
                 ✨ צרו לי טיוטה
               </button>
             )}
           </Card>
         )}
 
-        {/* SCREEN 4B — BIO MANUAL */}
         {screen === 'bio-manual' && (
           <Card>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
@@ -335,17 +374,15 @@ export default function Founders() {
             <p style={{ fontSize: 14, color: '#6B6B6B', lineHeight: 1.7, marginBottom: 20 }}>
               לא קורות חיים. לא רשימת תפקידים. רק הסיפור שתרצו שאנשים יכירו דרכו אתכם.
             </p>
-            <textarea value={bioText} onChange={function(e) { if (e.target.value.length <= 500) { setBioText(e.target.value); setBioCount(e.target.value.length) } }}
-              rows={6} style={Object.assign({}, inp, { resize: 'vertical', lineHeight: 1.8, marginBottom: 6 })} placeholder="הסיפור שלכם..." />
-            <p style={{ fontSize: 11, color: bioCount > 450 ? '#e00' : '#B0A89E', textAlign: 'left', marginBottom: 16 }}>{bioCount}/500</p>
-            <button onClick={saveBioAndContinue} disabled={!bioText.trim()}
-              style={{ width: '100%', background: bioText.trim() ? '#111' : '#ccc', color: '#fff', padding: '14px', borderRadius: 10, fontSize: 15, fontWeight: 800, border: 'none', cursor: bioText.trim() ? 'pointer' : 'not-allowed', fontFamily: 'Heebo, Arial, sans-serif' }}>
+            <textarea value={bioText} onChange={function(e) { if (e.target.value.length <= 800) { setBioText(e.target.value); setBioCount(e.target.value.length) } }} rows={7} style={Object.assign({}, inp, { resize: 'vertical', lineHeight: 1.8, marginBottom: 6 })} placeholder="הסיפור שלכם..." />
+            <p style={{ fontSize: 11, color: bioCount > 720 ? '#e00' : '#B0A89E', textAlign: 'left', marginBottom: 16 }}>{bioCount}/800</p>
+            {bioError && <p style={{ fontSize: 13, color: '#e00', background: '#fff5f5', padding: '10px 14px', borderRadius: 8, border: '1px solid #fecaca', marginBottom: 16 }}>{bioError}</p>}
+            <button onClick={saveBioAndContinue} disabled={!bioText.trim()} style={{ width: '100%', background: bioText.trim() ? '#111' : '#ccc', color: '#fff', padding: '14px', borderRadius: 10, fontSize: 15, fontWeight: 800, border: 'none', cursor: bioText.trim() ? 'pointer' : 'not-allowed', fontFamily: 'Heebo, Arial, sans-serif' }}>
               המשיכו ←
             </button>
           </Card>
         )}
 
-        {/* SCREEN 5 — BENEFIT */}
         {screen === 'benefit' && (
           <Card>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
@@ -365,19 +402,16 @@ export default function Founders() {
               הסיור הזה יהיה חלק מהדור הראשון של הסיפורים שירכיבו את הקהילה.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <a href={'/add-tour?founder=true&record_id=' + (recordId || '')}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#111', color: '#fff', padding: '15px', borderRadius: 12, fontSize: 16, fontWeight: 800, textDecoration: 'none', fontFamily: 'Heebo, Arial, sans-serif' }}>
+              <a href={'/add-tour?founder=true&record_id=' + (recordId || '')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#111', color: '#fff', padding: '15px', borderRadius: 12, fontSize: 16, fontWeight: 800, textDecoration: 'none', fontFamily: 'Heebo, Arial, sans-serif' }}>
                 הכניסו את הסיפור הראשון שלכם ←
               </a>
-              <button onClick={function() { setScreen('later') }}
-                style={{ width: '100%', background: CREAM, color: BROWN, padding: '14px', borderRadius: 12, fontSize: 15, fontWeight: 700, border: '1.5px solid #EDE7DF', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
+              <button onClick={function() { setScreen('later') }} style={{ width: '100%', background: CREAM, color: BROWN, padding: '14px', borderRadius: 12, fontSize: 15, fontWeight: 700, border: '1.5px solid #EDE7DF', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
                 אשלים את זה בהמשך
               </button>
             </div>
           </Card>
         )}
 
-        {/* SCREEN 6 — LATER */}
         {screen === 'later' && (
           <Card style={{ textAlign: 'center' }}>
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
