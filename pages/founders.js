@@ -215,47 +215,68 @@ export default function Founders() {
   }
 
   const handleRegister = async function(e) {
-    e.preventDefault()
+  e.preventDefault()
 
-    if (!form.name.trim() || !form.email.trim() || !form.phone.trim()) {
-      setError('יש למלא את כל השדות')
+  if (!form.name.trim() || !form.email.trim() || !form.phone.trim()) {
+    setError('יש למלא את כל השדות')
+    return
+  }
+
+  setError('')
+  setLoading(true)
+
+  try {
+    const res = await fetch('/api/register-founder', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        invite_source: 'unknown'
+      })
+    })
+
+    const data = await res.json()
+
+    if (data.error === 'founder_exists' && data.record_id) {
+      const guide = data.guide || {}
+
+      setFounderNumber(data.founder_number || guide.Founder_Number || null)
+      setRecordId(data.record_id)
+
+      setForm({
+        name: guide.Guide_Name || form.name,
+        email: guide.Email || form.email,
+        phone: guide.WhatsApp_Number || form.phone
+      })
+
+      setBioText(guide.Guide_bio || '')
+      setBioCount((guide.Guide_bio || '').length)
+      setBioGenerated(Boolean(guide.Guide_bio))
+
+      setScreen('benefit')
+      setLoading(false)
       return
     }
 
-    setError('')
-    setLoading(true)
-
-    try {
-      const res = await fetch('/api/register-founder', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: form.name.trim(),
-          email: form.email.trim(),
-          phone: form.phone.trim(),
-          invite_source: 'unknown'
-        })
-      })
-
-      const data = await res.json()
-
-      if (!data.success || !data.record_id) {
-        console.error('[founders] register failed:', data)
-        setError('משהו השתבש. אפשר לנסות שוב.')
-        setLoading(false)
-        return
-      }
-
-      setFounderNumber(data.founder_number || null)
-      setRecordId(data.record_id)
-      setScreen('success')
-    } catch(err) {
-      console.error('[founders] register error:', err)
+    if (!data.success || !data.record_id) {
+      console.error('[founders] register failed:', data)
       setError('משהו השתבש. אפשר לנסות שוב.')
+      setLoading(false)
+      return
     }
 
-    setLoading(false)
+    setFounderNumber(data.founder_number || null)
+    setRecordId(data.record_id)
+    setScreen('success')
+  } catch(err) {
+    console.error('[founders] register error:', err)
+    setError('משהו השתבש. אפשר לנסות שוב.')
   }
+
+  setLoading(false)
+}
 
   const generateBio = async function() {
     const input = profileInput.trim()
