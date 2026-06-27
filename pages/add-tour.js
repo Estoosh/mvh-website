@@ -203,16 +203,19 @@ useEffect(function() {
     fetch('/api/get-guide?record_id=' + recordId)
       .then(r => r.json())
       .then(function(data) {
-        if (!data.found) { router.push('/join'); return }
-        setGuideId(data.airtable_id)
-        setGuide(data.guide)
-        setWhatsappNumber(data.guide.WhatsApp_Number || '')
-        setForm(function(prev) {
-          return Object.assign({}, prev, {
-            guide_context: data.guide.Guide_Bio || ''
-          })
-        })
-      })
+  console.log('[add-tour] get-guide response:', data)
+  console.log('[add-tour] Guide_Bio:', data?.guide?.Guide_Bio)
+  console.log('[add-tour] WhatsApp_Number:', data?.guide?.WhatsApp_Number)
+  if (!data.found) { router.push('/join'); return }
+  setGuideId(data.airtable_id)
+  setGuide(data.guide)
+  setWhatsappNumber(data.guide.WhatsApp_Number || '')
+  setForm(function(prev) {
+    return Object.assign({}, prev, {
+      guide_context: data.guide.Guide_Bio || ''
+    })
+  })
+})
     return
   }
 
