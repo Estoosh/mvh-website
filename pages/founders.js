@@ -200,40 +200,57 @@ export default function Founders() {
   }
 
   const saveBioAndContinue = async function() {
-    const cleanBio = bioText.trim()
+  const cleanBio = bioText.trim()
 
-    if (!cleanBio) {
-      setBioError('יש לכתוב או לאשר טיוטת פרופיל לפני שממשיכים')
-      return
-    }
+  if (!cleanBio) {
+    setBioError('יש לכתוב או לאשר טיוטת פרופיל לפני שממשיכים')
+    return
+  }
 
-    if (!recordId) {
-      setBioError('לא מצאנו את רשומת המייסד. נסו לרענן או להירשם שוב.')
-      return
-    }
+  if (!recordId) {
+    localStorage.removeItem(DRAFT_KEY)
+    window.location.href = '/founders?reset=true'
+    return
+  }
 
-    setBioError('')
+  setBioError('')
 
-    try {
-      const res = await fetch('/api/update-guide-bio', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ record_id: recordId, bio: cleanBio })
-      })
+  try {
+    const res = await fetch('/api/update-guide-bio', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ record_id: recordId, bio: cleanBio })
+    })
 
-      const data = await res.json()
+    const data = await res.json()
 
-      if (!res.ok || !data.success) {
-        setBioError('לא הצלחנו לשמור את הפרופיל. נסו שוב.')
+    if (!res.ok || !data.success) {
+      const airtableError =
+        data?.airtable?.error?.type ||
+        data?.airtable?.error ||
+        data?.error
+
+      if (
+        airtableError === 'NOT_FOUND' ||
+        airtableError === 'INVALID_RECORD_ID' ||
+        String(airtableError || '').includes('NOT_FOUND')
+      ) {
+        localStorage.removeItem(DRAFT_KEY)
+        window.location.href = '/founders?reset=true'
         return
       }
 
-      setScreen('benefit')
-    } catch(err) {
-      console.error('[saveBioAndContinue] error:', err)
+      console.error('[saveBioAndContinue] update failed:', data)
       setBioError('לא הצלחנו לשמור את הפרופיל. נסו שוב.')
+      return
     }
+
+    setScreen('benefit')
+  } catch(err) {
+    console.error('[saveBioAndContinue] error:', err)
+    setBioError('לא הצלחנו לשמור את הפרופיל. נסו שוב.')
   }
+}
 
   return (
     <div dir="rtl" style={{ fontFamily: 'Heebo, Arial, sans-serif', background: CREAM, minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 24px' }}>
