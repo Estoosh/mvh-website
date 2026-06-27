@@ -4,114 +4,69 @@ export default async function handler(req, res) {
   }
 
   const { profileInput } = req.body
-  const input = typeof profileInput === 'string' ? profileInput.trim() : ''
 
-  if (!input) {
+  if (!profileInput || !profileInput.trim()) {
     return res.status(400).json({ error: 'profile_input_required' })
   }
 
-  const isUrl = /^https?:\/\//i.test(input)
-  const wordCount = input.split(/\s+/).filter(Boolean).length
-  const isNameOnly = !isUrl && wordCount <= 4 && input.length <= 50
+  const cleanInput = profileInput.trim()
+  const isUrl = cleanInput.startsWith('http')
+  const isShortText = cleanInput.split(' ').length <= 4
+  const needsSearch = isUrl || isShortText
 
-  if (isUrl) {
-    return res.status(200).json({
-      bio:
-        'לא הצלחנו לקרוא את האתר באופן אוטומטי. הדביקו כאן כמה משפטים מתוך האתר, פוסט או פרופיל מקצועי, ונציע לכם טיוטה אישית יותר.'
-    })
-  }
+  const searchQuery = isUrl
+    ? 'מורה דרך ' + cleanInput
+    : cleanInput + ' מורה דרך'
 
-  if (isNameOnly) {
-    return res.status(200).json({
-      bio:
-        `${input} מצטרף לדור הראשון של מאז ועד היום. כדי להפוך את הפרופיל לאישי יותר, כדאי להוסיף משפט אחד על המקום, התקופה או סוג הסיפורים שאתם הכי אוהבים לספר.`
-    })
-  }
+  const userMessage = needsSearch
+    ? `חפש מידע על "${searchQuery}" וכתב טיוטת פרופיל קצרה למורה דרך באתר "מאז ועד היום". השתמש רק במידע שמצאת. אל תמציא פרטים. אם לא מצאת מידע, כתוב טיוטה צנועה ובקש מהמשתמש להוסיף משפט אישי.`
+    : `כתוב טיוטת פרופיל קצרה למורה דרך באתר "מאז ועד היום" על בסיס הטקסט הבא בלבד:\n${cleanInput}\n\nאל תמציא פרטים שלא מופיעים בטקסט.`
 
-  return generateBioFromText(input, res)
-}
+  const systemPrompt = `אתה כותב טיוטות פרופיל למורי דרך באתר "מאז ועד היום".
 
-async function generateBioFromText(profileText, res) {
-  const apiKey = process.env.GEMINI_API_KEY
+כללים:
+- כתוב בעברית טבעית ואנושית
+- 2 פסקאות קצרות, 220-350 תווים סה"כ, מקסימום 400
+- המטרה: לעזור למטייל להבין איזה סוג מספר סיפורים האדם הזה
+- אל תמציא פרטים
+- אסור: בעל ניסיון רב, חוויה בלתי נשכחת, מסע מרתק, חיבור אנושי, מומחה בתחומו, מורה דרך מוסמך
 
-  if (!apiKey) {
-    return res.status(500).json({ error: 'missing_gemini_api_key' })
-  }
-
-  const prompt = `
-אתה כותב טיוטת פרופיל למורה דרך באתר "מאז ועד היום".
-
-הטקסט היחיד שמותר לך להשתמש בו הוא הטקסט הבא שהמשתמש כתב או הדביק:
-
-${profileText}
-
-המשימה:
-כתוב Bio קצר, אנושי ומדויק, שיעזור למטייל להבין איזה סוג מספר סיפורים האדם הזה.
-
-הכללים:
-- השתמש רק במידע שמופיע בטקסט.
-- אל תמציא ניסיון, תארים, מקומות, התמחות או הישגים.
-- אל תכתוב קורות חיים.
-- אל תכתוב טקסט שיווקי גנרי.
-- אל תכתוב כאילו אתה מכיר את האדם מעבר לטקסט שניתן.
-- כתוב בעברית טבעית, בגובה העיניים.
-- 2 פסקאות קצרות.
-- 220 עד 350 תווים.
-- מקסימום 400 תווים.
-
-אסור להשתמש בביטויים:
-בעל ניסיון רב
-חוויה בלתי נשכחת
-מסע מרתק
-חיבור אנושי
-מומחה בתחומו
-מורה דרך מוסמך
-לוקח אתכם למסע
-גשר בין עבר להווה
-
-מבחן איכות:
-אם אפשר להחליף את שם האדם בשם של מדריך אחר והטקסט עדיין עובד, כתוב מחדש.
-
-אם הטקסט דל מדי, כתוב טיוטה צנועה שמבוססת רק עליו, ובסוף הוסף בקשה קצרה להוסיף עוד משפט אישי.
-
-החזר JSON בלבד:
-{"bio":"..."}
-`
+החזר JSON בלבד: {"bio":"..."}`
 
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
-        })
-      }
-    )
-
-    if (!response.ok) {
-      const errText = await response.text()
-      console.error('[generate-founder-bio] Gemini error:', errText)
-      return res.status(502).json({ error: 'gemini_request_failed' })
-    }
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: systemPrompt,
+        tools: needsSearch ? [{ type: 'web_search_20250305', name: 'web_search' }] : undefined,
+        messages: [{ role: 'user', content: userMessage }]
+      })
+    })
 
     const data = await response.json()
-    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || ''
-    const cleaned = rawText.replace(/```json|```/g, '').trim()
+    console.log('[generate-founder-bio] response content types:', data?.content?.map(c => c.type))
 
+    const textBlocks = (data?.content || [])
+      .filter(c => c.type === 'text')
+      .map(c => c.text)
+      .join('\n')
+
+    console.log('[generate-founder-bio] text output:', textBlocks.slice(0, 300))
+
+    const cleaned = textBlocks.replace(/```json|```/g, '').trim()
     let parsed
     try {
       parsed = JSON.parse(cleaned)
-    } catch (err) {
+    } catch(e) {
       return res.status(200).json({ bio: cleaned.slice(0, 400) })
     }
 
-    return res.status(200).json({
-      bio: String(parsed.bio || '').slice(0, 400)
-    })
-  } catch (err) {
-    console.error('[generate-founder-bio] internal error:', err)
+    return res.status(200).json({ bio: (parsed.bio || '').slice(0, 400) })
+  } catch(err) {
+    console.error('[generate-founder-bio] error:', err.message)
     return res.status(500).json({ error: 'internal_error' })
   }
 }
