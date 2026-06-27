@@ -398,7 +398,28 @@ export default function Founders() {
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#2a2a2a', marginBottom: 6 }}>טלפון <span style={{ color: BROWN }}>*</span></label>
-                <input type="tel" name="phone" value={form.phone} onChange={handleChange} required style={inp} placeholder="050-0000000" />
+               <div style={{ display: 'grid', gridTemplateColumns: '90px 1fr', gap: 8 }}>
+  <input
+    type="tel"
+    inputMode="numeric"
+    value={phonePrefix}
+    onChange={function(e) { setPhonePrefix(onlyDigits(e.target.value, 3)) }}
+    required
+    style={inp}
+    placeholder="050"
+    maxLength={3}
+  />
+  <input
+    type="tel"
+    inputMode="numeric"
+    value={phoneRest}
+    onChange={function(e) { setPhoneRest(onlyDigits(e.target.value, 7)) }}
+    required
+    style={inp}
+    placeholder="1234567"
+    maxLength={7}
+  />
+</div>
               </div>
               {error && <p style={{ fontSize: 13, color: '#e00', background: '#fff5f5', padding: '10px 14px', borderRadius: 8, border: '1px solid #fecaca' }}>{error}</p>}
               <button type="submit" disabled={loading} style={{ width: '100%', background: loading ? '#888' : '#111', color: '#fff', padding: '15px', borderRadius: 12, fontSize: 16, fontWeight: 800, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'Heebo, Arial, sans-serif', marginTop: 4 }}>
