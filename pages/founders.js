@@ -71,26 +71,43 @@ export default function Founders() {
   const [bioError, setBioError] = useState('')
 
   useEffect(function() {
-    try {
-      const saved = localStorage.getItem(DRAFT_KEY)
-      if (!saved) return
-      const draft = JSON.parse(saved)
+  try {
+    const shouldReset =
+      typeof window !== 'undefined' &&
+      window.location.search.includes('reset=true')
 
-      if (draft.screen) setScreen(draft.screen)
-      if (draft.form) setForm(draft.form)
-      if (draft.founderNumber) setFounderNumber(draft.founderNumber)
-      if (draft.recordId) setRecordId(draft.recordId)
-      if (draft.profileInput) setProfileInput(draft.profileInput)
-      if (draft.bioText) {
-        setBioText(draft.bioText)
-        setBioCount(draft.bioText.length)
-      }
-      if (draft.bioGenerated) setBioGenerated(draft.bioGenerated)
-    } catch (err) {
-      console.error('[founders] failed to restore draft:', err)
+    if (shouldReset) {
+      localStorage.removeItem(DRAFT_KEY)
+      setScreen('welcome')
+      setForm({ name: '', email: '', phone: '' })
+      setFounderNumber(null)
+      setRecordId(null)
+      setProfileInput('')
+      setBioText('')
+      setBioGenerated(false)
+      setBioCount(0)
+      return
     }
-  }, [])
 
+    const saved = localStorage.getItem(DRAFT_KEY)
+    if (!saved) return
+
+    const draft = JSON.parse(saved)
+
+    if (draft.screen) setScreen(draft.screen)
+    if (draft.form) setForm(draft.form)
+    if (draft.founderNumber) setFounderNumber(draft.founderNumber)
+    if (draft.recordId) setRecordId(draft.recordId)
+    if (draft.profileInput) setProfileInput(draft.profileInput)
+    if (draft.bioText) {
+      setBioText(draft.bioText)
+      setBioCount(draft.bioText.length)
+    }
+    if (draft.bioGenerated) setBioGenerated(draft.bioGenerated)
+  } catch (err) {
+    console.error('[founders] failed to restore draft:', err)
+  }
+}, [])
   useEffect(function() {
     try {
       localStorage.setItem(DRAFT_KEY, JSON.stringify({
