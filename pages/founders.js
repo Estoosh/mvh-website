@@ -117,7 +117,7 @@ export default function Founders() {
   }
   setBioLoading(false)
 }
-  }
+  
 
   const saveBioAndContinue = async function() {
     if (!bioText.trim() || !recordId) { setScreen('benefit'); return }
