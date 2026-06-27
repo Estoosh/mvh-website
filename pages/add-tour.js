@@ -185,7 +185,7 @@ export default function AddTour() {
   const [aiLoadingField, setAiLoadingField] = useState(null)
   const [aiError, setAiError] = useState('')
   const [showToast, setShowToast] = useState(false)
-  const meetingRef = useRef(null)
+  const [meetingInput, setMeetingInput] = useState(null)
 
   const [form, setForm] = useState({
     title: '', teaser: '', story: '', guide_context: '',
@@ -230,23 +230,21 @@ useEffect(function() {
 }, [router.isReady, isLoaded, user])
 
   useEffect(function() {
-    if (typeof window === 'undefined') return
-    loadGoogleMaps().then(function() {
-      if (!meetingRef.current) return
-      var ac = new window.google.maps.places.Autocomplete(meetingRef.current, {
-        language: 'he',
-        componentRestrictions: { country: 'il' }
-      })
-      ac.addListener('place_changed', function() {
-        var place = ac.getPlace()
-        setMeetingPoint(place.formatted_address || '')
-        setMeetingLink(place.url || 'https://maps.google.com/?q=' + encodeURIComponent(place.formatted_address || ''))
-      })
-    }).catch(function(err) {
-      console.error('Google Maps load error:', err)
+  if (!meetingInput) return
+  loadGoogleMaps().then(function() {
+    var ac = new window.google.maps.places.Autocomplete(meetingInput, {
+      language: 'he',
+      componentRestrictions: { country: 'il' }
     })
-  }, [])
-
+    ac.addListener('place_changed', function() {
+      var place = ac.getPlace()
+      setMeetingPoint(place.formatted_address || '')
+      setMeetingLink(place.url || 'https://maps.google.com/?q=' + encodeURIComponent(place.formatted_address || ''))
+    })
+  }).catch(function(err) {
+    console.error('Google Maps load error:', err)
+  })
+}, [meetingInput])
   const handleChange = function(e) {
     var val = e.target.type === 'checkbox' ? e.target.checked : e.target.value
     if (e.target.name === 'teaser') { if (e.target.value.length > 140) return; setTeaserCount(e.target.value.length) }
@@ -485,7 +483,7 @@ useEffect(function() {
 
             <div>
               <FieldLabel hint="הקלידו כתובת — Google Maps יציע השלמות.">נקודת מפגש</FieldLabel>
-              <input ref={meetingRef} type="text" value={meetingPoint} onChange={function(e){setMeetingPoint(e.target.value)}} placeholder="הקלידו כתובת לחיפוש..." style={inp} />
+              <input ref={setMeetingInput} type="text" value={meetingPoint} onChange={function(e){setMeetingPoint(e.target.value)}} placeholder="הקלידו כתובת לחיפוש..." style={inp} />
               {meetingLink && <a href={meetingLink} target="_blank" rel="noopener noreferrer" style={{ display:'inline-block', marginTop:8, fontSize:12, color:BROWN, fontWeight:700 }}>פתח ב-Google Maps ←</a>}
             </div>
           </SectionCard>
