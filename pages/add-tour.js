@@ -224,8 +224,13 @@ useEffect(function() {
     .then(function(data) {
       if (!data.found) { router.push('/join'); return }
       setGuideId(data.airtable_id)
-      setGuide(data.guide)
-      setWhatsappNumber(data.guide.WhatsApp_Number || '')
+setGuide(data.guide)
+setWhatsappNumber(data.guide.WhatsApp_Number || '')
+setForm(function(prev) {
+  return Object.assign({}, prev, {
+    guide_context: data.guide.Guide_Bio || ''
+  })
+})
     })
 }, [router.isReady, isLoaded, user])
 
