@@ -11,10 +11,7 @@ export default async function handler(req, res) {
   const cleanInviteSource = typeof invite_source === 'string' ? invite_source.trim() : 'unknown'
 
   if (!cleanName || !cleanEmail || !cleanPhone) {
-    return res.status(400).json({
-      success: false,
-      error: 'missing_fields'
-    })
+    return res.status(400).json({ success: false, error: 'missing_fields' })
   }
 
   const token =
@@ -37,25 +34,63 @@ export default async function handler(req, res) {
     })
   }
 
-  const payload = {
-    Guide_Name: cleanName,
-    Email: cleanEmail,
-    WhatsApp_Number: cleanPhone,
-    Guide_Status: 'pending',
-    Founder_Status: 'Founder',
-    Founder_Stage: 'registered',
-    Guide_bio: ''
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json'
   }
 
   try {
+    const formula = `OR(LOWER({Email})='${escapeFormula(cleanEmail)}',{WhatsApp_Number}='${escapeFormula(cleanPhone)}')`
+    const searchUrl =
+      `https://api.airtable.com/v0/${baseId}/${guidesTable}` +
+      `?filterByFormula=${encodeURIComponent(formula)}` +
+      `&maxRecords=1`
+
+    const searchRes = await fetch(searchUrl, { headers })
+    const searchData = await searchRes.json()
+
+    if (!searchRes.ok) {
+      return res.status(502).json({
+        success: false,
+        error: 'airtable_search_failed',
+        airtable: searchData
+      })
+    }
+
+    if (searchData.records && searchData.records.length > 0) {
+      const existing = searchData.records[0]
+
+      return res.status(200).json({
+        success: false,
+        error: 'founder_exists',
+        existing_founder: true,
+        record_id: existing.id,
+        founder_number: existing.fields?.Founder_Number || null,
+        guide: {
+          id: existing.id,
+          ...existing.fields
+        },
+        message: 'המייל או מספר הטלפון כבר קיימים במערכת.'
+      })
+    }
+
+    const payload = {
+      Guide_Name: cleanName,
+      Email: cleanEmail,
+      WhatsApp_Number: cleanPhone,
+      Guide_Status: 'pending',
+      Founder_Status: 'Founder',
+      Founder_Stage: 'registered',
+      Invite_Source: cleanInviteSource,
+      Guide_bio: '',
+      Is_Public: false
+    }
+
     const createRes = await fetch(
       `https://api.airtable.com/v0/${baseId}/${guidesTable}`,
       {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
+        headers,
         body: JSON.stringify({ fields: payload })
       }
     )
@@ -72,6 +107,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       success: true,
+      existing_founder: false,
       record_id: data.id,
       founder_number: data.fields?.Founder_Number || null,
       guide: {
@@ -86,4 +122,8 @@ export default async function handler(req, res) {
       message: err.message
     })
   }
+}
+
+function escapeFormula(value) {
+  return String(value || '').replace(/'/g, "\\'")
 }
