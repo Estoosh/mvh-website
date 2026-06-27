@@ -337,6 +337,7 @@ export default function AddTour() {
           whatsapp_number: whatsappNumber,
           historical_periods: selectedPeriods,
           guide_context: form.guide_context,
+          founder: router.query.founder === 'true',
           entrance_fee_included: form.entrance_fee_included,
           entrance_fee_amount: form.entrance_fee_included ? (Number(form.entrance_fee_amount) || 0) : 0,
         }))
