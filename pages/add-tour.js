@@ -1245,12 +1245,14 @@ guide_photo: guidePhoto,
         </button>
       </div>
     ) : (
-     <label style={{
-  width: '85%',
-  aspectRatio: '1 / 1',
-  borderRadius: 14,
-  border: '2px dashed #EDE7DF',
+    <label style={{
+  width: 140,
+  height: 140,
+  borderRadius: 10,
+  border: '1.5px dashed #EDE7DF',
+  background: '#FBF7F1',
   display: 'flex',
+  flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
   cursor: 'pointer',
