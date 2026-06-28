@@ -97,35 +97,54 @@ export default function Founders() {
   }
 
   useEffect(function() {
-    try {
-      const shouldReset = typeof window !== 'undefined' && window.location.search.includes('reset=true')
-      if (shouldReset) { resetFlow(); restoredRef.current = true; return }
+  try {
+    const shouldReset =
+      typeof window !== 'undefined' &&
+      window.location.search.includes('reset=true')
 
-      const saved = localStorage.getItem(DRAFT_KEY)
-      if (!saved) { restoredRef.current = true; return }
-
-      const draft = JSON.parse(saved)
-      if (draft.screen) setScreen(draft.screen)
-      if (draft.form) {
-       if (draft.form) setForm(draft.form)
-
-if (draft.phonePrefix) setPhonePrefix(draft.phonePrefix)
-if (draft.phoneRest) setPhoneRest(draft.phoneRest)
-
-if (!draft.phonePrefix && !draft.phoneRest && draft.form?.phone) {
-  setPhonePrefix(draft.form.phone.slice(0, 3))
-  setPhoneRest(draft.form.phone.slice(3))
-}
-      if (draft.founderNumber) setFounderNumber(draft.founderNumber)
-      if (draft.recordId) setRecordId(draft.recordId)
-      if (draft.profileInput) setProfileInput(draft.profileInput)
-      if (draft.bioText) { setBioText(draft.bioText); setBioCount(draft.bioText.length) }
-      if (draft.bioGenerated) setBioGenerated(draft.bioGenerated)
+    if (shouldReset) {
+      resetFlow()
       restoredRef.current = true
-    } catch(err) {
-      restoredRef.current = true
+      return
     }
-  }, [])
+
+    const saved = localStorage.getItem(DRAFT_KEY)
+
+    if (!saved) {
+      restoredRef.current = true
+      return
+    }
+
+    const draft = JSON.parse(saved)
+
+    if (draft.screen) setScreen(draft.screen)
+
+    if (draft.form) setForm(draft.form)
+
+    if (draft.phonePrefix) setPhonePrefix(draft.phonePrefix)
+    if (draft.phoneRest) setPhoneRest(draft.phoneRest)
+
+    if (!draft.phonePrefix && !draft.phoneRest && draft.form?.phone) {
+      setPhonePrefix(draft.form.phone.slice(0, 3))
+      setPhoneRest(draft.form.phone.slice(3))
+    }
+
+    if (draft.founderNumber) setFounderNumber(draft.founderNumber)
+    if (draft.recordId) setRecordId(draft.recordId)
+    if (draft.profileInput) setProfileInput(draft.profileInput)
+
+    if (draft.bioText) {
+      setBioText(draft.bioText)
+      setBioCount(draft.bioText.length)
+    }
+
+    if (draft.bioGenerated) setBioGenerated(draft.bioGenerated)
+
+    restoredRef.current = true
+  } catch (err) {
+    restoredRef.current = true
+  }
+}, [])
 
   useEffect(function() {
     if (!restoredRef.current) return
