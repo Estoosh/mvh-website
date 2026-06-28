@@ -345,14 +345,50 @@ export default function Founders() {
             </p>
             <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#2a2a2a', marginBottom: 6 }}>שם מלא <span style={{ color: BROWN }}>*</span></label>
-                <input type="text" name="name" value={form.name} onChange={handleChange} required style={inp} placeholder="השם שיופיע בפרופיל שלכם" />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#2a2a2a', marginBottom: 6 }}>אימייל <span style={{ color: BROWN }}>*</span></label>
-                <input type="email" name="email" value={form.email} onChange={handleChange} required style={inp} placeholder="your@email.com" />
-              </div>
-              <div>
+  <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#2a2a2a', marginBottom: 6 }}>
+    טלפון <span style={{ color: BROWN }}>*</span>
+  </label>
+
+  <div style={{
+    display: 'flex',
+    direction: 'ltr',
+    gap: 8,
+    justifyContent: 'flex-end',
+    alignItems: 'center'
+  }}>
+    <input
+      type="tel"
+      inputMode="numeric"
+      value={phonePrefix}
+      onChange={function(e) { setPhonePrefix(onlyDigits(e.target.value, 3)) }}
+      required
+      style={Object.assign({}, inp, {
+        width: 92,
+        textAlign: 'center',
+        direction: 'ltr'
+      })}
+      placeholder="050"
+      maxLength={3}
+    />
+
+    <span style={{ color: '#B97A45', fontWeight: 800 }}>-</span>
+
+    <input
+      type="tel"
+      inputMode="numeric"
+      value={phoneRest}
+      onChange={function(e) { setPhoneRest(onlyDigits(e.target.value, 7)) }}
+      required
+      style={Object.assign({}, inp, {
+        width: 170,
+        textAlign: 'center',
+        direction: 'ltr'
+      })}
+      placeholder="1234567"
+      maxLength={7}
+    />
+  </div>
+</div>
                 <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#2a2a2a', marginBottom: 6 }}>טלפון <span style={{ color: BROWN }}>*</span></label>
                 <div style={{
   display: 'flex',
