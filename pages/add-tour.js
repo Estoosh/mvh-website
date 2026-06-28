@@ -1209,8 +1209,9 @@ guide_photo: guidePhoto,
     {guidePhoto ? (
       <div style={{
         position: 'relative',
-        width: '100%',
-        aspectRatio: '1 / 1',
+        width: 140,
+height: 140,
+margin: '0 auto',
         borderRadius: 14,
         overflow: 'hidden',
         border: '1px solid #EDE7DF'
