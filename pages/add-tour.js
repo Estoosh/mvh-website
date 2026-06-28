@@ -360,177 +360,343 @@ else { console.error(data); setLoading(false) }
   }
 
 if (saved) {
-    const isFounder = router.query.founder === 'true'
-    const founderNum = router.query.founder_number
+  const isFounder = router.query.founder === 'true'
+  const founderNum = router.query.founder_number || guide?.Founder_Number || ''
 
-    if (isFounder) return (
-      <div dir="rtl" style={{ fontFamily: 'Heebo, Arial, sans-serif', background: '#F7F1EA', minHeight: '100vh' }}>
-        <style>{`
-          @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+  if (isFounder) return (
+    <div dir="rtl" style={{
+      fontFamily: 'Heebo, Arial, sans-serif',
+      background: '#F7F1EA',
+      minHeight: '100vh',
+      overflowX: 'hidden'
+    }}>
+      <style>{`
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(18px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .founder-complete-card {
+          animation: fadeUp 500ms ease forwards;
+        }
+
+        @media (max-width: 768px) {
+          .founder-hero {
+            height: 250px !important;
           }
-          .fs-card { animation: fadeUp 500ms ease forwards; }
-          @media (max-width: 768px) {
-            .fs-hero { height: 240px !important; }
-            .fs-card {
-              margin-top: -80px !important;
-              padding: 28px 20px !important;
-              flex-direction: column !important;
-            }
-            .fs-timeline-col { display: none !important; }
-            .fs-timeline-mobile { display: flex !important; }
-            .fs-illustration { width: 230px !important; }
-            .fs-cta { width: 100% !important; }
+
+          .founder-complete-card {
+            width: calc(100% - 28px) !important;
+            margin-top: -88px !important;
+            padding: 28px 20px 32px !important;
+            border-radius: 24px !important;
           }
-        `}</style>
 
-        {/* HERO */}
-        <div className="fs-hero" style={{ width: '100%', height: 360, overflow: 'hidden', position: 'relative' }}>
-          <img src="/founder_hero.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '55%', background: 'linear-gradient(to top, #F7F1EA, transparent)' }} />
-        </div>
+          .founder-layout {
+            display: block !important;
+          }
 
-        {/* CARD WRAPPER */}
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '0 20px 80px' }}>
-          <div className="fs-card" style={{
-            marginTop: -110,
-            background: '#fff',
-            borderRadius: 28,
-            maxWidth: 820,
+          .founder-timeline-side {
+            display: none !important;
+          }
+
+          .founder-timeline-mobile {
+            display: grid !important;
+          }
+
+          .founder-title {
+            font-size: 28px !important;
+          }
+
+          .founder-illustration {
+            width: 250px !important;
+          }
+
+          .founder-note {
+            padding: 16px !important;
+          }
+
+          .founder-cta {
+            width: 100% !important;
+          }
+        }
+      `}</style>
+
+      <div className="founder-hero" style={{
+        height: 360,
+        width: '100%',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <img
+          src="/founder_hero.png"
+          alt=""
+          style={{
             width: '100%',
-            boxShadow: '0 28px 70px rgba(0,0,0,0.12)',
-            border: '1px solid #EDE7DF',
-            padding: '56px 48px',
-            display: 'flex',
-            gap: 48,
-            alignItems: 'flex-start',
-            position: 'relative',
-            zIndex: 2,
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center'
+          }}
+        />
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(to bottom, rgba(247,241,234,0) 45%, #F7F1EA 100%)'
+        }} />
+      </div>
+
+      <main style={{
+        display: 'flex',
+        justifyContent: 'center',
+        padding: '0 24px 80px'
+      }}>
+        <section className="founder-complete-card" style={{
+          width: '100%',
+          maxWidth: 860,
+          marginTop: -118,
+          background: '#fff',
+          borderRadius: 30,
+          border: '1px solid #EDE7DF',
+          boxShadow: '0 30px 80px rgba(0,0,0,0.13)',
+          padding: 56,
+          position: 'relative',
+          zIndex: 2
+        }}>
+          <div className="founder-layout" style={{
+            display: 'grid',
+            gridTemplateColumns: '150px 1fr',
+            gap: 40,
+            alignItems: 'start'
           }}>
 
-            {/* TIMELINE — LEFT COLUMN */}
-            <div className="fs-timeline-col" style={{ width: 160, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', paddingTop: 120 }}>
+            <aside className="founder-timeline-side" style={{
+              borderLeft: '1px solid #EDE7DF',
+              paddingLeft: 26,
+              paddingTop: 22
+            }}>
               {[
-                { label: 'הצטרפתם לדור הראשון', done: true },
-                { label: 'הפרופיל נשמר', done: true },
-                { label: 'הסיור נשמר לבדיקה', done: true },
-                { label: 'ניפגש בהשקה', done: false },
-              ].map(function(step, i) {
+                ['✓', 'הצטרפתם לדור הראשון'],
+                ['✓', 'הפרופיל נשמר'],
+                ['✓', 'הסיור נשמר לבדיקה'],
+                ['✦', 'ניפגש בהשקה']
+              ].map(function(item, i) {
+                const active = i === 3
                 return (
-                  <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%' }}>
+                  <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                       <div style={{
-                        width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
-                        background: step.done ? '#B97A45' : '#fff',
-                        border: '2px solid #B97A45',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 12, color: '#fff', fontWeight: 800,
+                        width: active ? 34 : 30,
+                        height: active ? 34 : 30,
+                        borderRadius: '50%',
+                        background: active ? '#7E4821' : '#B97A45',
+                        color: '#fff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 800,
+                        fontSize: active ? 15 : 13,
+                        boxShadow: active ? '0 8px 20px rgba(126,72,33,0.22)' : 'none'
                       }}>
-                        {step.done ? '✓' : '✦'}
+                        {item[0]}
                       </div>
-                      <span style={{ fontSize: 12, color: '#7E4821', fontWeight: step.done ? 700 : 500, lineHeight: 1.4, fontFamily: 'Heebo, Arial, sans-serif' }}>
-                        {step.label}
-                      </span>
+                      {i < 3 && <div style={{
+                        width: 2,
+                        height: 36,
+                        background: '#C8A582',
+                        opacity: 0.45
+                      }} />}
                     </div>
-                    {i < 3 && (
-                      <div style={{ width: 2, height: 32, background: '#C8A582', opacity: 0.45, margin: '4px 0 4px 12px', alignSelf: 'flex-start' }} />
-                    )}
+
+                    <div style={{
+                      fontSize: 13,
+                      color: '#7E4821',
+                      fontWeight: 700,
+                      lineHeight: 1.45,
+                      paddingTop: 5
+                    }}>
+                      {item[1]}
+                    </div>
                   </div>
                 )
               })}
-            </div>
+            </aside>
 
-            {/* CONTENT — RIGHT COLUMN */}
-            <div style={{ flex: 1, textAlign: 'right' }}>
+            <div style={{ textAlign: 'center' }}>
+              <img
+                src="/Logo-black.png"
+                alt="מאז ועד היום"
+                style={{
+                  height: 62,
+                  width: 'auto',
+                  marginBottom: 20
+                }}
+                onError={function(e) { e.target.style.display = 'none' }}
+              />
 
-              {/* LOGO */}
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
-                <img src="/Logo-black.png" alt="מאז ועד היום" style={{ height: 58, width: 'auto' }} onError={function(e) { e.target.style.display='none' }} />
-              </div>
-
-              {/* FOUNDER NUMBER */}
               {founderNum && (
-                <p style={{ textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#B97A45', letterSpacing: '2.5px', textTransform: 'uppercase', marginBottom: 20 }}>
+                <p style={{
+                  color: '#B97A45',
+                  fontSize: 13,
+                  fontWeight: 800,
+                  letterSpacing: '2px',
+                  margin: '0 0 14px'
+                }}>
                   FOUNDER #{founderNum}
                 </p>
               )}
 
-              {/* DOTS DIVIDER */}
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, marginBottom: 24 }}>
-                <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C8A582' }} />
-                <div style={{ width: 28, height: 1, background: '#C8A582' }} />
-                <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C8A582' }} />
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                marginBottom: 22
+              }}>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#C8A582' }} />
+                <span style={{ width: 34, height: 1, background: '#C8A582' }} />
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#C8A582' }} />
               </div>
 
-              {/* HEADLINE */}
-              <h1 style={{ fontSize: 'clamp(24px,3vw,34px)', fontWeight: 900, color: '#1A1A1A', marginBottom: 20, lineHeight: 1.25, textAlign: 'center' }}>
+              <h1 className="founder-title" style={{
+                fontSize: 38,
+                lineHeight: 1.25,
+                fontWeight: 900,
+                color: '#1A1A1A',
+                margin: '0 0 24px',
+                letterSpacing: '-0.5px'
+              }}>
                 הסיפור הראשון שלכם נשמר.
               </h1>
 
-              {/* MOBILE TIMELINE */}
-              <div className="fs-timeline-mobile" style={{ display: 'none', flexDirection: 'column', gap: 10, marginBottom: 24, padding: '16px 18px', background: '#FBF7F1', borderRadius: 14, border: '1px solid #EDE7DF' }}>
+              <p style={{ fontSize: 17, color: '#555', lineHeight: 1.9, margin: '0 0 4px' }}>
+                יום אחד יהיו כאן עוד מאות סיורים.
+              </p>
+              <p style={{ fontSize: 17, color: '#555', lineHeight: 1.9, margin: '0 0 24px' }}>
+                אבל הסיור שלכם יהיה חלק מהדור הראשון.
+              </p>
+              <p style={{ fontSize: 17, color: '#555', lineHeight: 1.9, margin: '0 0 30px' }}>
+                תודה שאתם עוזרים לנו לכתוב את הפרק הראשון של{' '}
+                <span style={{ color: '#B97A45', fontWeight: 800 }}>מאז ועד היום</span>.
+              </p>
+
+              <div className="founder-timeline-mobile" style={{
+                display: 'none',
+                gridTemplateColumns: '1fr',
+                gap: 10,
+                background: '#FBF7F1',
+                border: '1px solid #EDE7DF',
+                borderRadius: 16,
+                padding: 16,
+                marginBottom: 26,
+                textAlign: 'right'
+              }}>
                 {[
-                  { label: 'הצטרפתם לדור הראשון', done: true },
-                  { label: 'הפרופיל נשמר', done: true },
-                  { label: 'הסיור נשמר לבדיקה', done: true },
-                  { label: 'ניפגש בהשקה', done: false },
-                ].map(function(step, i) {
+                  ['✓', 'הצטרפתם לדור הראשון'],
+                  ['✓', 'הפרופיל נשמר'],
+                  ['✓', 'הסיור נשמר לבדיקה'],
+                  ['✦', 'ניפגש בהשקה']
+                ].map(function(item, i) {
                   return (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{
-                        width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-                        background: step.done ? '#B97A45' : '#fff',
-                        border: '2px solid #B97A45',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 11, color: '#fff', fontWeight: 800,
+                      <span style={{
+                        width: 26,
+                        height: 26,
+                        borderRadius: '50%',
+                        background: i === 3 ? '#7E4821' : '#B97A45',
+                        color: '#fff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 12,
+                        fontWeight: 800
                       }}>
-                        {step.done ? '✓' : '✦'}
-                      </div>
-                      <span style={{ fontSize: 13, color: '#7E4821', fontWeight: step.done ? 700 : 500, fontFamily: 'Heebo, Arial, sans-serif' }}>
-                        {step.label}
+                        {item[0]}
+                      </span>
+                      <span style={{ fontSize: 13, color: '#7E4821', fontWeight: 700 }}>
+                        {item[1]}
                       </span>
                     </div>
                   )
                 })}
               </div>
 
-              {/* BODY */}
-              <p style={{ fontSize: 16, color: '#555', lineHeight: 1.9, marginBottom: 6, textAlign: 'center' }}>
-                יום אחד יהיו כאן עוד מאות סיורים.
-              </p>
-              <p style={{ fontSize: 16, color: '#555', lineHeight: 1.9, marginBottom: 20, textAlign: 'center' }}>
-                אבל הסיור שלכם יהיה חלק מהדור הראשון.
-              </p>
-              <p style={{ fontSize: 16, color: '#555', lineHeight: 1.9, marginBottom: 28, textAlign: 'center' }}>
-                תודה שאתם עוזרים לנו לכתוב את הפרק הראשון של{' '}
-                <span style={{ color: '#B97A45', fontWeight: 700 }}>מאז ועד היום</span>.
-              </p>
+              <img
+                className="founder-illustration"
+                src="/founder_footer.png"
+                alt=""
+                style={{
+                  width: 340,
+                  maxWidth: '100%',
+                  display: 'block',
+                  margin: '0 auto 28px',
+                  opacity: 0.94
+                }}
+                onError={function(e) { e.target.style.display = 'none' }}
+              />
 
-              {/* NOTE BOX */}
-              <div style={{ background: '#FBF7F1', border: '1px solid #EDE7DF', borderRadius: 14, padding: '16px 20px', marginBottom: 28, textAlign: 'center' }}>
-                <p style={{ fontSize: 14, color: '#555', lineHeight: 1.75, margin: 0, fontFamily: 'Heebo, Arial, sans-serif' }}>
-                  לקראת ההשקה נשלח לכם מייל עם גישה מלאה לחשבון ולסיור שהעליתם.
-                </p>
+              <div className="founder-note" style={{
+                maxWidth: 560,
+                margin: '0 auto 30px',
+                background: '#FBF7F1',
+                border: '1px solid #EDE7DF',
+                borderRadius: 18,
+                padding: '18px 24px',
+                color: '#555',
+                fontSize: 15,
+                lineHeight: 1.8
+              }}>
+                לקראת ההשקה נשלח לכם מייל עם{' '}
+                <strong style={{ color: '#B97A45' }}>גישה מלאה לחשבון</strong>{' '}
+                ולסיור שהעליתם.
               </div>
 
-              {/* ILLUSTRATION */}
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 36 }}>
-                <img className="fs-illustration" src="/founder_footer.png" alt="" style={{ width: 340, maxWidth: '100%', opacity: 0.92 }} onError={function(e) { e.target.style.display='none' }} />
-              </div>
-
-              {/* CTA */}
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <button className="fs-cta" onClick={function() { window.location.href = '/' }}
-                  style={{ background: '#B97A45', color: '#fff', height: 56, padding: '0 52px', borderRadius: 14, fontSize: 16, fontWeight: 800, border: 'none', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif', boxShadow: '0 8px 28px rgba(185,122,69,0.28)' }}>
-                  ניפגש בהשקה ✦
-                </button>
-              </div>
+              <button
+                className="founder-cta"
+                onClick={function() { window.location.href = '/' }}
+                style={{
+                  background: '#B97A45',
+                  color: '#fff',
+                  height: 56,
+                  padding: '0 54px',
+                  borderRadius: 14,
+                  border: 'none',
+                  fontSize: 16,
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  fontFamily: 'Heebo, Arial, sans-serif',
+                  boxShadow: '0 12px 28px rgba(185,122,69,0.25)'
+                }}
+              >
+                ניפגש בהשקה ✦
+              </button>
             </div>
           </div>
+        </section>
+      </main>
+    </div>
+  )
+
+  return (
+    <div style={{ fontFamily: 'Heebo, Arial, sans-serif', background: CREAM, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Header />
+      <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 24px' }}>
+        <div style={{ maxWidth: 560, width: '100%', textAlign: 'center' }}>
+          <div style={{ fontSize: 52, marginBottom: 16 }}>🎉</div>
+          <h1 style={{ fontSize: 28, fontWeight: 800, color: '#1a1a1a', marginBottom: 12 }}>
+            הסיור שלכם באוויר.
+          </h1>
+          <button
+            onClick={function() { router.push('/dashboard') }}
+            style={{ background: '#111', color: '#fff', padding: '12px 24px', borderRadius: 10, fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}
+          >
+            לדשבורד ←
+          </button>
         </div>
-      </div>
-    )
+      </main>
+      <Footer />
+    </div>
+  )
+}
 
     return (
       <div style={{ fontFamily: 'Heebo, Arial, sans-serif', background: CREAM, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -625,11 +791,61 @@ if (saved) {
                 </select>
               </div>
             </div>
-            <div style={{ marginBottom: 16 }}>
-              <FieldLabel required hint="מולא אוטומטית מהפרטים שלכם. אפשר לשנות אם רוצים מספר אחר לסיור הזה.">מספר וואטסאפ</FieldLabel>
-              <input type="tel" value={whatsappNumber} onChange={function(e){setWhatsappNumber(e.target.value)}} required style={inp} />
-            </div>
-            <div>
+           <div style={{ marginBottom: 16 }}>
+  <FieldLabel required hint="מולא אוטומטית מהפרטים שלכם. אפשר לשנות אם רוצים מספר אחר לסיור הזה.">
+    מספר וואטסאפ
+  </FieldLabel>
+
+  <div style={{
+    display: 'flex',
+    direction: 'ltr',
+    gap: 8,
+    justifyContent: 'flex-end',
+    alignItems: 'center'
+  }}>
+    <input
+      type="tel"
+      inputMode="numeric"
+      value={String(whatsappNumber || '').replace(/\D/g, '').slice(0, 3)}
+      onChange={function(e) {
+        var digits = String(whatsappNumber || '').replace(/\D/g, '')
+        var rest = digits.slice(3, 10)
+        var prefix = e.target.value.replace(/\D/g, '').slice(0, 3)
+        setWhatsappNumber(prefix + rest)
+      }}
+      required
+      style={Object.assign({}, inp, {
+        width: 92,
+        textAlign: 'center',
+        direction: 'ltr'
+      })}
+      placeholder="050"
+      maxLength={3}
+    />
+
+    <span style={{ color: '#B97A45', fontWeight: 800 }}>-</span>
+
+    <input
+      type="tel"
+      inputMode="numeric"
+      value={String(whatsappNumber || '').replace(/\D/g, '').slice(3, 10)}
+      onChange={function(e) {
+        var digits = String(whatsappNumber || '').replace(/\D/g, '')
+        var prefix = digits.slice(0, 3)
+        var rest = e.target.value.replace(/\D/g, '').slice(0, 7)
+        setWhatsappNumber(prefix + rest)
+      }}
+      required
+      style={Object.assign({}, inp, {
+        width: 170,
+        textAlign: 'center',
+        direction: 'ltr'
+      })}
+      placeholder="1234567"
+      maxLength={7}
+    />
+  </div>
+</div>
               <FieldLabel hint="הקלידו כתובת — Google Maps יציע השלמות.">נקודת מפגש</FieldLabel>
               <input ref={setMeetingInput} type="text" value={meetingPoint} onChange={function(e){setMeetingPoint(e.target.value)}} placeholder="הקלידו כתובת לחיפוש..." style={inp} />
               {meetingLink && <a href={meetingLink} target="_blank" rel="noopener noreferrer" style={{ display:'inline-block', marginTop:8, fontSize:12, color:BROWN, fontWeight:700 }}>פתח ב-Google Maps ←</a>}
