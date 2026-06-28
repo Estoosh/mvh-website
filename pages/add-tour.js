@@ -367,35 +367,50 @@ if (saved) {
       <div dir="rtl" style={{ fontFamily: 'Heebo, Arial, sans-serif', background: '#F7F1EA', minHeight: '100vh' }}>
         <style>{`
           @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(16px); }
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
           }
-          .founder-card { animation: fadeUp 600ms ease forwards; }
+          .fs-card { animation: fadeUp 500ms ease forwards; }
           @media (max-width: 768px) {
-            .hero-img { height: 260px !important; }
-            .founder-card { width: calc(100% - 32px) !important; margin-top: -80px !important; padding: 28px 20px !important; }
-            .timeline-side { display: none !important; }
-            .timeline-mobile { display: flex !important; }
-            .illustration { width: 220px !important; }
-            .cta-btn { width: 100% !important; }
+            .fs-hero { height: 240px !important; }
+            .fs-card {
+              margin-top: -80px !important;
+              padding: 28px 20px !important;
+              flex-direction: column !important;
+            }
+            .fs-timeline-col { display: none !important; }
+            .fs-timeline-mobile { display: flex !important; }
+            .fs-illustration { width: 230px !important; }
+            .fs-cta { width: 100% !important; }
           }
         `}</style>
 
-        <div className="hero-img" style={{ width: '100%', height: '42vh', position: 'relative', overflow: 'hidden' }}>
-          <img src="/founder_hero.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%', background: 'linear-gradient(to top, #F7F1EA 0%, transparent 100%)' }} />
+        {/* HERO */}
+        <div className="fs-hero" style={{ width: '100%', height: 360, overflow: 'hidden', position: 'relative' }}>
+          <img src="/founder_hero.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '55%', background: 'linear-gradient(to top, #F7F1EA, transparent)' }} />
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '0 16px 80px' }}>
-          <div className="founder-card" style={{
-            background: '#fff', borderRadius: 24, maxWidth: 760, width: '100%',
-            marginTop: -100, position: 'relative', zIndex: 2,
-            boxShadow: '0 24px 64px rgba(0,0,0,0.10)',
-            border: '1px solid #EDE7DF', padding: '44px 40px',
-            display: 'flex', gap: 40, alignItems: 'flex-start'
+        {/* CARD WRAPPER */}
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '0 20px 80px' }}>
+          <div className="fs-card" style={{
+            marginTop: -110,
+            background: '#fff',
+            borderRadius: 28,
+            maxWidth: 820,
+            width: '100%',
+            boxShadow: '0 28px 70px rgba(0,0,0,0.12)',
+            border: '1px solid #EDE7DF',
+            padding: '56px 48px',
+            display: 'flex',
+            gap: 48,
+            alignItems: 'flex-start',
+            position: 'relative',
+            zIndex: 2,
           }}>
 
-            <div className="timeline-side" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, paddingTop: 8 }}>
+            {/* TIMELINE — LEFT COLUMN */}
+            <div className="fs-timeline-col" style={{ width: 160, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', paddingTop: 120 }}>
               {[
                 { label: 'הצטרפתם לדור הראשון', done: true },
                 { label: 'הפרופיל נשמר', done: true },
@@ -403,60 +418,58 @@ if (saved) {
                 { label: 'ניפגש בהשקה', done: false },
               ].map(function(step, i) {
                 return (
-                  <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%' }}>
                       <div style={{
-                        width: 28, height: 28, borderRadius: '50%',
+                        width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
                         background: step.done ? '#B97A45' : '#fff',
                         border: '2px solid #B97A45',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 13, color: '#fff', flexShrink: 0
+                        fontSize: 12, color: '#fff', fontWeight: 800,
                       }}>
                         {step.done ? '✓' : '✦'}
                       </div>
-                      <span style={{ fontSize: 12, color: '#7E4821', fontWeight: step.done ? 700 : 500, whiteSpace: 'nowrap', fontFamily: 'Heebo, Arial, sans-serif' }}>
+                      <span style={{ fontSize: 12, color: '#7E4821', fontWeight: step.done ? 700 : 500, lineHeight: 1.4, fontFamily: 'Heebo, Arial, sans-serif' }}>
                         {step.label}
                       </span>
                     </div>
-                    {i < 3 && <div style={{ width: 2, height: 28, background: '#C8A582', opacity: 0.4, margin: '2px 0 2px 0' }} />}
+                    {i < 3 && (
+                      <div style={{ width: 2, height: 32, background: '#C8A582', opacity: 0.45, margin: '4px 0 4px 12px', alignSelf: 'flex-start' }} />
+                    )}
                   </div>
                 )
               })}
             </div>
 
+            {/* CONTENT — RIGHT COLUMN */}
             <div style={{ flex: 1, textAlign: 'right' }}>
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
-                <img src="/Logo-black.png" alt="מאז ועד היום" style={{ height: 56, width: 'auto' }} onError={function(e) { e.target.style.display='none' }} />
+
+              {/* LOGO */}
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+                <img src="/Logo-black.png" alt="מאז ועד היום" style={{ height: 58, width: 'auto' }} onError={function(e) { e.target.style.display='none' }} />
               </div>
 
+              {/* FOUNDER NUMBER */}
               {founderNum && (
-                <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, color: '#B97A45', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 12 }}>
-                  Founder #{founderNum}
+                <p style={{ textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#B97A45', letterSpacing: '2.5px', textTransform: 'uppercase', marginBottom: 20 }}>
+                  FOUNDER #{founderNum}
                 </p>
               )}
 
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6, marginBottom: 20 }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#C8A582' }} />
-                <div style={{ width: 24, height: 1, background: '#C8A582' }} />
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#C8A582' }} />
+              {/* DOTS DIVIDER */}
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, marginBottom: 24 }}>
+                <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C8A582' }} />
+                <div style={{ width: 28, height: 1, background: '#C8A582' }} />
+                <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C8A582' }} />
               </div>
 
-              <h1 style={{ fontSize: 'clamp(22px,3vw,32px)', fontWeight: 900, color: '#1A1A1A', marginBottom: 16, lineHeight: 1.3, textAlign: 'center' }}>
+              {/* HEADLINE */}
+              <h1 style={{ fontSize: 'clamp(24px,3vw,34px)', fontWeight: 900, color: '#1A1A1A', marginBottom: 20, lineHeight: 1.25, textAlign: 'center' }}>
                 הסיפור הראשון שלכם נשמר.
               </h1>
 
-              <p style={{ fontSize: 16, color: '#555', lineHeight: 1.9, marginBottom: 8, textAlign: 'center' }}>
-                יום אחד יהיו כאן עוד מאות סיורים.
-              </p>
-              <p style={{ fontSize: 16, color: '#555', lineHeight: 1.9, marginBottom: 20, textAlign: 'center' }}>
-                אבל הסיור שלכם יהיה חלק מהדור הראשון.
-              </p>
-              <p style={{ fontSize: 16, color: '#555', lineHeight: 1.9, marginBottom: 28, textAlign: 'center' }}>
-                תודה שאתם עוזרים לנו לכתוב את הפרק הראשון של{' '}
-                <span style={{ color: '#B97A45', fontWeight: 700 }}>מאז ועד היום</span>.
-              </p>
-
-              <div className="timeline-mobile" style={{ display: 'none', flexDirection: 'column', gap: 8, marginBottom: 24, padding: '16px', background: '#FBF7F1', borderRadius: 12, border: '1px solid #EDE7DF' }}>
+              {/* MOBILE TIMELINE */}
+              <div className="fs-timeline-mobile" style={{ display: 'none', flexDirection: 'column', gap: 10, marginBottom: 24, padding: '16px 18px', background: '#FBF7F1', borderRadius: 14, border: '1px solid #EDE7DF' }}>
                 {[
                   { label: 'הצטרפתם לדור הראשון', done: true },
                   { label: 'הפרופיל נשמר', done: true },
@@ -466,11 +479,11 @@ if (saved) {
                   return (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <div style={{
-                        width: 24, height: 24, borderRadius: '50%',
+                        width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
                         background: step.done ? '#B97A45' : '#fff',
                         border: '2px solid #B97A45',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 11, color: '#fff', flexShrink: 0
+                        fontSize: 11, color: '#fff', fontWeight: 800,
                       }}>
                         {step.done ? '✓' : '✦'}
                       </div>
@@ -482,25 +495,34 @@ if (saved) {
                 })}
               </div>
 
-              <div style={{ marginBottom: 24, borderRadius: 14, overflow: 'hidden', border: '1px solid #EDE7DF' }}>
-                <img src="/founder_baner.png" alt="" style={{ width: '100%', display: 'block' }} onError={function(e) { e.target.style.display='none' }} />
-                <div style={{ background: '#E8DDD0', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <span style={{ fontSize: 28 }}>✉️</span>
-                  <p style={{ fontSize: 14, color: '#555', lineHeight: 1.7, margin: 0, fontFamily: 'Heebo, Arial, sans-serif' }}>
-                    לקראת ההשקה נשלח לכם מייל עם{' '}
-                    <strong style={{ color: '#B97A45' }}>גישה מלאה לחשבון</strong>{' '}
-                    ולסיור שהעליתם.
-                  </p>
-                </div>
+              {/* BODY */}
+              <p style={{ fontSize: 16, color: '#555', lineHeight: 1.9, marginBottom: 6, textAlign: 'center' }}>
+                יום אחד יהיו כאן עוד מאות סיורים.
+              </p>
+              <p style={{ fontSize: 16, color: '#555', lineHeight: 1.9, marginBottom: 20, textAlign: 'center' }}>
+                אבל הסיור שלכם יהיה חלק מהדור הראשון.
+              </p>
+              <p style={{ fontSize: 16, color: '#555', lineHeight: 1.9, marginBottom: 28, textAlign: 'center' }}>
+                תודה שאתם עוזרים לנו לכתוב את הפרק הראשון של{' '}
+                <span style={{ color: '#B97A45', fontWeight: 700 }}>מאז ועד היום</span>.
+              </p>
+
+              {/* NOTE BOX */}
+              <div style={{ background: '#FBF7F1', border: '1px solid #EDE7DF', borderRadius: 14, padding: '16px 20px', marginBottom: 28, textAlign: 'center' }}>
+                <p style={{ fontSize: 14, color: '#555', lineHeight: 1.75, margin: 0, fontFamily: 'Heebo, Arial, sans-serif' }}>
+                  לקראת ההשקה נשלח לכם מייל עם גישה מלאה לחשבון ולסיור שהעליתם.
+                </p>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
-                <img className="illustration" src="/founder_footer.png" alt="" style={{ width: 320, maxWidth: '100%', opacity: 0.9 }} onError={function(e) { e.target.style.display='none' }} />
+              {/* ILLUSTRATION */}
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 36 }}>
+                <img className="fs-illustration" src="/founder_footer.png" alt="" style={{ width: 340, maxWidth: '100%', opacity: 0.92 }} onError={function(e) { e.target.style.display='none' }} />
               </div>
 
+              {/* CTA */}
               <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <button className="cta-btn" onClick={function() { window.location.href = '/' }}
-                  style={{ background: '#B97A45', color: '#fff', padding: '0 48px', height: 54, borderRadius: 14, fontSize: 16, fontWeight: 800, border: 'none', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif', boxShadow: '0 8px 24px rgba(185,122,69,0.25)' }}>
+                <button className="fs-cta" onClick={function() { window.location.href = '/' }}
+                  style={{ background: '#B97A45', color: '#fff', height: 56, padding: '0 52px', borderRadius: 14, fontSize: 16, fontWeight: 800, border: 'none', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif', boxShadow: '0 8px 28px rgba(185,122,69,0.28)' }}>
                   ניפגש בהשקה ✦
                 </button>
               </div>
