@@ -83,10 +83,14 @@ const guideFields = {
 
   const createdGuide = await createGuideRes.json()
 
-  if (!createGuideRes.ok || !createdGuide.id) {
-    return res.status(502).json({ error: 'airtable_create_guide_failed', airtable: createdGuide })
-  }
-
+ if (!createGuideRes.ok || !createdGuide.id) {
+  console.error('AIRTABLE_CREATE_GUIDE_FAILED', JSON.stringify(createdGuide, null, 2))
+  return res.status(502).json({
+    error: 'airtable_create_guide_failed',
+    airtable: createdGuide,
+    sent_fields: guideFields
+  }) 
+   
   const tourResult = await createTourRecord({
     baseId,
     headers,
