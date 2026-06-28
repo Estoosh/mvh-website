@@ -191,20 +191,44 @@ export default function Founders() {
     setForm(Object.assign({}, form, { [e.target.name]: e.target.value }))
   }
 
-  const handleRegister = function(e) {
-    e.preventDefault()
+  const handleRegister = async function(e) {
+  e.preventDefault()
 
-    const cleanName = form.name.trim()
-    const cleanEmail = form.email.trim().toLowerCase()
-    const fullPhone = phonePrefix + phoneRest
+  const cleanName = form.name.trim()
+  const cleanEmail = form.email.trim().toLowerCase()
+  const fullPhone = phonePrefix + phoneRest
 
-    if (!cleanName || !cleanEmail || phonePrefix.length !== 3 || phoneRest.length !== 7) {
-      setError('יש למלא את כל השדות כולל מספר טלפון תקין')
+  if (!cleanName || !cleanEmail || phonePrefix.length !== 3 || phoneRest.length !== 7) {
+    setError('יש למלא את כל השדות כולל מספר טלפון תקין')
+    return
+  }
+
+  setError('')
+  setLoading(true)
+
+  try {
+    const res = await fetch('/api/register-founder', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: cleanEmail,
+        phone: fullPhone
+      })
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      setError('משהו השתבש. אפשר לנסות שוב.')
+      setLoading(false)
       return
     }
 
-    setError('')
-    setLoading(true)
+    if (data.existing_founder) {
+      setError(data.message || 'אתם כבר רשומים לקהילת המייסדים. נשלח אליכם עדכון לקראת ההשקה.')
+      setLoading(false)
+      return
+    }
 
     const nextForm = {
       name: cleanName,
@@ -213,6 +237,7 @@ export default function Founders() {
     }
 
     setForm(nextForm)
+
     saveDraft({
       screen: 'success',
       form: nextForm,
@@ -222,7 +247,11 @@ export default function Founders() {
 
     setScreen('success')
     setLoading(false)
+  } catch (err) {
+    setError('משהו השתבש. אפשר לנסות שוב.')
+    setLoading(false)
   }
+}
 
   async function saveBioLocally(nextBio) {
     const cleanBio = typeof nextBio === 'string' ? nextBio.trim() : ''
