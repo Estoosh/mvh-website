@@ -130,7 +130,20 @@ export default function Founders() {
     }
 
     if (draft.founderNumber) setFounderNumber(draft.founderNumber)
-    if (draft.recordId) setRecordId(draft.recordId)
+    if (draft.recordId) {
+  const response = await fetch(
+    '/api/get-guide?record_id=' + draft.recordId
+  )
+
+  const data = await response.json()
+
+  if (!data.found) {
+    resetFlow()
+    return
+  }
+
+  setRecordId(draft.recordId)
+}
     if (draft.profileInput) setProfileInput(draft.profileInput)
 
     if (draft.bioText) {
