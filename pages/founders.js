@@ -30,9 +30,7 @@ function StepBadge({ number }) {
 function Card({ children, style }) {
   return (
     <div style={Object.assign({
-      background: '#fff',
-      borderRadius: 20,
-      padding: '36px 32px',
+      background: '#fff', borderRadius: 20, padding: '36px 32px',
       border: '1px solid #EDE7DF',
       boxShadow: '0 12px 40px rgba(0,0,0,0.06)',
       animation: 'fadeUp 350ms ease forwards'
@@ -43,16 +41,14 @@ function Card({ children, style }) {
 }
 
 const inp = {
-  width: '100%',
-  padding: '12px 14px',
-  borderRadius: 10,
-  border: '1.5px solid #EDE7DF',
-  fontSize: 15,
-  fontFamily: 'Heebo, Arial, sans-serif',
-  outline: 'none',
-  background: '#fff',
-  boxSizing: 'border-box',
-  color: '#1a1a1a'
+  width: '100%', padding: '12px 14px', borderRadius: 10,
+  border: '1.5px solid #EDE7DF', fontSize: 15,
+  fontFamily: 'Heebo, Arial, sans-serif', outline: 'none',
+  background: '#fff', boxSizing: 'border-box', color: '#1a1a1a'
+}
+
+function onlyDigits(val, max) {
+  return val.replace(/\D/g, '').slice(0, max)
 }
 
 const emptyDraft = {
@@ -68,6 +64,8 @@ const emptyDraft = {
 export default function Founders() {
   const [screen, setScreen] = useState('welcome')
   const [form, setForm] = useState({ name: '', email: '', phone: '' })
+  const [phonePrefix, setPhonePrefix] = useState('')
+  const [phoneRest, setPhoneRest] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [founderNumber, setFounderNumber] = useState(null)
@@ -84,8 +82,10 @@ export default function Founders() {
 
   function resetFlow() {
     localStorage.removeItem(DRAFT_KEY)
-    setScreen(emptyDraft.screen)
-    setForm(emptyDraft.form)
+    setScreen('welcome')
+    setForm({ name: '', email: '', phone: '' })
+    setPhonePrefix('')
+    setPhoneRest('')
     setFounderNumber(null)
     setRecordId(null)
     setProfileInput('')
@@ -98,63 +98,43 @@ export default function Founders() {
 
   useEffect(function() {
     try {
-      const shouldReset =
-        typeof window !== 'undefined' &&
-        window.location.search.includes('reset=true')
-
-      if (shouldReset) {
-        resetFlow()
-        restoredRef.current = true
-        return
-      }
+      const shouldReset = typeof window !== 'undefined' && window.location.search.includes('reset=true')
+      if (shouldReset) { resetFlow(); restoredRef.current = true; return }
 
       const saved = localStorage.getItem(DRAFT_KEY)
-      if (!saved) {
-        restoredRef.current = true
-        return
-      }
+      if (!saved) { restoredRef.current = true; return }
 
       const draft = JSON.parse(saved)
-
       if (draft.screen) setScreen(draft.screen)
-      if (draft.form) setForm(draft.form)
+      if (draft.form) {
+        setForm(draft.form)
+        if (draft.form.phone) {
+          setPhonePrefix(draft.form.phone.slice(0, 3))
+          setPhoneRest(draft.form.phone.slice(3))
+        }
+      }
       if (draft.founderNumber) setFounderNumber(draft.founderNumber)
       if (draft.recordId) setRecordId(draft.recordId)
       if (draft.profileInput) setProfileInput(draft.profileInput)
-      if (draft.bioText) {
-        setBioText(draft.bioText)
-        setBioCount(draft.bioText.length)
-      }
+      if (draft.bioText) { setBioText(draft.bioText); setBioCount(draft.bioText.length) }
       if (draft.bioGenerated) setBioGenerated(draft.bioGenerated)
-
       restoredRef.current = true
-    } catch (err) {
-      console.error('[founders] restore failed:', err)
+    } catch(err) {
       restoredRef.current = true
     }
   }, [])
 
   useEffect(function() {
     if (!restoredRef.current) return
-
     try {
       localStorage.setItem(DRAFT_KEY, JSON.stringify({
-        screen,
-        form,
-        founderNumber,
-        recordId,
-        profileInput,
-        bioText,
-        bioGenerated
+        screen, form, founderNumber, recordId, profileInput, bioText, bioGenerated
       }))
-    } catch (err) {
-      console.error('[founders] save draft failed:', err)
-    }
+    } catch(err) {}
   }, [screen, form, founderNumber, recordId, profileInput, bioText, bioGenerated])
 
   async function saveBioToAirtable(nextBio) {
     const cleanBio = typeof nextBio === 'string' ? nextBio.trim() : ''
-
     if (!recordId || !cleanBio) return { success: false, skipped: true }
 
     setBioSaveStatus('שומר...')
@@ -166,48 +146,35 @@ export default function Founders() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ record_id: recordId, bio: cleanBio })
       })
-
       const data = await res.json()
 
       if (!res.ok || !data.success) {
-        console.error('[founders] bio save failed:', data)
-
-        const err = data?.airtable?.error?.type || data?.airtable?.error || data?.error
-
+        const err = data?.airtable?.error?.type || data?.error
         if (String(err || '').includes('NOT_FOUND') || String(err || '').includes('INVALID_RECORD')) {
           resetFlow()
           window.location.href = '/founders?reset=true'
           return { success: false, reset: true }
         }
-
         setBioSaveStatus('')
         setBioError('לא הצלחנו לשמור את הפרופיל. נסו שוב.')
-        return { success: false, data }
+        return { success: false }
       }
 
       setBioSaveStatus('נשמר')
-      return { success: true, data }
-    } catch (err) {
-      console.error('[founders] bio save error:', err)
+      return { success: true }
+    } catch(err) {
       setBioSaveStatus('')
       setBioError('לא הצלחנו לשמור את הפרופיל. נסו שוב.')
-      return { success: false, error: err }
+      return { success: false }
     }
   }
 
   useEffect(function() {
     if (!recordId || !bioText.trim()) return
     if (screen !== 'bio-ai' && screen !== 'bio-manual') return
-
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
-
-    saveTimerRef.current = setTimeout(function() {
-      saveBioToAirtable(bioText)
-    }, 900)
-
-    return function() {
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
-    }
+    saveTimerRef.current = setTimeout(function() { saveBioToAirtable(bioText) }, 900)
+    return function() { if (saveTimerRef.current) clearTimeout(saveTimerRef.current) }
   }, [bioText, recordId, screen])
 
   const handleChange = function(e) {
@@ -215,89 +182,68 @@ export default function Founders() {
   }
 
   const handleRegister = async function(e) {
-  e.preventDefault()
+    e.preventDefault()
+    const fullPhone = phonePrefix + phoneRest
+    if (!form.name.trim() || !form.email.trim() || fullPhone.length < 9) {
+      setError('יש למלא את כל השדות כולל מספר טלפון תקין')
+      return
+    }
+    setError('')
+    setLoading(true)
 
-  if (!form.name.trim() || !form.email.trim() || !form.phone.trim()) {
-    setError('יש למלא את כל השדות')
-    return
-  }
-
-  setError('')
-  setLoading(true)
-
-  try {
-    const res = await fetch('/api/register-founder', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: form.name.trim(),
-        email: form.email.trim(),
-        phone: form.phone.trim(),
-        invite_source: 'unknown'
+    try {
+      const res = await fetch('/api/register-founder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          phone: fullPhone,
+          invite_source: 'unknown'
+        })
       })
-    })
+      const data = await res.json()
 
-    const data = await res.json()
+      if (data.error === 'founder_exists' && data.record_id) {
+        const guide = data.guide || {}
+        setFounderNumber(data.founder_number || guide.Founder_Number || null)
+        setRecordId(data.record_id)
+        setForm({ name: guide.Guide_Name || form.name, email: guide.Email || form.email, phone: guide.WhatsApp_Number || fullPhone })
+        setBioText(guide.Guide_Bio || '')
+        setBioCount((guide.Guide_Bio || '').length)
+        setBioGenerated(Boolean(guide.Guide_Bio))
+        setScreen('benefit')
+        setLoading(false)
+        return
+      }
 
-    if (data.error === 'founder_exists' && data.record_id) {
-      const guide = data.guide || {}
+      if (!data.success || !data.record_id) {
+        setError('משהו השתבש. אפשר לנסות שוב.')
+        setLoading(false)
+        return
+      }
 
-      setFounderNumber(data.founder_number || guide.Founder_Number || null)
+      setFounderNumber(data.founder_number || null)
       setRecordId(data.record_id)
-
-      setForm({
-        name: guide.Guide_Name || form.name,
-        email: guide.Email || form.email,
-        phone: guide.WhatsApp_Number || form.phone
-      })
-
-      setBioText(guide.Guide_bio || '')
-      setBioCount((guide.Guide_bio || '').length)
-      setBioGenerated(Boolean(guide.Guide_bio))
-
-      setScreen('benefit')
-      setLoading(false)
-      return
-    }
-
-    if (!data.success || !data.record_id) {
-      console.error('[founders] register failed:', data)
+      setScreen('success')
+    } catch(err) {
       setError('משהו השתבש. אפשר לנסות שוב.')
-      setLoading(false)
-      return
     }
-
-    setFounderNumber(data.founder_number || null)
-    setRecordId(data.record_id)
-    setScreen('success')
-  } catch(err) {
-    console.error('[founders] register error:', err)
-    setError('משהו השתבש. אפשר לנסות שוב.')
+    setLoading(false)
   }
-
-  setLoading(false)
-}
 
   const generateBio = async function() {
     const input = profileInput.trim()
-
-    if (!input) {
-      setBioError('יש להזין טקסט לפני יצירת הטיוטה')
-      return
-    }
-
+    if (!input) { setBioError('יש להזין טקסט לפני יצירת הטיוטה'); return }
     setBioError('')
     setBioLoading(true)
-
     try {
       const res = await fetch('/api/generate-founder-bio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ profileInput: input })
       })
-
       const data = await res.json()
-
       if (data.bio) {
         const nextBio = String(data.bio).slice(0, 800)
         setBioText(nextBio)
@@ -308,31 +254,17 @@ export default function Founders() {
         setBioError('לא הצלחנו ליצור טיוטה. אפשר לנסות שוב או לכתוב בעצמכם.')
       }
     } catch(err) {
-      console.error('[generateBio] error:', err)
       setBioError('משהו השתבש. אפשר לנסות שוב.')
     }
-
     setBioLoading(false)
   }
 
   const saveBioAndContinue = async function() {
     const cleanBio = bioText.trim()
-
-    if (!cleanBio) {
-      setBioError('יש לכתוב או לאשר טיוטת פרופיל לפני שממשיכים')
-      return
-    }
-
-    if (!recordId) {
-      resetFlow()
-      window.location.href = '/founders?reset=true'
-      return
-    }
-
+    if (!cleanBio) { setBioError('יש לכתוב או לאשר טיוטת פרופיל לפני שממשיכים'); return }
+    if (!recordId) { resetFlow(); window.location.href = '/founders?reset=true'; return }
     const result = await saveBioToAirtable(cleanBio)
-
-    if (!result.success) return
-
+    if (!result.success && !result.skipped) return
     setScreen('benefit')
   }
 
@@ -350,25 +282,20 @@ export default function Founders() {
       </Head>
 
       <div style={{ maxWidth: 540, width: '100%' }}>
-        <div style={{ display: 'block', textAlign: 'center', marginBottom: 36 }}>
-          <img src="/Logo-black.png" alt="מאז ועד היום" style={{ height: 60, width: 'auto' }} onError={e => e.target.style.display='none'} />
+        <div style={{ textAlign: 'center', marginBottom: 36 }}>
+          <img src="/Logo-black.png" alt="מאז ועד היום" style={{ height: 60, width: 'auto' }} onError={function(e) { e.target.style.display='none' }} />
         </div>
 
         {screen === 'welcome' && (
           <Card>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-              <TimelineDot />
-              <StepBadge number="1" />
+              <TimelineDot /><StepBadge number="1" />
             </div>
             <h1 style={{ fontSize: 20, fontWeight: 800, color: '#1a1a1a', marginBottom: 16, lineHeight: 1.4 }}>
               אם קיבלתם את הלינק הזה, כנראה שמישהו חושב שאתם מסוג האנשים שיכולים לעזור לנו לבנות משהו חדש.
             </h1>
-            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85, marginBottom: 14 }}>
-              אנחנו מאמינים שאנשים לא יוצאים מהבית בשביל עובדות. הם יוצאים בשביל סיפורים.
-            </p>
-            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85, marginBottom: 28 }}>
-              ואנחנו מחפשים אנשים שיודעים לקחת מקום ולהפוך אותו לסיפור.
-            </p>
+            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85, marginBottom: 14 }}>אנחנו מאמינים שאנשים לא יוצאים מהבית בשביל עובדות. הם יוצאים בשביל סיפורים.</p>
+            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85, marginBottom: 28 }}>ואנחנו מחפשים אנשים שיודעים לקחת מקום ולהפוך אותו לסיפור.</p>
             <button onClick={function() { setScreen('register') }} style={{ width: '100%', background: '#111', color: '#fff', padding: '15px', borderRadius: 12, fontSize: 16, fontWeight: 800, border: 'none', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
               כן, אני רוצה להצטרף לדור הראשון ←
             </button>
@@ -378,8 +305,7 @@ export default function Founders() {
         {screen === 'register' && (
           <Card>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-              <TimelineDot />
-              <StepBadge number="2" />
+              <TimelineDot /><StepBadge number="2" />
             </div>
             <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1a1a1a', marginBottom: 8 }}>
               ברוכים הבאים לדור הראשון של <span style={{ color: BRAND, fontWeight: 700 }}>מאז ועד היום</span>.
@@ -398,28 +324,10 @@ export default function Founders() {
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#2a2a2a', marginBottom: 6 }}>טלפון <span style={{ color: BROWN }}>*</span></label>
-               <div style={{ display: 'grid', gridTemplateColumns: '90px 1fr', gap: 8 }}>
-  <input
-    type="tel"
-    inputMode="numeric"
-    value={phonePrefix}
-    onChange={function(e) { setPhonePrefix(onlyDigits(e.target.value, 3)) }}
-    required
-    style={inp}
-    placeholder="050"
-    maxLength={3}
-  />
-  <input
-    type="tel"
-    inputMode="numeric"
-    value={phoneRest}
-    onChange={function(e) { setPhoneRest(onlyDigits(e.target.value, 7)) }}
-    required
-    style={inp}
-    placeholder="1234567"
-    maxLength={7}
-  />
-</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '90px 1fr', gap: 8 }}>
+                  <input type="tel" inputMode="numeric" value={phonePrefix} onChange={function(e) { setPhonePrefix(onlyDigits(e.target.value, 3)) }} required style={inp} placeholder="050" maxLength={3} />
+                  <input type="tel" inputMode="numeric" value={phoneRest} onChange={function(e) { setPhoneRest(onlyDigits(e.target.value, 7)) }} required style={inp} placeholder="1234567" maxLength={7} />
+                </div>
               </div>
               {error && <p style={{ fontSize: 13, color: '#e00', background: '#fff5f5', padding: '10px 14px', borderRadius: 8, border: '1px solid #fecaca' }}>{error}</p>}
               <button type="submit" disabled={loading} style={{ width: '100%', background: loading ? '#888' : '#111', color: '#fff', padding: '15px', borderRadius: 12, fontSize: 16, fontWeight: 800, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'Heebo, Arial, sans-serif', marginTop: 4 }}>
@@ -432,22 +340,13 @@ export default function Founders() {
         {screen === 'success' && (
           <Card>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-              <TimelineDot />
-              <StepBadge number="3" />
+              <TimelineDot /><StepBadge number="3" />
             </div>
             {founderNumber && <p style={{ fontSize: 13, fontWeight: 700, color: BRAND, marginBottom: 10 }}>Founder #{founderNumber}</p>}
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1a1a1a', marginBottom: 10, lineHeight: 1.3 }}>
-              כל מקום טוב מתחיל בסיפור טוב.
-            </h2>
-            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.8, marginBottom: 6 }}>
-              זה הסיפור הראשון של <span style={{ color: BRAND, fontWeight: 700 }}>מאז ועד היום</span>.
-            </p>
-            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.8, marginBottom: 24 }}>
-              תודה שאתם חלק ממנו.
-            </p>
-            <p style={{ fontSize: 14, color: '#6B6B6B', lineHeight: 1.7, marginBottom: 24 }}>
-              יום אחד יצטרפו לכאן עוד מאות מורי דרך. אבל כרגע אנחנו עדיין בונים את הפרק הראשון. בואו נתחיל מכם.
-            </p>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1a1a1a', marginBottom: 10, lineHeight: 1.3 }}>כל מקום טוב מתחיל בסיפור טוב.</h2>
+            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.8, marginBottom: 6 }}>זה הסיפור הראשון של <span style={{ color: BRAND, fontWeight: 700 }}>מאז ועד היום</span>.</p>
+            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.8, marginBottom: 24 }}>תודה שאתם חלק ממנו.</p>
+            <p style={{ fontSize: 14, color: '#6B6B6B', lineHeight: 1.7, marginBottom: 24 }}>יום אחד יצטרפו לכאן עוד מאות מורי דרך. אבל כרגע אנחנו עדיין בונים את הפרק הראשון. בואו נתחיל מכם.</p>
             <div style={{ borderTop: '1px solid #EDE7DF', paddingTop: 20 }}>
               <p style={{ fontSize: 14, fontWeight: 700, color: '#2a2a2a', marginBottom: 14 }}>איך תרצו להציג את עצמכם?</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -465,8 +364,7 @@ export default function Founders() {
         {screen === 'bio-ai' && (
           <Card>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-              <TimelineDot />
-              <StepBadge number="4" />
+              <TimelineDot /><StepBadge number="4" />
             </div>
             <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1a1a1a', marginBottom: 10 }}>ספרו לנו קצת על עצמכם</h2>
             <p style={{ fontSize: 14, color: '#6B6B6B', lineHeight: 1.7, marginBottom: 20 }}>
@@ -497,13 +395,10 @@ export default function Founders() {
         {screen === 'bio-manual' && (
           <Card>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-              <TimelineDot />
-              <StepBadge number="4" />
+              <TimelineDot /><StepBadge number="4" />
             </div>
             <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1a1a1a', marginBottom: 10 }}>ספרו לנו בכמה מילים מי אתם.</h2>
-            <p style={{ fontSize: 14, color: '#6B6B6B', lineHeight: 1.7, marginBottom: 20 }}>
-              לא קורות חיים. לא רשימת תפקידים. רק הסיפור שתרצו שאנשים יכירו דרכו אתכם.
-            </p>
+            <p style={{ fontSize: 14, color: '#6B6B6B', lineHeight: 1.7, marginBottom: 20 }}>לא קורות חיים. לא רשימת תפקידים. רק הסיפור שתרצו שאנשים יכירו דרכו אתכם.</p>
             <textarea value={bioText} onChange={function(e) { if (e.target.value.length <= 800) { setBioText(e.target.value); setBioCount(e.target.value.length) } }} rows={7} style={Object.assign({}, inp, { resize: 'vertical', lineHeight: 1.8, marginBottom: 6 })} placeholder="הסיפור שלכם..." />
             <p style={{ fontSize: 11, color: bioCount > 720 ? '#e00' : '#B0A89E', textAlign: 'left', marginBottom: 8 }}>{bioCount}/800</p>
             {bioSaveStatus && <p style={{ fontSize: 12, color: '#777', marginBottom: 12 }}>{bioSaveStatus}</p>}
@@ -517,8 +412,7 @@ export default function Founders() {
         {screen === 'benefit' && (
           <Card>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-              <TimelineDot />
-              <StepBadge number="5" />
+              <TimelineDot /><StepBadge number="5" />
             </div>
             <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1a1a1a', marginBottom: 16, lineHeight: 1.4 }}>
               כל מקום טוב מתחיל בסיפור טוב.<br />הגיע הזמן לסיפור הראשון שלכם.
@@ -526,14 +420,11 @@ export default function Founders() {
             <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85, marginBottom: 12 }}>
               כחלק מתוכנית המייסדים של <span style={{ color: BRAND, fontWeight: 700 }}>מאז ועד היום</span>, תוכלו לפרסם את הסיור הראשון שלכם בפלטפורמה ללא עלות וללא הגבלת זמן.
             </p>
-            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85, marginBottom: 12 }}>
-              ההטבה נשמרת למייסדים שמעלים את הסיור לפני מועד ההשקה.
-            </p>
-            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85, marginBottom: 28 }}>
-              הסיור הזה יהיה חלק מהדור הראשון של הסיפורים שירכיבו את הקהילה.
-            </p>
+            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85, marginBottom: 12 }}>ההטבה נשמרת למייסדים שמעלים את הסיור לפני מועד ההשקה.</p>
+            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85, marginBottom: 28 }}>הסיור הזה יהיה חלק מהדור הראשון של הסיפורים שירכיבו את הקהילה.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <a href={'/add-tour?founder=true&record_id=' + (recordId || '')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#111', color: '#fff', padding: '15px', borderRadius: 12, fontSize: 16, fontWeight: 800, textDecoration: 'none', fontFamily: 'Heebo, Arial, sans-serif' }}>
+              <a href={'/add-tour?founder=true&record_id=' + (recordId || '') + '&founder_number=' + (founderNumber || '')}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#111', color: '#fff', padding: '15px', borderRadius: 12, fontSize: 16, fontWeight: 800, textDecoration: 'none', fontFamily: 'Heebo, Arial, sans-serif' }}>
                 הכניסו את הסיפור הראשון שלכם ←
               </a>
               <button onClick={function() { setScreen('later') }} style={{ width: '100%', background: CREAM, color: BROWN, padding: '14px', borderRadius: 12, fontSize: 15, fontWeight: 700, border: '1.5px solid #EDE7DF', cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
@@ -549,9 +440,7 @@ export default function Founders() {
               <TimelineDot />
             </div>
             <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1a1a1a', marginBottom: 12 }}>מעולה.</h2>
-            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85 }}>
-              שמרנו לכם את ההטבה. כשתהיו מוכנים, היא תחכה לכם כאן עד יום ההשקה.
-            </p>
+            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85 }}>שמרנו לכם את ההטבה. כשתהיו מוכנים, היא תחכה לכם כאן עד יום ההשקה.</p>
           </Card>
         )}
       </div>
