@@ -107,12 +107,15 @@ export default function Founders() {
       const draft = JSON.parse(saved)
       if (draft.screen) setScreen(draft.screen)
       if (draft.form) {
-        setForm(draft.form)
-        if (draft.form.phone) {
-          setPhonePrefix(draft.form.phone.slice(0, 3))
-          setPhoneRest(draft.form.phone.slice(3))
-        }
-      }
+       if (draft.form) setForm(draft.form)
+
+if (draft.phonePrefix) setPhonePrefix(draft.phonePrefix)
+if (draft.phoneRest) setPhoneRest(draft.phoneRest)
+
+if (!draft.phonePrefix && !draft.phoneRest && draft.form?.phone) {
+  setPhonePrefix(draft.form.phone.slice(0, 3))
+  setPhoneRest(draft.form.phone.slice(3))
+}
       if (draft.founderNumber) setFounderNumber(draft.founderNumber)
       if (draft.recordId) setRecordId(draft.recordId)
       if (draft.profileInput) setProfileInput(draft.profileInput)
@@ -128,8 +131,16 @@ export default function Founders() {
     if (!restoredRef.current) return
     try {
       localStorage.setItem(DRAFT_KEY, JSON.stringify({
-        screen, form, founderNumber, recordId, profileInput, bioText, bioGenerated
-      }))
+  screen,
+  form,
+  phonePrefix,
+  phoneRest,
+  founderNumber,
+  recordId,
+  profileInput,
+  bioText,
+  bioGenerated
+}))
     } catch(err) {}
   }, [screen, form, founderNumber, recordId, profileInput, bioText, bioGenerated])
 
@@ -184,7 +195,7 @@ export default function Founders() {
   const handleRegister = async function(e) {
     e.preventDefault()
     const fullPhone = phonePrefix + phoneRest
-    if (!form.name.trim() || !form.email.trim() || fullPhone.length < 9) {
+   if (!form.name.trim() || !form.email.trim() || phonePrefix.length !== 3 || phoneRest.length !== 7) {
       setError('יש למלא את כל השדות כולל מספר טלפון תקין')
       return
     }
@@ -209,9 +220,9 @@ export default function Founders() {
         setFounderNumber(data.founder_number || guide.Founder_Number || null)
         setRecordId(data.record_id)
         setForm({ name: guide.Guide_Name || form.name, email: guide.Email || form.email, phone: guide.WhatsApp_Number || fullPhone })
-        setBioText(guide.Guide_Bio || '')
-        setBioCount((guide.Guide_Bio || '').length)
-        setBioGenerated(Boolean(guide.Guide_Bio))
+        setBioText(guide.Guide_bio || '')
+        setBioCount((guide.Guide_bio || '').length)
+        setBioGenerated(Boolean(guide.Guide_bio))
         setScreen('benefit')
         setLoading(false)
         return
@@ -324,7 +335,43 @@ export default function Founders() {
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#2a2a2a', marginBottom: 6 }}>טלפון <span style={{ color: BROWN }}>*</span></label>
-                <div style={{ display: 'grid', gridTemplateColumns: '90px 1fr', gap: 8 }}>
+                <div style={{
+  display: 'flex',
+  direction: 'ltr',
+  gap: 8,
+  justifyContent: 'flex-end',
+  alignItems: 'center'
+}}>
+  <input
+    type="tel"
+    inputMode="numeric"
+    value={phonePrefix}
+    onChange={function(e) { setPhonePrefix(onlyDigits(e.target.value, 3)) }}
+    required
+    style={Object.assign({}, inp, {
+      width: 92,
+      textAlign: 'center',
+      direction: 'ltr'
+    })}
+    placeholder="050"
+    maxLength={3}
+  />
+  <span style={{ color: '#B97A45', fontWeight: 800 }}>-</span>
+  <input
+    type="tel"
+    inputMode="numeric"
+    value={phoneRest}
+    onChange={function(e) { setPhoneRest(onlyDigits(e.target.value, 7)) }}
+    required
+    style={Object.assign({}, inp, {
+      width: 170,
+      textAlign: 'center',
+      direction: 'ltr'
+    })}
+    placeholder="1234567"
+    maxLength={7}
+  />
+</div>
                   <input type="tel" inputMode="numeric" value={phonePrefix} onChange={function(e) { setPhonePrefix(onlyDigits(e.target.value, 3)) }} required style={inp} placeholder="050" maxLength={3} />
                   <input type="tel" inputMode="numeric" value={phoneRest} onChange={function(e) { setPhoneRest(onlyDigits(e.target.value, 7)) }} required style={inp} placeholder="1234567" maxLength={7} />
                 </div>
