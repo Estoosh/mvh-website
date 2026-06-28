@@ -62,15 +62,14 @@ async function createFounderAndTour({ res, baseId, headers, body }) {
 
   const founderNumber = await getNextFounderNumber({ baseId, headers })
 
-  const guideFields = {
+const guideFields = {
   Guide_Name: cleanName,
   Email: cleanEmail,
   WhatsApp_Number: cleanPhone,
   Guide_Status: 'pending',
   Founder_Status: 'Founder',
   Founder_Number: founderNumber,
-  Guide_bio: cleanBio,
-  Is_Public: false
+  Guide_bio: cleanBio
 }
 
   const createGuideRes = await fetch(
