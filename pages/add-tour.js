@@ -1186,111 +1186,66 @@ guide_photo: guidePhoto,
               )}
             </div>
 
-            <div>
-             <div style={{ display: 'grid', gridTemplateColumns: '1fr 150px', gap: 16, alignItems: 'start' }}>
-  <div>
-    <FieldLabel>למה דווקא אתם מתאימים להוביל את הסיור הזה?</FieldLabel>
+           <div>
+  <FieldLabel>למה דווקא אתם מתאימים להוביל את הסיור הזה?</FieldLabel>
 
-    <p style={{
-      fontSize: 11,
-      color: '#6B6B6B',
-      marginBottom: 8,
-      lineHeight: 1.5
-    }}>
-      הטקסט הזה נלקח מהפרופיל שכתבתם בתהליך ההצטרפות. אפשר לערוך אותו אם רוצים להתאים אותו דווקא לסיור הזה.
-    </p>
+  <p style={{ fontSize: 11, color: '#6B6B6B', marginBottom: 8, lineHeight: 1.5 }}>
+    הטקסט הזה נלקח מהפרופיל שכתבתם בתהליך ההצטרפות. אפשר לערוך אותו אם רוצים להתאים אותו דווקא לסיור הזה.
+  </p>
 
-    
-  </div>
+  <textarea
+    name="guide_context"
+    value={form.guide_context}
+    onChange={handleChange}
+    rows={6}
+    style={Object.assign({}, inp, { resize: 'vertical', lineHeight: 1.65, fontSize: 13, marginBottom: 16 })}
+    placeholder="הסיפור שלכם כמדריכים..."
+  />
 
-  <div>
-    <FieldLabel>תמונת מדריך (אופציונלי)</FieldLabel>
+  <FieldLabel>תמונת מדריך (אופציונלי)</FieldLabel>
 
+  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 8 }}>
     {guidePhoto ? (
-      <div style={{
-        position: 'relative',
-        width: 140,
-height: 140,
-margin: '0 auto',
-        borderRadius: 14,
-        overflow: 'hidden',
-        border: '1px solid #EDE7DF'
-      }}>
+      <div style={{ position: 'relative', width: 100, height: 100 }}>
         <img
           src={guidePhoto}
           alt="Guide"
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover'
-          }}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 10, border: '1.5px solid #EDE7DF' }}
         />
 
         <button
           type="button"
-          onClick={() => setGuidePhoto('')}
-          style={{
-            position: 'absolute',
-            top: 8,
-            left: 8,
-            width: 28,
-            height: 28,
-            borderRadius: '50%',
-            border: 'none',
-            background: 'rgba(0,0,0,0.7)',
-            color: '#fff',
-            cursor: 'pointer'
-          }}
+          onClick={function() { setGuidePhoto('') }}
+          style={{ position: 'absolute', top: 4, left: 4, width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: 13, lineHeight: 1, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
           ×
         </button>
       </div>
     ) : (
-    <label style={{
-  width: 140,
-  height: 140,
-  borderRadius: 10,
-  border: '1.5px dashed #EDE7DF',
-  background: '#FBF7F1',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  cursor: 'pointer',
-  margin: '0 auto'
-}}>
+      <label style={{ width: 100, height: 100, borderRadius: 10, border: '2px dashed #EDE7DF', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: uploadingGuidePhoto ? 'not-allowed' : 'pointer', opacity: uploadingGuidePhoto ? 0.6 : 1, background: '#FBF7F1', gap: 4 }}>
+        <span style={{ fontSize: 22, color: '#C0B8AE' }}>+</span>
+        <span style={{ fontSize: 11, color: '#B0A89E', fontFamily: 'Heebo,Arial,sans-serif' }}>
+          {uploadingGuidePhoto ? 'מעלה...' : 'העלאת תמונה'}
+        </span>
         <input
           type="file"
           accept="image/*"
           onChange={handleGuidePhotoUpload}
+          disabled={uploadingGuidePhoto}
           style={{ display: 'none' }}
         />
-
-        <span style={{
-          fontSize: 13,
-          color: '#7E4821',
-          fontWeight: 700
-        }}>
-          {uploadingGuidePhoto ? 'מעלה...' : 'העלאת תמונה'}
-        </span>
       </label>
     )}
-
-    {guidePhotoError && (
-      <p style={{
-        color: '#d00',
-        fontSize: 12,
-        marginTop: 8
-      }}>
-        {guidePhotoError}
-      </p>
-    )}
   </div>
-</div>
 
+  {guidePhotoError && (
+    <p style={{ fontSize: 12, color: '#e00', marginTop: 8 }}>
+      {guidePhotoError}
+    </p>
+  )}
+</div>
              
-            </div>
-          </SectionCard>
+                     </SectionCard>
 
           <TimelineDivider />
 
