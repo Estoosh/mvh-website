@@ -201,7 +201,7 @@ export default function AddTour() {
       setWhatsappNumber(data.guide.WhatsApp_Number || '')
       setForm(function(prev) {
         return Object.assign({}, prev, {
-         guide_context: data.guide.Guide_Bio || ''
+         guide_context: data.guide.Guide_bio || ''
         })
       })
     }
