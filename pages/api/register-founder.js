@@ -7,31 +7,19 @@ export default async function handler(req, res) {
 
   const cleanName = typeof name === 'string' ? name.trim() : ''
   const cleanEmail = typeof email === 'string' ? email.trim().toLowerCase() : ''
-  const cleanPhone = typeof phone === 'string' ? phone.trim() : ''
+  const cleanPhone = String(phone || '').replace(/\D/g, '')
   const cleanInviteSource = typeof invite_source === 'string' ? invite_source.trim() : 'unknown'
 
-  if (!cleanName || !cleanEmail || !cleanPhone) {
-    return res.status(400).json({ success: false, error: 'missing_fields' })
+  if (!cleanName || !cleanEmail || cleanPhone.length !== 10) {
+    return res.status(400).json({ success: false, error: 'missing_or_invalid_fields' })
   }
 
-  const token =
-    process.env.AIRTABLE_TOKEN ||
-    process.env.AIRTABLE_API_KEY ||
-    process.env.AIRTABLE_ACCESS_TOKEN
-
-  const baseId =
-    process.env.AIRTABLE_BASE_ID ||
-    process.env.AIRTABLE_BASE
-
+  const token = process.env.AIRTABLE_TOKEN || process.env.AIRTABLE_API_KEY || process.env.AIRTABLE_ACCESS_TOKEN
+  const baseId = process.env.AIRTABLE_BASE_ID || process.env.AIRTABLE_BASE
   const guidesTable = 'tblsJ5Ok1yPSgtvSj'
 
   if (!token || !baseId) {
-    return res.status(500).json({
-      success: false,
-      error: 'missing_airtable_config',
-      hasToken: Boolean(token),
-      hasBaseId: Boolean(baseId)
-    })
+    return res.status(500).json({ success: false, error: 'missing_airtable_config' })
   }
 
   const headers = {
@@ -40,21 +28,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    const formula = `OR(LOWER({Email})='${escapeFormula(cleanEmail)}',{WhatsApp_Number}='${escapeFormula(cleanPhone)}')`
+    const formula = `OR(LOWER({Email})="${escapeFormula(cleanEmail)}",{WhatsApp_Number}="${escapeFormula(cleanPhone)}")`
     const searchUrl =
       `https://api.airtable.com/v0/${baseId}/${guidesTable}` +
-      `?filterByFormula=${encodeURIComponent(formula)}` +
-      `&maxRecords=1`
+      `?filterByFormula=${encodeURIComponent(formula)}&maxRecords=1`
 
     const searchRes = await fetch(searchUrl, { headers })
     const searchData = await searchRes.json()
 
     if (!searchRes.ok) {
-      return res.status(502).json({
-        success: false,
-        error: 'airtable_search_failed',
-        airtable: searchData
-      })
+      return res.status(502).json({ success: false, error: 'airtable_search_failed', airtable: searchData })
     }
 
     if (searchData.records && searchData.records.length > 0) {
@@ -68,7 +51,8 @@ export default async function handler(req, res) {
         founder_number: existing.fields?.Founder_Number || null,
         guide: {
           id: existing.id,
-          ...existing.fields
+          ...existing.fields,
+          Guide_bio: existing.fields?.Guide_bio || ''
         },
         message: 'המייל או מספר הטלפון כבר קיימים במערכת.'
       })
@@ -98,11 +82,7 @@ export default async function handler(req, res) {
     const data = await createRes.json()
 
     if (!createRes.ok) {
-      return res.status(502).json({
-        success: false,
-        error: 'airtable_create_failed',
-        airtable: data
-      })
+      return res.status(502).json({ success: false, error: 'airtable_create_failed', airtable: data })
     }
 
     return res.status(200).json({
@@ -112,18 +92,15 @@ export default async function handler(req, res) {
       founder_number: data.fields?.Founder_Number || null,
       guide: {
         id: data.id,
-        ...data.fields
+        ...data.fields,
+        Guide_bio: data.fields?.Guide_bio || ''
       }
     })
   } catch (err) {
-    return res.status(500).json({
-      success: false,
-      error: 'internal_error',
-      message: err.message
-    })
+    return res.status(500).json({ success: false, error: 'internal_error', message: err.message })
   }
 }
 
 function escapeFormula(value) {
-  return String(value || '').replace(/'/g, "\\'")
+  return String(value || '').replace(/"/g, '\\"')
 }
