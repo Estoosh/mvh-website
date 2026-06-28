@@ -1200,19 +1200,7 @@ guide_photo: guidePhoto,
       הטקסט הזה נלקח מהפרופיל שכתבתם בתהליך ההצטרפות. אפשר לערוך אותו אם רוצים להתאים אותו דווקא לסיור הזה.
     </p>
 
-    <textarea
-      name="guide_context"
-      value={form.guide_context}
-      onChange={handleChange}
-      rows={4}
-      style={{
-        ...inp,
-        resize: 'vertical',
-        lineHeight: 1.65,
-        fontSize: 13
-      }}
-      placeholder="הסיפור שלכם כמדריכים..."
-    />
+    
   </div>
 
   <div>
@@ -1257,16 +1245,17 @@ guide_photo: guidePhoto,
         </button>
       </div>
     ) : (
-      <label style={{
-        width: '100%',
-        aspectRatio: '1 / 1',
-        borderRadius: 14,
-        border: '2px dashed #EDE7DF',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer'
-      }}>
+     <label style={{
+  width: '85%',
+  aspectRatio: '1 / 1',
+  borderRadius: 14,
+  border: '2px dashed #EDE7DF',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  cursor: 'pointer',
+  margin: '0 auto'
+}}>
         <input
           type="file"
           accept="image/*"
