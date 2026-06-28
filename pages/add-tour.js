@@ -1187,7 +1187,7 @@ guide_photo: guidePhoto,
             </div>
 
             <div>
-             <div style={{ display: 'grid', gridTemplateColumns: '1fr 180px', gap: 16, alignItems: 'start' }}>
+             <div style={{ display: 'grid', gridTemplateColumns: '1fr 150px', gap: 16, alignItems: 'start' }}>
   <div>
     <FieldLabel>למה דווקא אתם מתאימים להוביל את הסיור הזה?</FieldLabel>
 
