@@ -80,7 +80,7 @@ async function createFounderFlow(res, baseId, headers, body) {
     WhatsApp_Number: phone,
     Guide_Status: 'pending',
     Founder_Status: 'Founder',
-    Founder_Number: founderNumber,
+   
     Guide_bio: bio
   }
 
@@ -133,7 +133,7 @@ async function createFounderFlow(res, baseId, headers, body) {
   await sendFounderConfirmationEmail({
     to: email,
     guideName,
-    founderNumber,
+    founderNumber: guideData.fields?.Founder_Number || founderNumber,
     tourTitle
   })
 
@@ -142,7 +142,7 @@ async function createFounderFlow(res, baseId, headers, body) {
     id: tourResult.data.id,
     tour_id: tourResult.data.id,
     guide_id: guideData.id,
-    founder_number: founderNumber,
+    founder_number: guideData.fields?.Founder_Number || founderNumber,
     guide: {
       id: guideData.id,
       ...guideData.fields,
