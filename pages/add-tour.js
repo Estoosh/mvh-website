@@ -1187,7 +1187,7 @@ guide_photo: guidePhoto,
             </div>
 
             <div>
-             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, alignItems: 'start' }}>
+             <div style={{ display: 'grid', gridTemplateColumns: '1fr 180px', gap: 16, alignItems: 'start' }}>
   <div>
     <FieldLabel>למה דווקא אתם מתאימים להוביל את הסיור הזה?</FieldLabel>
 
@@ -1285,7 +1285,7 @@ guide_photo: guidePhoto,
   </div>
 </div>
 
-              <textarea name="guide_context" value={form.guide_context} onChange={handleChange} rows={4} style={Object.assign({}, inp, { resize: 'vertical', lineHeight: 1.8 })} placeholder="הסיפור שלכם כמדריכים..." />
+             
             </div>
           </SectionCard>
 
