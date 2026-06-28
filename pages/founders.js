@@ -333,103 +333,79 @@ export default function Founders() {
         )}
 
         {screen === 'register' && (
-          <Card>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-              <TimelineDot /><StepBadge number="2" />
-            </div>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1a1a1a', marginBottom: 8 }}>
-              ברוכים הבאים לדור הראשון של <span style={{ color: BRAND, fontWeight: 700 }}>מאז ועד היום</span>.
-            </h2>
-            <p style={{ fontSize: 14, color: '#6B6B6B', marginBottom: 20, lineHeight: 1.7 }}>
-              אנחנו פותחים בימים אלו את קהילת המייסדים הראשונה של <span style={{ color: BRAND, fontWeight: 700 }}>מאז ועד היום</span>. לפני שנעלה לאוויר אנחנו מזמינים קבוצה קטנה של מורי דרך לעזור לנו לעצב את הדור הראשון של המוצר. זה מתחיל בשלושה פרטים פשוטים.
-            </p>
-            <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div>
-  <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#2a2a2a', marginBottom: 6 }}>
-    טלפון <span style={{ color: BROWN }}>*</span>
-  </label>
+  <Card>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+      <TimelineDot />
+      <StepBadge number="2" />
+    </div>
 
-  <div style={{
-    display: 'flex',
-    direction: 'ltr',
-    gap: 8,
-    justifyContent: 'flex-end',
-    alignItems: 'center'
-  }}>
-    <input
-      type="tel"
-      inputMode="numeric"
-      value={phonePrefix}
-      onChange={function(e) { setPhonePrefix(onlyDigits(e.target.value, 3)) }}
-      required
-      style={Object.assign({}, inp, {
-        width: 92,
-        textAlign: 'center',
-        direction: 'ltr'
-      })}
-      placeholder="050"
-      maxLength={3}
-    />
+    <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1a1a1a', marginBottom: 8 }}>
+      ברוכים הבאים לדור הראשון של <span style={{ color: BRAND, fontWeight: 700 }}>מאז ועד היום</span>.
+    </h2>
 
-    <span style={{ color: '#B97A45', fontWeight: 800 }}>-</span>
+    <p style={{ fontSize: 14, color: '#6B6B6B', marginBottom: 20, lineHeight: 1.7 }}>
+      אנחנו פותחים בימים אלו את קהילת המייסדים הראשונה של <span style={{ color: BRAND, fontWeight: 700 }}>מאז ועד היום</span>. זה מתחיל בשלושה פרטים פשוטים.
+    </p>
 
-    <input
-      type="tel"
-      inputMode="numeric"
-      value={phoneRest}
-      onChange={function(e) { setPhoneRest(onlyDigits(e.target.value, 7)) }}
-      required
-      style={Object.assign({}, inp, {
-        width: 170,
-        textAlign: 'center',
-        direction: 'ltr'
-      })}
-      placeholder="1234567"
-      maxLength={7}
-    />
-  </div>
-<div>
-  <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#2a2a2a', marginBottom: 6 }}>
-    טלפון <span style={{ color: BROWN }}>*</span>
-  </label>
+    <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div>
+        <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#2a2a2a', marginBottom: 6 }}>
+          שם מלא <span style={{ color: BROWN }}>*</span>
+        </label>
+        <input type="text" name="name" value={form.name} onChange={handleChange} required style={inp} placeholder="השם שיופיע בפרופיל שלכם" />
+      </div>
 
-  <div style={{ display: 'flex', direction: 'ltr', gap: 8, justifyContent: 'flex-end', alignItems: 'center' }}>
-    <input
-      type="tel"
-      inputMode="numeric"
-      value={phonePrefix}
-      onChange={function(e) { setPhonePrefix(onlyDigits(e.target.value, 3)) }}
-      required
-      style={Object.assign({}, inp, { width: 92, textAlign: 'center', direction: 'ltr' })}
-      placeholder="050"
-      maxLength={3}
-    />
+      <div>
+        <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#2a2a2a', marginBottom: 6 }}>
+          אימייל <span style={{ color: BROWN }}>*</span>
+        </label>
+        <input type="email" name="email" value={form.email} onChange={handleChange} required style={inp} placeholder="your@email.com" />
+      </div>
 
-    <span style={{ color: '#B97A45', fontWeight: 800 }}>-</span>
+      <div>
+        <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#2a2a2a', marginBottom: 6 }}>
+          טלפון <span style={{ color: BROWN }}>*</span>
+        </label>
 
-    <input
-      type="tel"
-      inputMode="numeric"
-      value={phoneRest}
-      onChange={function(e) { setPhoneRest(onlyDigits(e.target.value, 7)) }}
-      required
-      style={Object.assign({}, inp, { width: 170, textAlign: 'center', direction: 'ltr' })}
-      placeholder="1234567"
-      maxLength={7}
-    />
-  </div>
-</div>
-                  <input type="tel" inputMode="numeric" value={phonePrefix} onChange={function(e) { setPhonePrefix(onlyDigits(e.target.value, 3)) }} required style={inp} placeholder="050" maxLength={3} />
-                  <input type="tel" inputMode="numeric" value={phoneRest} onChange={function(e) { setPhoneRest(onlyDigits(e.target.value, 7)) }} required style={inp} placeholder="1234567" maxLength={7} />
-                </div>
-              </div>
-              {error && <p style={{ fontSize: 13, color: '#e00', background: '#fff5f5', padding: '10px 14px', borderRadius: 8, border: '1px solid #fecaca' }}>{error}</p>}
-              <button type="submit" disabled={loading} style={{ width: '100%', background: loading ? '#888' : '#111', color: '#fff', padding: '15px', borderRadius: 12, fontSize: 16, fontWeight: 800, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'Heebo, Arial, sans-serif', marginTop: 4 }}>
-                {loading ? 'שומר...' : 'המשיכו ←'}
-              </button>
-            </form>
-          </Card>
-        )}
+        <div style={{ display: 'flex', direction: 'ltr', gap: 8, justifyContent: 'flex-end', alignItems: 'center' }}>
+          <input
+            type="tel"
+            inputMode="numeric"
+            value={phonePrefix}
+            onChange={function(e) { setPhonePrefix(onlyDigits(e.target.value, 3)) }}
+            required
+            style={Object.assign({}, inp, { width: 92, textAlign: 'center', direction: 'ltr' })}
+            placeholder="050"
+            maxLength={3}
+          />
+
+          <span style={{ color: '#B97A45', fontWeight: 800 }}>-</span>
+
+          <input
+            type="tel"
+            inputMode="numeric"
+            value={phoneRest}
+            onChange={function(e) { setPhoneRest(onlyDigits(e.target.value, 7)) }}
+            required
+            style={Object.assign({}, inp, { width: 170, textAlign: 'center', direction: 'ltr' })}
+            placeholder="1234567"
+            maxLength={7}
+          />
+        </div>
+      </div>
+
+      {error && (
+        <p style={{ fontSize: 13, color: '#e00', background: '#fff5f5', padding: '10px 14px', borderRadius: 8, border: '1px solid #fecaca' }}>
+          {error}
+        </p>
+      )}
+
+      <button type="submit" disabled={loading} style={{ width: '100%', background: loading ? '#888' : '#111', color: '#fff', padding: '15px', borderRadius: 12, fontSize: 16, fontWeight: 800, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'Heebo, Arial, sans-serif', marginTop: 4 }}>
+        {loading ? 'שומר...' : 'המשיכו ←'}
+      </button>
+    </form>
+  </Card>
+)}
 
         {screen === 'success' && (
           <Card>
