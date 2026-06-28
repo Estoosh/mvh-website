@@ -19,32 +19,44 @@ export default async function handler(req, res) {
     'Content-Type': 'application/json'
   }
 
-  const isFounder = body.founder === true || body.founder === 'true'
-
   try {
+    const isFounder = body.founder === true || body.founder === 'true'
+
     if (isFounder) {
-      return await createFounderAndTour({ req, res, token, baseId, headers, body })
+      return await createFounderFlow(res, baseId, headers, body)
     }
 
-    return await createRegularTour({ res, baseId, headers, body })
+    return await createRegularTour(res, baseId, headers, body)
   } catch (err) {
+    console.error('ADD_TOUR_INTERNAL_ERROR', err)
     return res.status(500).json({ error: 'internal_error', message: err.message })
   }
 }
 
-async function createFounderAndTour({ res, baseId, headers, body }) {
+async function createFounderFlow(res, baseId, headers, body) {
   const founder = body.founder_data || {}
 
-  const cleanName = typeof founder.name === 'string' ? founder.name.trim() : ''
-  const cleanEmail = typeof founder.email === 'string' ? founder.email.trim().toLowerCase() : ''
-  const cleanPhone = String(founder.phone || body.whatsapp_number || '').replace(/\D/g, '')
-  const cleanBio = typeof founder.bio === 'string' ? founder.bio.trim() : ''
+  const guideName = cleanText(founder.name)
+  const email = cleanText(founder.email).toLowerCase()
+  const phone = cleanPhone(founder.phone || body.whatsapp_number)
+  const bio = cleanText(founder.bio)
+  const guidePhoto = cleanText(body.guide_photo)
+  const tourTitle = cleanText(body.title)
 
-  if (!cleanName || !cleanEmail || cleanPhone.length !== 10 || !cleanBio) {
-    return res.status(400).json({ error: 'missing_or_invalid_founder_data' })
+  if (!guideName || !email || phone.length !== 10 || !bio || !tourTitle) {
+    return res.status(400).json({
+      error: 'missing_or_invalid_founder_data',
+      received: {
+        guideName: Boolean(guideName),
+        email: Boolean(email),
+        phoneLength: phone.length,
+        bio: Boolean(bio),
+        tourTitle: Boolean(tourTitle)
+      }
+    })
   }
 
-  const existingFounder = await findExistingFounder({ baseId, headers, email: cleanEmail, phone: cleanPhone })
+  const existingFounder = await findExistingFounder(baseId, headers, email, phone)
 
   if (existingFounder) {
     return res.status(200).json({
@@ -60,19 +72,23 @@ async function createFounderAndTour({ res, baseId, headers, body }) {
     })
   }
 
-  const founderNumber = await getNextFounderNumber({ baseId, headers })
+  const founderNumber = await getNextFounderNumber(baseId, headers)
 
-const guideFields = {
-  Guide_Name: cleanName,
-  Email: cleanEmail,
-  WhatsApp_Number: cleanPhone,
-  Guide_Status: 'pending',
-  Founder_Status: 'Founder',
-  Founder_Number: founderNumber,
-  Guide_bio: cleanBio
-}
+  const guideFields = {
+    Guide_Name: guideName,
+    Email: email,
+    WhatsApp_Number: phone,
+    Guide_Status: 'pending',
+    Founder_Status: 'Founder',
+    Founder_Number: founderNumber,
+    Guide_bio: bio
+  }
 
-  const createGuideRes = await fetch(
+  if (guidePhoto) {
+    guideFields.Guide_Photo = guidePhoto
+  }
+
+  const guideRes = await fetch(
     `https://api.airtable.com/v0/${baseId}/${GUIDES_TABLE}`,
     {
       method: 'POST',
@@ -81,66 +97,83 @@ const guideFields = {
     }
   )
 
-  const createdGuide = await createGuideRes.json()
+  const guideData = await guideRes.json()
 
- if (!createGuideRes.ok || !createdGuide.id) {
-  console.error('AIRTABLE_CREATE_GUIDE_FAILED', JSON.stringify(createdGuide, null, 2))
-  return res.status(502).json({
-    error: 'airtable_create_guide_failed',
-    airtable: createdGuide,
-    sent_fields: guideFields
-  }) 
-   
-  const tourResult = await createTourRecord({
-    baseId,
-    headers,
-    body,
-    guideId: createdGuide.id,
-    guideName: cleanName,
-    whatsappNumber: String(body.whatsapp_number || cleanPhone).replace(/\D/g, ''),
+  if (!guideRes.ok || !guideData.id) {
+    console.error('AIRTABLE_CREATE_GUIDE_FAILED', JSON.stringify({
+      airtable: guideData,
+      sent_fields: guideFields
+    }, null, 2))
+
+    return res.status(502).json({
+      error: 'airtable_create_guide_failed',
+      airtable: guideData,
+      sent_fields: guideFields
+    })
+  }
+
+  const tourResult = await createTourRecord(baseId, headers, body, {
+    guideName,
+    whatsappNumber: cleanPhone(body.whatsapp_number || phone),
     tourStatus: 'founder_free'
   })
 
-  if (!tourResult.ok) {
-    return res.status(502).json({ error: 'airtable_create_tour_failed', airtable: tourResult.data })
+  if (!tourResult.ok || !tourResult.data?.id) {
+    console.error('AIRTABLE_CREATE_TOUR_FAILED', JSON.stringify({
+      airtable: tourResult.data,
+      sent_body_title: body.title
+    }, null, 2))
+
+    return res.status(502).json({
+      error: 'airtable_create_tour_failed',
+      airtable: tourResult.data
+    })
   }
+
+  await sendFounderConfirmationEmail({
+    to: email,
+    guideName,
+    founderNumber,
+    tourTitle
+  })
 
   return res.status(200).json({
     success: true,
     id: tourResult.data.id,
     tour_id: tourResult.data.id,
-    guide_id: createdGuide.id,
+    guide_id: guideData.id,
     founder_number: founderNumber,
     guide: {
-      id: createdGuide.id,
-      ...createdGuide.fields,
-      Guide_bio: createdGuide.fields?.Guide_bio || ''
+      id: guideData.id,
+      ...guideData.fields,
+      Guide_bio: guideData.fields?.Guide_bio || ''
     },
     tour: tourResult.data
   })
 }
 
-async function createRegularTour({ res, baseId, headers, body }) {
+async function createRegularTour(res, baseId, headers, body) {
   const tourStatus = body.collab_code ? 'collab' : 'paid'
 
-  const tourResult = await createTourRecord({
-    baseId,
-    headers,
-    body,
-    guideId: body.guide_id || '',
+  const tourResult = await createTourRecord(baseId, headers, body, {
     guideName: body.guide_name || '',
-    whatsappNumber: String(body.whatsapp_number || '').replace(/\D/g, ''),
+    whatsappNumber: cleanPhone(body.whatsapp_number),
     tourStatus
   })
 
-  if (!tourResult.ok) {
-    return res.status(502).json({ error: 'airtable_create_tour_failed', airtable: tourResult.data })
+  if (!tourResult.ok || !tourResult.data?.id) {
+    console.error('AIRTABLE_CREATE_REGULAR_TOUR_FAILED', JSON.stringify(tourResult.data, null, 2))
+
+    return res.status(502).json({
+      error: 'airtable_create_tour_failed',
+      airtable: tourResult.data
+    })
   }
 
   return res.status(200).json(tourResult.data)
 }
 
-async function createTourRecord({ baseId, headers, body, guideId, guideName, whatsappNumber, tourStatus }) {
+async function createTourRecord(baseId, headers, body, options) {
   const fields = {
     Tour_Title: body.title || '',
     Tour_Teaser: body.teaser || '',
@@ -151,17 +184,13 @@ async function createTourRecord({ baseId, headers, body, guideId, guideName, wha
     Cities_Tags: body.cities || '',
     Min_Age: Number(body.min_age) || 0,
     Meeting_Point_Waze: body.meeting_point || '',
-    Tour_Status: tourStatus,
+    Tour_Status: options.tourStatus,
     Lead_Count: 0,
-    Guide_Name: guideName || '',
+    Guide_Name: options.guideName || '',
     Tour_Images: Array.isArray(body.image_urls) ? body.image_urls.join('|') : '',
-    WhatsApp_Number: whatsappNumber || '',
+    WhatsApp_Number: options.whatsappNumber || '',
     Historical_Period: Array.isArray(body.historical_periods) ? body.historical_periods : [],
     Is_Public: false
-  }
-
-  if (guideId) {
-    fields.Guide = [guideId]
   }
 
   if (body.entrance_fee_included) {
@@ -186,7 +215,7 @@ async function createTourRecord({ baseId, headers, body, guideId, guideName, wha
   }
 }
 
-async function findExistingFounder({ baseId, headers, email, phone }) {
+async function findExistingFounder(baseId, headers, email, phone) {
   const formula = `AND({Founder_Status}="Founder",OR(LOWER({Email})="${escapeFormula(email)}",{WhatsApp_Number}="${escapeFormula(phone)}"))`
 
   const url =
@@ -197,7 +226,8 @@ async function findExistingFounder({ baseId, headers, email, phone }) {
   const data = await response.json()
 
   if (!response.ok) {
-    throw new Error('airtable_founder_lookup_failed')
+    console.error('AIRTABLE_FIND_EXISTING_FOUNDER_FAILED', JSON.stringify(data, null, 2))
+    throw new Error('airtable_find_existing_founder_failed')
   }
 
   if (!data.records || data.records.length === 0) {
@@ -207,14 +237,15 @@ async function findExistingFounder({ baseId, headers, email, phone }) {
   return data.records[0]
 }
 
-async function getNextFounderNumber({ baseId, headers }) {
+async function getNextFounderNumber(baseId, headers) {
   const formula = `{Founder_Status}="Founder"`
 
-  const url =
+  const baseUrl =
     `https://api.airtable.com/v0/${baseId}/${GUIDES_TABLE}` +
-    `?filterByFormula=${encodeURIComponent(formula)}&fields%5B%5D=Founder_Number&pageSize=100`
+    `?filterByFormula=${encodeURIComponent(formula)}` +
+    `&fields%5B%5D=Founder_Number&pageSize=100`
 
-  let nextUrl = url
+  let nextUrl = baseUrl
   let maxNumber = -1
 
   while (nextUrl) {
@@ -222,7 +253,8 @@ async function getNextFounderNumber({ baseId, headers }) {
     const data = await response.json()
 
     if (!response.ok) {
-      throw new Error('airtable_founder_number_lookup_failed')
+      console.error('AIRTABLE_GET_NEXT_FOUNDER_NUMBER_FAILED', JSON.stringify(data, null, 2))
+      throw new Error('airtable_get_next_founder_number_failed')
     }
 
     ;(data.records || []).forEach(function(record) {
@@ -233,16 +265,117 @@ async function getNextFounderNumber({ baseId, headers }) {
       }
     })
 
-    if (data.offset) {
-      nextUrl = url + `&offset=${encodeURIComponent(data.offset)}`
-    } else {
-      nextUrl = null
-    }
+    nextUrl = data.offset ? baseUrl + `&offset=${encodeURIComponent(data.offset)}` : null
   }
 
   return maxNumber + 1
 }
 
+async function sendFounderConfirmationEmail({ to, guideName, founderNumber, tourTitle }) {
+  if (!process.env.RESEND_API_KEY) {
+    console.error('RESEND_API_KEY_MISSING')
+    return
+  }
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://mvh.co.il'
+  const shareLink = `${baseUrl}/founders`
+  const firstName = String(guideName || '').trim().split(' ')[0] || guideName || ''
+
+  const html = `
+    <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 620px; margin: 0 auto; color: #222; background: #ffffff;">
+      <div style="background: #0A0A0A; padding: 26px; text-align: center;">
+        <img src="https://mvh.co.il/logo-light.png" alt="מאז ועד היום" style="height: 48px;" />
+      </div>
+
+      <div style="padding: 34px 26px; line-height: 1.9;">
+        <p style="font-size: 16px;">שלום ${escapeHtml(firstName)},</p>
+
+        <p style="font-size: 16px;">יש מקומות שאנחנו עוברים לידם כל החיים ולא באמת רואים.</p>
+
+        <p style="font-size: 16px;">יש סיפורים שמחכים שמישהו יספר אותם מחדש.</p>
+
+        <p style="font-size: 16px;">ויש אנשים שכשהם מתחילים לדבר על מקום, אנשים סביבם מפסיקים להסתכל בטלפון ורוצים להיות שם בעצמם.</p>
+
+        <p style="font-size: 16px;">זו בדיוק הסיבה שבגללה הקמנו את <strong>מאז ועד היום</strong>.</p>
+
+        <p style="font-size: 16px;">היום הפכתם לחלק מהפרק הראשון של הסיפור הזה.</p>
+
+        <div style="background: #F7F1EA; border: 1px solid #EDE7DF; border-radius: 14px; padding: 20px 22px; margin: 26px 0;">
+          <p style="font-size: 13px; color: #7E4821; font-weight: 800; margin: 0 0 8px;">הסיור הראשון שלכם נשמר</p>
+          <p style="font-size: 19px; font-weight: 800; color: #111; margin: 0;">${escapeHtml(tourTitle)}</p>
+        </div>
+
+        <p style="font-size: 16px;">מספר המייסד שלכם הוא:</p>
+
+        <div style="font-size: 30px; font-weight: 900; color: #B97A45; letter-spacing: 1px; margin: 10px 0 26px;">
+          Founder #${escapeHtml(founderNumber)}
+        </div>
+
+        <p style="font-size: 16px;">כשהאתר יושק נשלח לכם מייל נוסף עם אפשרות להגדיר סיסמה ולקבל גישה מלאה לחשבון האישי ולסיור שהעליתם.</p>
+
+        <p style="font-size: 16px;">עד אז תוכלו לדעת שהסיור שלכם כבר נמצא בין האבנים הראשונות שעליהן נבנית הקהילה הזו.</p>
+
+        <div style="background: #FBF7F1; border: 1px solid #EDE7DF; border-radius: 14px; padding: 20px 22px; margin: 30px 0;">
+          <p style="font-size: 16px; font-weight: 800; margin: 0 0 10px;">מכירים מורי דרך סטוריטלרים כמוכם?</p>
+          <p style="font-size: 16px; margin: 0 0 18px;">שתפו את לינק ההרשמה עם שלושה כאלה. אנחנו לא מחפשים את קהילת המייסדים הגדולה ביותר. אנחנו מחפשים את קהילת המייסדים הטובה ביותר.</p>
+          <a href="${shareLink}" style="display: inline-block; background: #111; color: #fff; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-size: 14px; font-weight: 800;">
+            שתפו את לינק ההרשמה
+          </a>
+        </div>
+
+        <p style="font-size: 16px;">נתראה בקרוב,</p>
+        <p style="font-size: 16px;">צוות מאז ועד היום</p>
+
+        <div style="margin-top: 34px; padding-top: 22px; border-top: 1px solid #eee; font-size: 13px; color: #888;">
+          אפשר להשיב למייל הזה בכל שאלה: ask@mvh.co.il
+        </div>
+      </div>
+    </div>
+  `
+
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + process.env.RESEND_API_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: 'מאז ועד היום | קהילת המייסדים <no-reply@mvh.co.il>',
+        reply_to: 'ask@mvh.co.il',
+        to,
+        subject: 'הצטרפת לקהילת המייסדים של מאז ועד היום',
+        html
+      })
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      console.error('RESEND_FOUNDER_EMAIL_FAILED', JSON.stringify(data, null, 2))
+    }
+  } catch (err) {
+    console.error('RESEND_FOUNDER_EMAIL_ERROR', err)
+  }
+}
+
+function cleanText(value) {
+  return String(value || '').trim()
+}
+
+function cleanPhone(value) {
+  return String(value || '').replace(/\D/g, '')
+}
+
 function escapeFormula(value) {
   return String(value || '').replace(/"/g, '\\"')
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
 }
