@@ -201,7 +201,7 @@ export default function AddTour() {
       setWhatsappNumber(data.guide.WhatsApp_Number || '')
       setForm(function(prev) {
         return Object.assign({}, prev, {
-          guide_context: data.guide.Guide_bio || ''
+         guide_context: data.guide.Guide_Bio || ''
         })
       })
     }
@@ -343,8 +343,8 @@ export default function AddTour() {
         }))
       })
       const data = await res.json()
-      if (data.id) setSaved(true)
-      else { console.error(data); setLoading(false) }
+      if (data.id) { setSaved(true); setLoading(false) }
+else { console.error(data); setLoading(false) }
     } catch(err) { console.error(err); setLoading(false) }
   }
 
