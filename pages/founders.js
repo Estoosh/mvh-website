@@ -388,44 +388,36 @@ export default function Founders() {
       maxLength={7}
     />
   </div>
-</div>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#2a2a2a', marginBottom: 6 }}>טלפון <span style={{ color: BROWN }}>*</span></label>
-                <div style={{
-  display: 'flex',
-  direction: 'ltr',
-  gap: 8,
-  justifyContent: 'flex-end',
-  alignItems: 'center'
-}}>
-  <input
-    type="tel"
-    inputMode="numeric"
-    value={phonePrefix}
-    onChange={function(e) { setPhonePrefix(onlyDigits(e.target.value, 3)) }}
-    required
-    style={Object.assign({}, inp, {
-      width: 92,
-      textAlign: 'center',
-      direction: 'ltr'
-    })}
-    placeholder="050"
-    maxLength={3}
-  />
-  <span style={{ color: '#B97A45', fontWeight: 800 }}>-</span>
-  <input
-    type="tel"
-    inputMode="numeric"
-    value={phoneRest}
-    onChange={function(e) { setPhoneRest(onlyDigits(e.target.value, 7)) }}
-    required
-    style={Object.assign({}, inp, {
-      width: 170,
-      textAlign: 'center',
-      direction: 'ltr'
-    })}
-    placeholder="1234567"
-    maxLength={7}
-  />
+<div>
+  <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#2a2a2a', marginBottom: 6 }}>
+    טלפון <span style={{ color: BROWN }}>*</span>
+  </label>
+
+  <div style={{ display: 'flex', direction: 'ltr', gap: 8, justifyContent: 'flex-end', alignItems: 'center' }}>
+    <input
+      type="tel"
+      inputMode="numeric"
+      value={phonePrefix}
+      onChange={function(e) { setPhonePrefix(onlyDigits(e.target.value, 3)) }}
+      required
+      style={Object.assign({}, inp, { width: 92, textAlign: 'center', direction: 'ltr' })}
+      placeholder="050"
+      maxLength={3}
+    />
+
+    <span style={{ color: '#B97A45', fontWeight: 800 }}>-</span>
+
+    <input
+      type="tel"
+      inputMode="numeric"
+      value={phoneRest}
+      onChange={function(e) { setPhoneRest(onlyDigits(e.target.value, 7)) }}
+      required
+      style={Object.assign({}, inp, { width: 170, textAlign: 'center', direction: 'ltr' })}
+      placeholder="1234567"
+      maxLength={7}
+    />
+  </div>
 </div>
                   <input type="tel" inputMode="numeric" value={phonePrefix} onChange={function(e) { setPhonePrefix(onlyDigits(e.target.value, 3)) }} required style={inp} placeholder="050" maxLength={3} />
                   <input type="tel" inputMode="numeric" value={phoneRest} onChange={function(e) { setPhoneRest(onlyDigits(e.target.value, 7)) }} required style={inp} placeholder="1234567" maxLength={7} />
