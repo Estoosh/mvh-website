@@ -264,6 +264,9 @@ export default function AddTour() {
   const [coverIndex, setCoverIndex] = useState(0)
   const [uploadingImage, setUploadingImage] = useState(false)
   const [imageError, setImageError] = useState('')
+const [guidePhoto, setGuidePhoto] = useState('')
+const [uploadingGuidePhoto, setUploadingGuidePhoto] = useState(false)
+const [guidePhotoError, setGuidePhotoError] = useState('')
   const [aiLoadingField, setAiLoadingField] = useState(null)
   const [aiError, setAiError] = useState('')
   const [showToast, setShowToast] = useState(false)
@@ -364,6 +367,7 @@ export default function AddTour() {
       setMeetingLink(tour.meeting_link || '')
       setSelectedPeriods(Array.isArray(tour.historical_periods) ? tour.historical_periods : [])
       setImages(Array.isArray(tour.images) ? tour.images : [])
+setGuidePhoto(tour.guide_photo || '')
       setCoverIndex(Number(tour.cover_index) || 0)
 
       return
@@ -427,8 +431,9 @@ export default function AddTour() {
       meeting_point: meetingPoint,
       meeting_link: meetingLink,
       historical_periods: selectedPeriods,
-      images,
-      cover_index: coverIndex
+     images,
+cover_index: coverIndex,
+guide_photo: guidePhoto
     })
   }, [form, whatsappNumber, isAbroad, byAppointment, selectedDays, selectedTimes, checkedItems, extraItems, meetingPoint, meetingLink, selectedPeriods, images, coverIndex, founderDraft])
 
@@ -520,7 +525,45 @@ export default function AddTour() {
     setAiLoadingField(null)
   }
 
-  const handleImageUpload = async function(e) {
+  const handleGuidePhotoUpload = async function(e) {
+  const file = e.target.files && e.target.files[0]
+  if (!file) return
+
+  setGuidePhotoError('')
+  setUploadingGuidePhoto(true)
+
+  await new Promise(function(resolve) {
+    const reader = new FileReader()
+
+    reader.onloadend = async function() {
+      try {
+        const res = await fetch('/api/upload-tour-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image_base64: reader.result })
+        })
+
+        const data = await res.json()
+
+        if (data.url) {
+          setGuidePhoto(data.url)
+        } else {
+          setGuidePhotoError('לא הצלחנו להעלות את התמונה')
+        }
+      } catch (err) {
+        setGuidePhotoError('לא הצלחנו להעלות את התמונה')
+      }
+
+      resolve()
+    }
+
+    reader.readAsDataURL(file)
+  })
+
+  setUploadingGuidePhoto(false)
+}
+
+const handleImageUpload = async function(e) {
     var files = Array.from(e.target.files || [])
 
     if (!files.length) return
@@ -684,6 +727,7 @@ export default function AddTour() {
           historical_periods: selectedPeriods,
           guide_context: form.guide_context,
           founder: founderMode,
+guide_photo: guidePhoto,
           entrance_fee_included: form.entrance_fee_included,
           entrance_fee_amount: form.entrance_fee_included ? (Number(form.entrance_fee_amount) || 0) : 0,
         }))
@@ -1143,11 +1187,114 @@ export default function AddTour() {
             </div>
 
             <div>
-              <FieldLabel>למה דווקא אתם מתאימים להוביל את הסיור הזה?</FieldLabel>
+             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, alignItems: 'start' }}>
+  <div>
+    <FieldLabel>למה דווקא אתם מתאימים להוביל את הסיור הזה?</FieldLabel>
 
-              <p style={{ fontSize: 12, color: '#6B6B6B', marginBottom: 8, lineHeight: 1.6 }}>
-                השדה הזה מולא מתוך הפרופיל שכתבתם בתהליך ההצטרפות. אפשר לערוך אותו ידנית אם תרצו לדייק אותו לסיור הזה.
-              </p>
+    <p style={{
+      fontSize: 11,
+      color: '#6B6B6B',
+      marginBottom: 8,
+      lineHeight: 1.5
+    }}>
+      הטקסט הזה נלקח מהפרופיל שכתבתם בתהליך ההצטרפות. אפשר לערוך אותו אם רוצים להתאים אותו דווקא לסיור הזה.
+    </p>
+
+    <textarea
+      name="guide_context"
+      value={form.guide_context}
+      onChange={handleChange}
+      rows={4}
+      style={{
+        ...inp,
+        resize: 'vertical',
+        lineHeight: 1.65,
+        fontSize: 13
+      }}
+      placeholder="הסיפור שלכם כמדריכים..."
+    />
+  </div>
+
+  <div>
+    <FieldLabel>תמונת מדריך (אופציונלי)</FieldLabel>
+
+    {guidePhoto ? (
+      <div style={{
+        position: 'relative',
+        width: '100%',
+        aspectRatio: '1 / 1',
+        borderRadius: 14,
+        overflow: 'hidden',
+        border: '1px solid #EDE7DF'
+      }}>
+        <img
+          src={guidePhoto}
+          alt="Guide"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover'
+          }}
+        />
+
+        <button
+          type="button"
+          onClick={() => setGuidePhoto('')}
+          style={{
+            position: 'absolute',
+            top: 8,
+            left: 8,
+            width: 28,
+            height: 28,
+            borderRadius: '50%',
+            border: 'none',
+            background: 'rgba(0,0,0,0.7)',
+            color: '#fff',
+            cursor: 'pointer'
+          }}
+        >
+          ×
+        </button>
+      </div>
+    ) : (
+      <label style={{
+        width: '100%',
+        aspectRatio: '1 / 1',
+        borderRadius: 14,
+        border: '2px dashed #EDE7DF',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer'
+      }}>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleGuidePhotoUpload}
+          style={{ display: 'none' }}
+        />
+
+        <span style={{
+          fontSize: 13,
+          color: '#7E4821',
+          fontWeight: 700
+        }}>
+          {uploadingGuidePhoto ? 'מעלה...' : 'העלאת תמונה'}
+        </span>
+      </label>
+    )}
+
+    {guidePhotoError && (
+      <p style={{
+        color: '#d00',
+        fontSize: 12,
+        marginTop: 8
+      }}>
+        {guidePhotoError}
+      </p>
+    )}
+  </div>
+</div>
 
               <textarea name="guide_context" value={form.guide_context} onChange={handleChange} rows={4} style={Object.assign({}, inp, { resize: 'vertical', lineHeight: 1.8 })} placeholder="הסיפור שלכם כמדריכים..." />
             </div>
