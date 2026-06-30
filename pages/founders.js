@@ -810,15 +810,26 @@ const [founderStats, setFounderStats] = useState({
                 </button>
 
                 <button
-                  type="button"
-                  onClick={function() {
-                    window.location.href =
-                      'mailto:ask@mvh.co.il?subject=' +
-                      encodeURIComponent('אני לא מורה דרך ומעוניין להציע שירותים אחרים באתר') +
-                      '&body=' +
-                      encodeURIComponent(contactMessage)
-                  }}
-                  disabled={!contactMessage.trim()}
+  type="button"
+  onClick={async function() {
+    const res = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        subject: 'אני לא מורה דרך ומעוניין להציע שירותים אחרים באתר',
+        message: contactMessage
+      })
+    })
+
+    if (res.ok) {
+      setContactMessage('')
+      setShowContactModal(false)
+      alert('ההודעה נשלחה בהצלחה')
+    } else {
+      alert('לא הצלחנו לשלוח. נסו שוב.')
+    }
+  }}
+  disabled={!contactMessage.trim()}
                   style={{
                     flex: 1,
                     padding: '12px',
