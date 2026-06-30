@@ -80,10 +80,10 @@ export default async function handler(req, res) {
       headers
     })
 
-    const founderTours = tours.filter(function(record) {
-      const fields = record.fields || {}
-      return fields.Founder_Number || fields.founder_number || fields.Founder || fields.existing_founder
-    })
+   const founderTours = tours.filter(function(record) {
+  const fields = record.fields || {}
+  return fields.Guide && Array.isArray(fields.Guide) && fields.Guide.length > 0
+})
 
     const prices = founderTours
       .map(function(record) {
