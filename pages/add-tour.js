@@ -930,9 +930,30 @@ guide_photo: guidePhoto,
 
                   <img className="founder-illustration" src="/founder_footer.png" alt="" style={{ width: 340, maxWidth: '100%', display: 'block', margin: '0 auto 28px', opacity: 0.94 }} onError={function(e) { e.target.style.display = 'none' }} />
 
-                  <div className="founder-note" style={{ maxWidth: 560, margin: '0 auto 30px', background: '#FBF7F1', border: '1px solid #EDE7DF', borderRadius: 18, padding: '18px 24px', color: '#555', fontSize: 15, lineHeight: 1.8 }}>
-                    לקראת ההשקה נשלח לכם מייל עם אישור הצטרפות לקהילת המייסדים. הגישה לחשבון האישי תיפתח רק כשנעבור להשקה מלאה.
-                  </div>
+                  <div className="founder-note" style={{ maxWidth: 560, margin: '0 auto 24px', background: '#FBF7F1', border: '1px solid #EDE7DF', borderRadius: 18, padding: '18px 24px', color: '#555', fontSize: 15, lineHeight: 1.8 }}>
+  לקראת ההשקה נשלח לכם מייל עם אישור הצטרפות לקהילת המייסדים. הגישה לחשבון האישי תיפתח רק כשנעבור להשקה מלאה.
+
+  <div style={{ marginTop: 12 }}>
+    <button
+      type="button"
+      onClick={function() {
+        alert('עמוד הסיור שלכם ייפתח יחד עם השקת האתר. נשלח לכם קישור ברגע שהוא יהיה זמין.')
+      }}
+      style={{
+        background: 'none',
+        border: 'none',
+        padding: 0,
+        color: '#2563EB',
+        fontSize: 14,
+        fontWeight: 700,
+        cursor: 'pointer',
+        fontFamily: 'Heebo, Arial, sans-serif'
+      }}
+    >
+      הצצה לעמוד הסיור שלכם →
+    </button>
+  </div>
+</div>
 
                   <div style={{ maxWidth: 560, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
   <button
