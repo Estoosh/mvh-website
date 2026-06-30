@@ -1,5 +1,5 @@
-const GUIDES_TABLE = 'tblsJ5Ok1vPSgtvSj'
-const TOURS_TABLE = 'tbltsGvfPLMAmJ764'
+const GUIDES_TABLE = 'Guides'
+const TOURS_TABLE = 'Tours'
 
 async function fetchAllRecords({ baseId, tableId, headers, filterByFormula }) {
   let records = []
