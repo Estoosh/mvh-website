@@ -245,7 +245,7 @@ export default function AddTour() {
   const [saved, setSaved] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [founderDraft, setFounderDraft] = useState(null)
-  const [founderNumber, setFounderNumber] = useState('')
+  const [savedTourId, setSavedTourId] = useState('')
   const [guideId, setGuideId] = useState(null)
   const [guide, setGuide] = useState(null)
   const [whatsappNumber, setWhatsappNumber] = useState('')
@@ -738,6 +738,7 @@ guide_photo: guidePhoto,
       if (!res.ok || data.error) {
         if (data.error === 'founder_exists') {
           setFounderNumber(data.founder_number || '')
+          setSavedTourId(data.tour_id || data.id || '')
           setSaved(true)
           setLoading(false)
           try { localStorage.removeItem(DRAFT_KEY) } catch (err) {}
@@ -752,6 +753,7 @@ guide_photo: guidePhoto,
       if (data.id || data.tour_id) {
         if (founderMode) {
           setFounderNumber(data.founder_number || '')
+          setSavedTourId(data.tour_id || data.id || '')
           try { localStorage.removeItem(DRAFT_KEY) } catch (err) {}
         }
 
@@ -934,24 +936,22 @@ guide_photo: guidePhoto,
   לקראת ההשקה נשלח לכם מייל עם אישור הצטרפות לקהילת המייסדים. הגישה לחשבון האישי תיפתח רק כשנעבור להשקה מלאה.
 
   <div style={{ marginTop: 12 }}>
-    <button
-      type="button"
-      onClick={function() {
-        alert('עמוד הסיור שלכם ייפתח יחד עם השקת האתר. נשלח לכם קישור ברגע שהוא יהיה זמין.')
-      }}
-      style={{
-        background: 'none',
-        border: 'none',
-        padding: 0,
-        color: '#2563EB',
-        fontSize: 14,
-        fontWeight: 700,
-        cursor: 'pointer',
-        fontFamily: 'Heebo, Arial, sans-serif'
-      }}
-    >
-      הצצה לעמוד הסיור שלכם →
-    </button>
+   {savedTourId && (
+  <a
+    href={'/tours/' + savedTourId}
+    target="_blank"
+    rel="noopener noreferrer"
+    style={{
+      color: '#2563EB',
+      fontSize: 14,
+      fontWeight: 700,
+      textDecoration: 'none',
+      fontFamily: 'Heebo, Arial, sans-serif'
+    }}
+  >
+    הצצה לעמוד הסיור שלכם →
+  </a>
+)}
   </div>
 </div>
 
