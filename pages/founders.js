@@ -639,14 +639,7 @@ const [contactMessage, setContactMessage] = useState(
               אני מורה דרך מוסמך בעל תעודה בתוקף
             </label>
 
-            <label style={{ display: 'block', border: certificateTrack === 'other' ? '2px solid #B97A45' : '1px solid #EDE7DF', borderRadius: 12, padding: 16, cursor: 'pointer', marginBottom: 20 }}>
-              <input type="radio" checked={certificateTrack === 'other'} onChange={function() { setCertificateTrack('other') }} style={{ marginLeft: 8 }} />
-              אני לא מורה דרך ומעוניין להציע שירותים אחרים באתר
-              <div style={{ fontSize: 13, color: '#777', marginTop: 8 }}>
-                (למשל הרצאות, סדנאות או חוויות אחרות המבוססות על מקום וסיפור)
-              </div>
-            </label>
-
+           
             {certificateTrack === 'guide' && (
               <div>
                 <label style={{ display: 'block', marginBottom: 10 }}>
@@ -660,7 +653,21 @@ const [contactMessage, setContactMessage] = useState(
                 </label>
 
                 {certificateChoice === 'upload' && (
-                  <input type="file" accept="image/*,.pdf" onChange={function(e) { const file = e.target.files && e.target.files[0]; if (file) setCertificateFile(file.name) }} />
+                 <label style={{ width: 100, height: 100, borderRadius: 10, border: '2px dashed #EDE7DF', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: '#FBF7F1', gap: 4, marginBottom: 14 }}>
+  <span style={{ fontSize: 22, color: '#C0B8AE' }}>+</span>
+  <span style={{ fontSize: 11, color: '#B0A89E', fontFamily: 'Heebo,Arial,sans-serif' }}>
+    {certificateFile ? 'הקובץ נבחר' : 'העלאת תעודה'}
+  </span>
+  <input
+    type="file"
+    accept="image/*,.pdf"
+    onChange={function(e) {
+      const file = e.target.files && e.target.files[0]
+      if (file) setCertificateFile(file.name)
+    }}
+    style={{ display: 'none' }}
+  />
+</label>
                 )}
 
                 {certificateChoice === 'later' && (
@@ -668,6 +675,13 @@ const [contactMessage, setContactMessage] = useState(
                     אין בעיה. אפשר להמשיך להוסיף סיורים ולעבוד כרגיל. הסיורים שלכם יפורסמו לציבור לאחר העלאת התעודה ואישור קצר של הצוות. נשלח לכם תזכורת לקראת השקת האתר.
                   </div>
                 )}
+<label style={{ display: 'block', border: certificateTrack === 'other' ? '2px solid #B97A45' : '1px solid #EDE7DF', borderRadius: 12, padding: 16, cursor: 'pointer', marginBottom: 20 }}>
+              <input type="radio" checked={certificateTrack === 'other'} onChange={function() { setCertificateTrack('other') }} style={{ marginLeft: 8 }} />
+              אני לא מורה דרך ומעוניין להציע שירותים אחרים באתר
+              <div style={{ fontSize: 13, color: '#777', marginTop: 8 }}>
+                (למשל הרצאות, סדנאות או חוויות אחרות המבוססות על מקום וסיפור)
+              </div>
+            </label>
 
                 <button onClick={function() { setScreen('benefit') }} disabled={!certificateChoice} style={{ width: '100%', background: certificateChoice ? '#111' : '#ccc', color: '#fff', padding: '14px', borderRadius: 12, border: 'none', fontWeight: 800, cursor: certificateChoice ? 'pointer' : 'not-allowed', fontFamily: 'Heebo, Arial, sans-serif' }}>
                   המשיכו ←
@@ -702,9 +716,50 @@ const [contactMessage, setContactMessage] = useState(
               ההטבה נשמרת למייסדים שמעלים את הסיור לפני מועד ההשקה.
             </p>
 
-            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85, marginBottom: 28 }}>
-              הסיור הזה יהיה חלק מהדור הראשון של הסיפורים שירכיבו את הקהילה.
-            </p>
+           <p style={{ fontSize: 15, color: '#555', lineHeight: 1.85, marginBottom: 24 }}>
+  הסיור הזה יהיה חלק מהדור הראשון של הסיפורים שירכיבו את הקהילה.
+</p>
+
+<div style={{
+  borderTop: '1px solid #EDE7DF',
+  borderBottom: '1px solid #EDE7DF',
+  padding: '18px 0',
+  marginBottom: 28,
+  textAlign: 'center'
+}}>
+
+  <div style={{
+    fontSize: 14,
+    fontWeight: 700,
+    color: '#2a2a2a',
+    marginBottom: 16
+  }}>
+    כבר בקהילת המייסדים:
+  </div>
+
+  <div style={{
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
+    fontSize: 15,
+    color: '#555',
+    lineHeight: 1.8
+  }}>
+    <div>43 מורי דרך</div>
+    <div>55 סיורים</div>
+    <div>₪68 מחיר ממוצע למשתתף</div>
+    <div>57 מקומות פנויים בתוכנית המייסדים</div>
+  </div>
+
+  <div style={{
+    marginTop: 16,
+    fontSize: 12,
+    color: '#888'
+  }}>
+    * הסיור הראשון של המייסדים נשאר ללא עלות חודשית.
+  </div>
+
+</div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <a
