@@ -934,9 +934,39 @@ guide_photo: guidePhoto,
                     לקראת ההשקה נשלח לכם מייל עם אישור הצטרפות לקהילת המייסדים. הגישה לחשבון האישי תיפתח רק כשנעבור להשקה מלאה.
                   </div>
 
-                  <button className="founder-cta" onClick={function() { window.location.href = '/' }} style={{ background: '#B97A45', color: '#fff', height: 56, padding: '0 54px', borderRadius: 14, border: 'none', fontSize: 16, fontWeight: 800, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif', boxShadow: '0 12px 28px rgba(185,122,69,0.25)' }}>
-                    ניפגש בהשקה ✦
-                  </button>
+                  <div style={{ maxWidth: 560, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
+  <button
+    className="founder-cta"
+    onClick={function() {
+      const text = encodeURIComponent(
+`היי,
+
+הרגע הצטרפתי לתוכנית המייסדים של מאז ועד היום.
+
+הסיור הראשון נשאר ללא עלות חודשית והמקומות מוגבלים ל־100 מייסדים בלבד.
+
+אם זה מתאים לך, שווה להציץ עכשיו:
+https://mvh.co.il/founders`
+      )
+
+      window.open('https://wa.me/?text=' + text, '_blank')
+    }}
+    style={{ background: '#111', color: '#fff', height: 56, padding: '0 28px', borderRadius: 14, border: 'none', fontSize: 16, fontWeight: 800, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif', boxShadow: '0 12px 28px rgba(0,0,0,0.18)' }}
+  >
+    שתפו עם מורה דרך נוסף בוואטסאפ
+  </button>
+
+  <button
+    className="founder-cta"
+    onClick={async function() {
+      await navigator.clipboard.writeText('https://mvh.co.il/founders')
+      alert('הקישור הועתק')
+    }}
+    style={{ background: '#fff', color: '#222', height: 52, padding: '0 28px', borderRadius: 14, border: '1px solid #E6DDD3', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}
+  >
+    העתיקו קישור להזמנה
+  </button>
+</div>
                 </div>
               </div>
             </section>
