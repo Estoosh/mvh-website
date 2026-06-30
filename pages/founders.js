@@ -641,53 +641,54 @@ const [contactMessage, setContactMessage] = useState(
 
            
             {certificateTrack === 'guide' && (
-              <div>
-                <label style={{ display: 'block', marginBottom: 10 }}>
-                  <input type="radio" checked={certificateChoice === 'upload'} onChange={function() { setCertificateChoice('upload') }} style={{ marginLeft: 8 }} />
-                  אעלה תעודה עכשיו
-                </label>
+  <div>
+    <label style={{ display: 'block', marginBottom: 10 }}>
+      <input type="radio" checked={certificateChoice === 'upload'} onChange={function() { setCertificateChoice('upload') }} style={{ marginLeft: 8 }} />
+      אעלה תעודה עכשיו
+    </label>
 
-                <label style={{ display: 'block', marginBottom: 16 }}>
-                  <input type="radio" checked={certificateChoice === 'later'} onChange={function() { setCertificateChoice('later') }} style={{ marginLeft: 8 }} />
-                  אעלה את התעודה בהמשך
-                </label>
+    <label style={{ display: 'block', marginBottom: 16 }}>
+      <input type="radio" checked={certificateChoice === 'later'} onChange={function() { setCertificateChoice('later') }} style={{ marginLeft: 8 }} />
+      אעלה את התעודה בהמשך
+    </label>
 
-                {certificateChoice === 'upload' && (
-                 <label style={{ width: 100, height: 100, borderRadius: 10, border: '2px dashed #EDE7DF', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: '#FBF7F1', gap: 4, marginBottom: 14 }}>
-  <span style={{ fontSize: 22, color: '#C0B8AE' }}>+</span>
-  <span style={{ fontSize: 11, color: '#B0A89E', fontFamily: 'Heebo,Arial,sans-serif' }}>
-    {certificateFile ? 'הקובץ נבחר' : 'העלאת תעודה'}
-  </span>
-  <input
-    type="file"
-    accept="image/*,.pdf"
-    onChange={function(e) {
-      const file = e.target.files && e.target.files[0]
-      if (file) setCertificateFile(file.name)
-    }}
-    style={{ display: 'none' }}
-  />
-</label>
-                )}
+    {certificateChoice === 'upload' && (
+      <label style={{ width: 100, height: 100, borderRadius: 10, border: '2px dashed #EDE7DF', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: '#FBF7F1', gap: 4, marginBottom: 14 }}>
+        <span style={{ fontSize: 22, color: '#C0B8AE' }}>+</span>
+        <span style={{ fontSize: 11, color: '#B0A89E', fontFamily: 'Heebo,Arial,sans-serif' }}>
+          {certificateFile ? 'הקובץ נבחר' : 'העלאת תעודה'}
+        </span>
+        <input
+          type="file"
+          accept="image/*,.pdf"
+          onChange={function(e) {
+            const file = e.target.files && e.target.files[0]
+            if (file) setCertificateFile(file.name)
+          }}
+          style={{ display: 'none' }}
+        />
+      </label>
+    )}
 
-                {certificateChoice === 'later' && (
-                  <div style={{ background: '#FBF7F1', border: '1px solid #EDE7DF', borderRadius: 12, padding: 16, fontSize: 14, lineHeight: 1.8, color: '#555', marginBottom: 16 }}>
-                    אין בעיה. אפשר להמשיך להוסיף סיורים ולעבוד כרגיל. הסיורים שלכם יפורסמו לציבור לאחר העלאת התעודה ואישור קצר של הצוות. נשלח לכם תזכורת לקראת השקת האתר.
-                  </div>
-                )}
+    {certificateChoice === 'later' && (
+      <div style={{ background: '#FBF7F1', border: '1px solid #EDE7DF', borderRadius: 12, padding: 16, fontSize: 14, lineHeight: 1.8, color: '#555', marginBottom: 16 }}>
+        אין בעיה. אפשר להמשיך להוסיף סיורים ולעבוד כרגיל. הסיורים שלכם יפורסמו לציבור לאחר העלאת התעודה ואישור קצר של הצוות. נשלח לכם תזכורת לקראת השקת האתר.
+      </div>
+    )}
+
+    <button onClick={function() { setScreen('benefit') }} disabled={!certificateChoice} style={{ width: '100%', background: certificateChoice ? '#111' : '#ccc', color: '#fff', padding: '14px', borderRadius: 12, border: 'none', fontWeight: 800, cursor: certificateChoice ? 'pointer' : 'not-allowed', fontFamily: 'Heebo, Arial, sans-serif' }}>
+      המשיכו ←
+    </button>
+  </div>
+)}
+
 <label style={{ display: 'block', border: certificateTrack === 'other' ? '2px solid #B97A45' : '1px solid #EDE7DF', borderRadius: 12, padding: 16, cursor: 'pointer', marginBottom: 20 }}>
-              <input type="radio" checked={certificateTrack === 'other'} onChange={function() { setCertificateTrack('other') }} style={{ marginLeft: 8 }} />
-              אני לא מורה דרך ומעוניין להציע שירותים אחרים באתר
-              <div style={{ fontSize: 13, color: '#777', marginTop: 8 }}>
-                (למשל הרצאות, סדנאות או חוויות אחרות המבוססות על מקום וסיפור)
-              </div>
-            </label>
-
-                <button onClick={function() { setScreen('benefit') }} disabled={!certificateChoice} style={{ width: '100%', background: certificateChoice ? '#111' : '#ccc', color: '#fff', padding: '14px', borderRadius: 12, border: 'none', fontWeight: 800, cursor: certificateChoice ? 'pointer' : 'not-allowed', fontFamily: 'Heebo, Arial, sans-serif' }}>
-                  המשיכו ←
-                </button>
-              </div>
-            )}
+  <input type="radio" checked={certificateTrack === 'other'} onChange={function() { setCertificateTrack('other') }} style={{ marginLeft: 8 }} />
+  אני לא מורה דרך ומעוניין להציע שירותים אחרים באתר
+  <div style={{ fontSize: 13, color: '#777', marginTop: 8 }}>
+    (למשל הרצאות, סדנאות או חוויות אחרות המבוססות על מקום וסיפור)
+  </div>
+</label>
 
             {certificateTrack === 'other' && (
               <a href={`mailto:ask@mvh.co.il?subject=${encodeURIComponent('אני לא מורה דרך ומעוניין להציע שירותים אחרים באתר')}&body=${encodeURIComponent(contactMessage)}`} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#111', color: '#fff', padding: '14px', borderRadius: 12, textDecoration: 'none', fontWeight: 800, fontFamily: 'Heebo, Arial, sans-serif' }}>
