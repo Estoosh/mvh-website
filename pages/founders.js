@@ -643,7 +643,7 @@ const [founderStats, setFounderStats] = useState({
           </Card>
         )}
 
-                {screen === 'certificate' && (
+               {screen === 'certificate' && !contactSent && (
           <Card>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
               <TimelineDot />
@@ -874,6 +874,9 @@ const [founderStats, setFounderStats] = useState({
                 <button
   type="button"
   onClick={async function() {
+  if (!contactMessage.trim()) return
+
+  try {
     const res = await fetch('/api/contact', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -883,14 +886,18 @@ const [founderStats, setFounderStats] = useState({
       })
     })
 
-    if (res.ok) {
-      setContactMessage('')
-setShowContactModal(false)
-setContactSent(true)
-    } else {
+    if (!res.ok) {
       alert('לא הצלחנו לשלוח. נסו שוב.')
+      return
     }
-  }}
+
+    setContactMessage('')
+    setShowContactModal(false)
+    setContactSent(true)
+  } catch (err) {
+    alert('לא הצלחנו לשלוח. נסו שוב.')
+  }
+}}
   disabled={!contactMessage.trim()}
                   style={{
                     flex: 1,
