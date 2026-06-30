@@ -80,7 +80,7 @@ const [certificateUploading, setCertificateUploading] = useState(false)
 const [certificateError, setCertificateError] = useState('')
 const [contactMessage, setContactMessage] = useState('')
 const [showContactModal, setShowContactModal] = useState(false)
-)
+
 
 const [founderStats, setFounderStats] = useState({
   founderCount: 43,
