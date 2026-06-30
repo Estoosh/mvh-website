@@ -80,11 +80,10 @@ export default async function handler(req, res) {
       headers
     })
 
-   const founderTours = tours.filter(function(record) {
+  const founderTours = tours.filter(function(record) {
   const fields = record.fields || {}
-  return fields.Guide && Array.isArray(fields.Guide) && fields.Guide.length > 0
+  return fields.Tour_Title && fields.Tour_Title !== 'Tour_Title'
 })
-
     const prices = founderTours
       .map(function(record) {
         return getTourPrice(record.fields || {})
@@ -96,7 +95,7 @@ export default async function handler(req, res) {
     const averagePrice =
       prices.length > 0
         ? Math.round(prices.reduce(function(sum, price) { return sum + price }, 0) / prices.length)
-        : 68
+        : 0
 
     const founderCount = guides.length
     const tourCount = founderTours.length
