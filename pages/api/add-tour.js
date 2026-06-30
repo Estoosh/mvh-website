@@ -1,5 +1,5 @@
-const GUIDES_TABLE = 'tblsJ5Ok1yPSgtvSj'
-const TOURS_TABLE = 'tbltsGvfPLMAmJ764'
+const GUIDES_TABLE = 'Guides'
+const TOURS_TABLE = 'Tours'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -113,10 +113,11 @@ async function createFounderFlow(res, baseId, headers, body) {
   }
 
   const tourResult = await createTourRecord(baseId, headers, body, {
-    guideName,
-    whatsappNumber: cleanPhone(body.whatsapp_number || phone),
-    tourStatus: 'founder_free'
-  })
+  guideId: guideData.id,
+  guideName,
+  whatsappNumber: cleanPhone(body.whatsapp_number || phone),
+  tourStatus: 'founder_free'
+})
 
   if (!tourResult.ok || !tourResult.data?.id) {
     console.error('AIRTABLE_CREATE_TOUR_FAILED', JSON.stringify({
@@ -155,11 +156,12 @@ async function createFounderFlow(res, baseId, headers, body) {
 async function createRegularTour(res, baseId, headers, body) {
   const tourStatus = body.collab_code ? 'collab' : 'paid'
 
-  const tourResult = await createTourRecord(baseId, headers, body, {
-    guideName: body.guide_name || '',
-    whatsappNumber: cleanPhone(body.whatsapp_number),
-    tourStatus
-  })
+ const tourResult = await createTourRecord(baseId, headers, body, {
+  guideId: body.guide_id || '',
+  guideName: body.guide_name || '',
+  whatsappNumber: cleanPhone(body.whatsapp_number),
+  tourStatus
+})
 
   if (!tourResult.ok || !tourResult.data?.id) {
     console.error('AIRTABLE_CREATE_REGULAR_TOUR_FAILED', JSON.stringify(tourResult.data, null, 2))
@@ -187,6 +189,7 @@ async function createTourRecord(baseId, headers, body, options) {
     Tour_Status: options.tourStatus,
     Lead_Count: 0,
     Guide_Name: options.guideName || '',
+Guide: options.guideId ? [options.guideId] : [],
     Tour_Images: Array.isArray(body.image_urls) ? body.image_urls.join('|') : '',
     WhatsApp_Number: options.whatsappNumber || '',
     Historical_Period: Array.isArray(body.historical_periods) ? body.historical_periods : [],
