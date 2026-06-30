@@ -209,11 +209,11 @@ const [founderStats, setFounderStats] = useState({
         if (!data || data.error) return
 
         setFounderStats({
-          founderCount: data.founderCount || 43,
-          tourCount: data.tourCount || 55,
-          averagePrice: data.averagePrice || 68,
-          remainingFounderSpots: data.remainingFounderSpots || 57
-        })
+  founderCount: data.founderCount ?? 43,
+  tourCount: data.tourCount ?? 55,
+  averagePrice: data.averagePrice ?? 68,
+  remainingFounderSpots: data.remainingFounderSpots ?? 57
+})
       })
       .catch(function() {})
   }, [])
@@ -714,8 +714,8 @@ const [founderStats, setFounderStats] = useState({
 </label>
 
             {certificateTrack === 'other' && (
-             <a
-  href={`mailto:ask@mvh.co.il?subject=${encodeURIComponent('אני לא מורה דרך ומעוניין להציע שירותים אחרים באתר')}&body=${encodeURIComponent(contactMessage)}`}
+     <a
+  href={`https://mail.google.com/mail/?view=cm&fs=1&to=ask@mvh.co.il&su=${encodeURIComponent('אני לא מורה דרך ומעוניין להציע שירותים אחרים באתר')}&body=${encodeURIComponent(contactMessage)}`}
   target="_blank"
   rel="noopener noreferrer"
   style={{
@@ -731,7 +731,7 @@ const [founderStats, setFounderStats] = useState({
     fontFamily: 'Heebo, Arial, sans-serif'
   }}
 >
-  פתחו הודעה מוכנה לשליחה ←
+  פתחו הודעה מוכנה ב־Gmail ←
 </a>
             )}
           </Card>
