@@ -80,6 +80,7 @@ const [certificateUploading, setCertificateUploading] = useState(false)
 const [certificateError, setCertificateError] = useState('')
 const [contactMessage, setContactMessage] = useState('')
 const [showContactModal, setShowContactModal] = useState(false)
+const [contactSent, setContactSent] = useState(false)
 
 
 const [founderStats, setFounderStats] = useState({
@@ -737,7 +738,68 @@ const [founderStats, setFounderStats] = useState({
             )}
                    </Card>
         )}
+{contactSent && (
+  <Card>
+    <div style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: 24
+    }}>
+      <TimelineDot />
+      <StepBadge number="✓" />
+    </div>
 
+    <h2 style={{
+      fontSize: 28,
+      fontWeight: 900,
+      color: '#1a1a1a',
+      marginBottom: 18,
+      lineHeight: 1.3
+    }}>
+      תודה. קיבלנו את ההודעה שלכם.
+    </h2>
+
+    <p style={{
+      fontSize: 16,
+      color: '#666',
+      lineHeight: 1.9,
+      marginBottom: 16
+    }}>
+      מאז ועד היום נבנה עבור מורי דרך, אבל חלק מהרעיונות הטובים ביותר מגיעים מאנשים שיודעים להפוך מקום לסיפור בדרך אחרת.
+    </p>
+
+    <p style={{
+      fontSize: 16,
+      color: '#666',
+      lineHeight: 1.9,
+      marginBottom: 30
+    }}>
+      נחזור אליכם אם נחשוב שיש התאמה.
+    </p>
+
+    <button
+      type="button"
+      onClick={function() {
+        window.location.href = '/'
+      }}
+      style={{
+        width: '100%',
+        background: '#111',
+        color: '#fff',
+        border: 'none',
+        padding: '18px',
+        borderRadius: 14,
+        fontSize: 18,
+        fontWeight: 800,
+        cursor: 'pointer',
+        fontFamily: 'Heebo, Arial, sans-serif'
+      }}
+    >
+      חזרה לאתר ←
+    </button>
+  </Card>
+)}
         {showContactModal && (
           <div style={{
             position: 'fixed',
@@ -823,8 +885,8 @@ const [founderStats, setFounderStats] = useState({
 
     if (res.ok) {
       setContactMessage('')
-      setShowContactModal(false)
-      alert('ההודעה נשלחה בהצלחה')
+setShowContactModal(false)
+setContactSent(true)
     } else {
       alert('לא הצלחנו לשלוח. נסו שוב.')
     }
