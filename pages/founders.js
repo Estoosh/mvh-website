@@ -78,8 +78,8 @@ const [certificateChoice, setCertificateChoice] = useState('')
 const [certificateFile, setCertificateFile] = useState('')
 const [certificateUploading, setCertificateUploading] = useState(false)
 const [certificateError, setCertificateError] = useState('')
-const [contactMessage, setContactMessage] = useState(
-  'שלום,\n\nשמי:\n\nאני עוסק/ת ב:\n\nאני חושב/ת שהשירות שלי יכול להתאים למאז ועד היום כי:\n\nקישור לאתר או לעמוד רלוונטי:\n'
+const [contactMessage, setContactMessage] = useState('')
+const [showContactModal, setShowContactModal] = useState(false)
 )
 
 const [founderStats, setFounderStats] = useState({
@@ -714,11 +714,11 @@ const [founderStats, setFounderStats] = useState({
 </label>
 
             {certificateTrack === 'other' && (
-     <a
-  href={`https://mail.google.com/mail/?view=cm&fs=1&to=ask@mvh.co.il&su=${encodeURIComponent('אני לא מורה דרך ומעוניין להציע שירותים אחרים באתר')}&body=${encodeURIComponent(contactMessage)}`}
-  target="_blank"
-  rel="noopener noreferrer"
+    <button
+  type="button"
+  onClick={function() { setShowContactModal(true) }}
   style={{
+    width: '100%',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
@@ -726,15 +726,116 @@ const [founderStats, setFounderStats] = useState({
     color: '#fff',
     padding: '14px',
     borderRadius: 12,
-    textDecoration: 'none',
+    border: 'none',
     fontWeight: 800,
-    fontFamily: 'Heebo, Arial, sans-serif'
+    fontFamily: 'Heebo, Arial, sans-serif',
+    cursor: 'pointer'
   }}
 >
-  פתחו הודעה מוכנה ב־Gmail ←
-</a>
+  ספרו לנו בקצרה ←
+</button>
             )}
-          </Card>
+                   </Card>
+        )}
+
+        {showContactModal && (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.42)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 20
+          }}>
+            <div style={{
+              width: '100%',
+              maxWidth: 420,
+              background: '#fff',
+              borderRadius: 20,
+              padding: 24,
+              boxShadow: '0 24px 70px rgba(0,0,0,0.22)',
+              border: '1px solid #EDE7DF'
+            }}>
+              <h3 style={{ fontSize: 20, fontWeight: 900, margin: '0 0 10px', color: '#1a1a1a' }}>
+                ספרו לנו בקצרה
+              </h3>
+
+              <p style={{ fontSize: 14, color: '#666', lineHeight: 1.7, margin: '0 0 14px' }}>
+                מה תרצו להציע במאז ועד היום?
+              </p>
+
+              <textarea
+                value={contactMessage}
+                onChange={function(e) {
+                  if (e.target.value.length <= 200) setContactMessage(e.target.value)
+                }}
+                rows={5}
+                placeholder="עד 200 תווים..."
+                style={{
+                  width: '100%',
+                  border: '1.5px solid #EDE7DF',
+                  borderRadius: 12,
+                  padding: 12,
+                  fontSize: 14,
+                  fontFamily: 'Heebo, Arial, sans-serif',
+                  lineHeight: 1.7,
+                  resize: 'none',
+                  boxSizing: 'border-box',
+                  outline: 'none'
+                }}
+              />
+
+              <div style={{ fontSize: 11, color: '#999', textAlign: 'left', marginTop: 6 }}>
+                {contactMessage.length}/200
+              </div>
+
+              <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
+                <button
+                  type="button"
+                  onClick={function() { setShowContactModal(false) }}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    borderRadius: 12,
+                    border: '1px solid #EDE7DF',
+                    background: '#fff',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    fontFamily: 'Heebo, Arial, sans-serif'
+                  }}
+                >
+                  ביטול
+                </button>
+
+                <button
+                  type="button"
+                  onClick={function() {
+                    window.location.href =
+                      'mailto:ask@mvh.co.il?subject=' +
+                      encodeURIComponent('אני לא מורה דרך ומעוניין להציע שירותים אחרים באתר') +
+                      '&body=' +
+                      encodeURIComponent(contactMessage)
+                  }}
+                  disabled={!contactMessage.trim()}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    borderRadius: 12,
+                    border: 'none',
+                    background: contactMessage.trim() ? '#111' : '#ccc',
+                    color: '#fff',
+                    fontWeight: 800,
+                    cursor: contactMessage.trim() ? 'pointer' : 'not-allowed',
+                    fontFamily: 'Heebo, Arial, sans-serif'
+                  }}
+                >
+                  שלחו
+                </button>
+              </div>
+            </div>
+          </div>
         )}
 
         {screen === 'benefit' && (
