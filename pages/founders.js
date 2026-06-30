@@ -714,9 +714,25 @@ const [founderStats, setFounderStats] = useState({
 </label>
 
             {certificateTrack === 'other' && (
-              <a href={`mailto:ask@mvh.co.il?subject=${encodeURIComponent('אני לא מורה דרך ומעוניין להציע שירותים אחרים באתר')}&body=${encodeURIComponent(contactMessage)}`} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#111', color: '#fff', padding: '14px', borderRadius: 12, textDecoration: 'none', fontWeight: 800, fontFamily: 'Heebo, Arial, sans-serif' }}>
-                צרו קשר ←
-              </a>
+             <a
+  href={`mailto:ask@mvh.co.il?subject=${encodeURIComponent('אני לא מורה דרך ומעוניין להציע שירותים אחרים באתר')}&body=${encodeURIComponent(contactMessage)}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  style={{
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    background: '#111',
+    color: '#fff',
+    padding: '14px',
+    borderRadius: 12,
+    textDecoration: 'none',
+    fontWeight: 800,
+    fontFamily: 'Heebo, Arial, sans-serif'
+  }}
+>
+  פתחו הודעה מוכנה לשליחה ←
+</a>
             )}
           </Card>
         )}
@@ -745,12 +761,26 @@ const [founderStats, setFounderStats] = useState({
 </p>
 
 <div style={{
-  borderTop: '1px solid #EDE7DF',
-  borderBottom: '1px solid #EDE7DF',
-  padding: '18px 0',
+  position: 'relative',
+  padding: '30px 0',
   marginBottom: 28,
   textAlign: 'center'
 }}>
+  <div style={{ position: 'absolute', top: 0, right: 0, left: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+    <span style={{ width: 7, height: 7, borderRadius: '50%', background: TIMELINE }} />
+    <span style={{ width: 52, height: 1, background: TIMELINE, opacity: 0.35 }} />
+    <span style={{ width: 6, height: 6, borderRadius: '50%', background: TIMELINE, opacity: 0.55 }} />
+    <span style={{ width: 52, height: 1, background: TIMELINE, opacity: 0.35 }} />
+    <span style={{ width: 7, height: 7, borderRadius: '50%', background: TIMELINE }} />
+  </div>
+
+  <div style={{ position: 'absolute', bottom: 0, right: 0, left: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+    <span style={{ width: 7, height: 7, borderRadius: '50%', background: TIMELINE }} />
+    <span style={{ width: 52, height: 1, background: TIMELINE, opacity: 0.35 }} />
+    <span style={{ width: 6, height: 6, borderRadius: '50%', background: TIMELINE, opacity: 0.55 }} />
+    <span style={{ width: 52, height: 1, background: TIMELINE, opacity: 0.35 }} />
+    <span style={{ width: 7, height: 7, borderRadius: '50%', background: TIMELINE }} />
+  </div>
 
   <div style={{
     fontSize: 14,
