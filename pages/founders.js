@@ -73,6 +73,14 @@ export default function Founders() {
   const [bioCount, setBioCount] = useState(0)
   const [bioError, setBioError] = useState('')
   const [bioSaveStatus, setBioSaveStatus] = useState('')
+const [certificateTrack, setCertificateTrack] = useState('')
+const [certificateChoice, setCertificateChoice] = useState('')
+const [certificateFile, setCertificateFile] = useState('')
+const [certificateUploading, setCertificateUploading] = useState(false)
+const [certificateError, setCertificateError] = useState('')
+const [contactMessage, setContactMessage] = useState(
+  'שלום,\n\nשמי:\n\nאני עוסק/ת ב:\n\nאני חושב/ת שהשירות שלי יכול להתאים למאז ועד היום כי:\n\nקישור לאתר או לעמוד רלוונטי:\n'
+)
   const restoredRef = useRef(false)
 
   function buildDraft(next) {
@@ -346,7 +354,7 @@ export default function Founders() {
       bioGenerated
     })
 
-    setScreen('benefit')
+    setScreen('certificate')
   }
 
   return (
@@ -608,6 +616,70 @@ export default function Founders() {
             <button onClick={saveBioAndContinue} disabled={!bioText.trim()} style={{ width: '100%', background: bioText.trim() ? '#111' : '#ccc', color: '#fff', padding: '14px', borderRadius: 10, fontSize: 15, fontWeight: 800, border: 'none', cursor: bioText.trim() ? 'pointer' : 'not-allowed', fontFamily: 'Heebo, Arial, sans-serif' }}>
               המשיכו ←
             </button>
+          </Card>
+        )}
+
+                {screen === 'certificate' && (
+          <Card>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+              <TimelineDot />
+              <StepBadge number="5" />
+            </div>
+
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1a1a1a', marginBottom: 12 }}>
+              לפני שממשיכים, שאלה קצרה.
+            </h2>
+
+            <p style={{ fontSize: 14, color: '#6B6B6B', lineHeight: 1.8, marginBottom: 24 }}>
+              מאז ועד היום נבנה עבור מורי דרך, אבל אנחנו תמיד שמחים להכיר אנשים שיודעים להפוך מקום לסיפור.
+            </p>
+
+            <label style={{ display: 'block', border: certificateTrack === 'guide' ? '2px solid #B97A45' : '1px solid #EDE7DF', borderRadius: 12, padding: 16, cursor: 'pointer', marginBottom: 12 }}>
+              <input type="radio" checked={certificateTrack === 'guide'} onChange={function() { setCertificateTrack('guide') }} style={{ marginLeft: 8 }} />
+              אני מורה דרך מוסמך בעל תעודה בתוקף
+            </label>
+
+            <label style={{ display: 'block', border: certificateTrack === 'other' ? '2px solid #B97A45' : '1px solid #EDE7DF', borderRadius: 12, padding: 16, cursor: 'pointer', marginBottom: 20 }}>
+              <input type="radio" checked={certificateTrack === 'other'} onChange={function() { setCertificateTrack('other') }} style={{ marginLeft: 8 }} />
+              אני לא מורה דרך ומעוניין להציע שירותים אחרים באתר
+              <div style={{ fontSize: 13, color: '#777', marginTop: 8 }}>
+                (למשל הרצאות, סדנאות או חוויות אחרות המבוססות על מקום וסיפור)
+              </div>
+            </label>
+
+            {certificateTrack === 'guide' && (
+              <div>
+                <label style={{ display: 'block', marginBottom: 10 }}>
+                  <input type="radio" checked={certificateChoice === 'upload'} onChange={function() { setCertificateChoice('upload') }} style={{ marginLeft: 8 }} />
+                  אעלה תעודה עכשיו
+                </label>
+
+                <label style={{ display: 'block', marginBottom: 16 }}>
+                  <input type="radio" checked={certificateChoice === 'later'} onChange={function() { setCertificateChoice('later') }} style={{ marginLeft: 8 }} />
+                  אעלה את התעודה בהמשך
+                </label>
+
+                {certificateChoice === 'upload' && (
+                  <input type="file" accept="image/*,.pdf" onChange={function(e) { const file = e.target.files && e.target.files[0]; if (file) setCertificateFile(file.name) }} />
+                )}
+
+                {certificateChoice === 'later' && (
+                  <div style={{ background: '#FBF7F1', border: '1px solid #EDE7DF', borderRadius: 12, padding: 16, fontSize: 14, lineHeight: 1.8, color: '#555', marginBottom: 16 }}>
+                    אין בעיה. אפשר להמשיך להוסיף סיורים ולעבוד כרגיל. הסיורים שלכם יפורסמו לציבור לאחר העלאת התעודה ואישור קצר של הצוות. נשלח לכם תזכורת לקראת השקת האתר.
+                  </div>
+                )}
+
+                <button onClick={function() { setScreen('benefit') }} disabled={!certificateChoice} style={{ width: '100%', background: certificateChoice ? '#111' : '#ccc', color: '#fff', padding: '14px', borderRadius: 12, border: 'none', fontWeight: 800, cursor: certificateChoice ? 'pointer' : 'not-allowed', fontFamily: 'Heebo, Arial, sans-serif' }}>
+                  המשיכו ←
+                </button>
+              </div>
+            )}
+
+            {certificateTrack === 'other' && (
+              <a href={`mailto:ask@mvh.co.il?subject=${encodeURIComponent('אני לא מורה דרך ומעוניין להציע שירותים אחרים באתר')}&body=${encodeURIComponent(contactMessage)}`} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#111', color: '#fff', padding: '14px', borderRadius: 12, textDecoration: 'none', fontWeight: 800, fontFamily: 'Heebo, Arial, sans-serif' }}>
+                צרו קשר ←
+              </a>
+            )}
           </Card>
         )}
 
