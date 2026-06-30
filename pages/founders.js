@@ -81,6 +81,13 @@ const [certificateError, setCertificateError] = useState('')
 const [contactMessage, setContactMessage] = useState(
   'שלום,\n\nשמי:\n\nאני עוסק/ת ב:\n\nאני חושב/ת שהשירות שלי יכול להתאים למאז ועד היום כי:\n\nקישור לאתר או לעמוד רלוונטי:\n'
 )
+
+const [founderStats, setFounderStats] = useState({
+  founderCount: 43,
+  tourCount: 55,
+  averagePrice: 68,
+  remainingFounderSpots: 57
+})
   const restoredRef = useRef(false)
 
   function buildDraft(next) {
@@ -194,6 +201,22 @@ const [contactMessage, setContactMessage] = useState(
       bioGenerated
     })
   }, [screen, form, phonePrefix, phoneRest, profileInput, bioText, bioGenerated])
+
+  useEffect(function() {
+    fetch('/api/founder-stats')
+      .then(function(res) { return res.json() })
+      .then(function(data) {
+        if (!data || data.error) return
+
+        setFounderStats({
+          founderCount: data.founderCount || 43,
+          tourCount: data.tourCount || 55,
+          averagePrice: data.averagePrice || 68,
+          remainingFounderSpots: data.remainingFounderSpots || 57
+        })
+      })
+      .catch(function() {})
+  }, [])
 
   const handleChange = function(e) {
     setForm(Object.assign({}, form, { [e.target.name]: e.target.value }))
@@ -746,10 +769,10 @@ const [contactMessage, setContactMessage] = useState(
     color: '#555',
     lineHeight: 1.8
   }}>
-    <div>43 מורי דרך</div>
-    <div>55 סיורים</div>
-    <div>₪68 מחיר ממוצע למשתתף</div>
-    <div>57 מקומות פנויים בתוכנית המייסדים</div>
+   <div><span style={{ fontWeight: 800, color: '#2a2a2a' }}>{founderStats.founderCount}</span> מורי דרך</div>
+<div><span style={{ fontWeight: 800, color: '#2a2a2a' }}>{founderStats.tourCount}</span> סיורים</div>
+<div><span style={{ fontWeight: 800, color: '#2a2a2a' }}>₪{founderStats.averagePrice}</span> מחיר ממוצע למשתתף</div>
+<div><span style={{ fontWeight: 800, color: '#2a2a2a' }}>{founderStats.remainingFounderSpots}</span> מקומות פנויים בתוכנית המייסדים</div>
   </div>
 
   <div style={{
