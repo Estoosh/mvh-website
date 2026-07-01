@@ -174,13 +174,26 @@ ${JSON.stringify(tourResult.data).slice(0, 1200)}`
     airtable: tourResult.data
   })
 }
-  await sendFounderConfirmationEmail({
-    to: email,
-    guideName,
-    founderNumber: guideData.fields?.Founder_Number || founderNumber,
-    tourTitle
-  })
-const telegramResult = await sendTelegram(
+  const finalFounderNumber = guideData.fields?.Founder_Number || founderNumber
+
+await sendFounderConfirmationEmail({
+  to: email,
+  guideName,
+  founderNumber: finalFounderNumber,
+  tourTitle
+})
+
+  await sendTelegram(
+  `📧 Founder email sent
+
+Founder #${finalFounderNumber}
+
+👤 ${guideName}
+📧 ${email}
+
+🗺️ ${tourTitle}`
+)
+  const telegramResult = await sendTelegram(
   `🎉 Founder חדש הצטרף
 
 Founder #${guideData.fields?.Founder_Number || founderNumber}
@@ -198,7 +211,7 @@ ${guideData.id}
 founder_free`
 )
 
-console.log('FOUNDER_TELEGRAM_RESULT', JSON.stringify(telegramResult, null, 2))
+
   return res.status(200).json({
     success: true,
     id: tourResult.data.id,
@@ -350,9 +363,18 @@ async function getNextFounderNumber(baseId, headers) {
 
 async function sendFounderConfirmationEmail({ to, guideName, founderNumber, tourTitle }) {
   if (!process.env.RESEND_API_KEY) {
-    console.error('RESEND_API_KEY_MISSING')
-    return
-  }
+  console.error('RESEND_API_KEY_MISSING')
+
+  await sendTelegram(
+    `🚨 RESEND CONFIG ERROR
+
+RESEND_API_KEY חסר ב־Vercel.
+
+Founder email לא נשלח.`
+  )
+
+  return
+}
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://mvh.co.il'
   const shareLink = `${baseUrl}/founders`
@@ -429,11 +451,49 @@ async function sendFounderConfirmationEmail({ to, guideName, founderNumber, tour
     const data = await response.json()
 
     if (!response.ok) {
-      console.error('RESEND_FOUNDER_EMAIL_FAILED', JSON.stringify(data, null, 2))
-    }
+  console.error('RESEND_FOUNDER_EMAIL_FAILED', JSON.stringify(data, null, 2))
+
+  await sendTelegram(
+    `🚨 FOUNDER EMAIL ERROR
+
+To:
+${to}
+
+Guide:
+${guideName}
+
+Founder:
+#${founderNumber}
+
+Tour:
+${tourTitle}
+
+Error:
+${JSON.stringify(data).slice(0, 1200)}`
+  )
+}
   } catch (err) {
-    console.error('RESEND_FOUNDER_EMAIL_ERROR', err)
-  }
+  console.error('RESEND_FOUNDER_EMAIL_ERROR', err)
+
+  await sendTelegram(
+    `🚨 FOUNDER EMAIL INTERNAL ERROR
+
+To:
+${to}
+
+Guide:
+${guideName}
+
+Founder:
+#${founderNumber}
+
+Tour:
+${tourTitle}
+
+Error:
+${err.message || 'unknown_error'}`
+  )
+}
 }
 
 function cleanText(value) {
