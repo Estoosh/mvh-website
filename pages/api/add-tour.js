@@ -144,18 +144,36 @@ ${JSON.stringify(guideData).slice(0, 1200)}`
   tourStatus: 'founder_free'
 })
 
-  if (!tourResult.ok || !tourResult.data?.id) {
-    console.error('AIRTABLE_CREATE_TOUR_FAILED', JSON.stringify({
-      airtable: tourResult.data,
-      sent_body_title: body.title
-    }, null, 2))
+ if (!tourResult.ok || !tourResult.data?.id) {
+  console.error('AIRTABLE_CREATE_TOUR_FAILED', JSON.stringify({
+    airtable: tourResult.data,
+    sent_body_title: body.title
+  }, null, 2))
 
-    return res.status(502).json({
-      error: 'airtable_create_tour_failed',
-      airtable: tourResult.data
-    })
-  }
+  await sendTelegram(
+    `🚨 AIRTABLE TOUR ERROR
 
+Guide:
+${guideName}
+
+Email:
+${email}
+
+Phone:
+${phone}
+
+Tour:
+${tourTitle}
+
+Error:
+${JSON.stringify(tourResult.data).slice(0, 1200)}`
+  )
+
+  return res.status(502).json({
+    error: 'airtable_create_tour_failed',
+    airtable: tourResult.data
+  })
+}
   await sendFounderConfirmationEmail({
     to: email,
     guideName,
