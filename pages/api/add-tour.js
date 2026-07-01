@@ -28,8 +28,16 @@ export default async function handler(req, res) {
     }
 
     return await createRegularTour(res, baseId, headers, body)
-  } catch (err) {
+   } catch (err) {
     console.error('ADD_TOUR_INTERNAL_ERROR', err)
+
+    await sendTelegram(
+      `🚨 ADD TOUR ERROR
+
+Error:
+${err.message || 'unknown_error'}`
+    )
+
     return res.status(500).json({ error: 'internal_error', message: err.message })
   }
 }
