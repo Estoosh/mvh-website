@@ -108,18 +108,34 @@ async function createFounderFlow(res, baseId, headers, body) {
 
   const guideData = await guideRes.json()
 
-  if (!guideRes.ok || !guideData.id) {
-    console.error('AIRTABLE_CREATE_GUIDE_FAILED', JSON.stringify({
-      airtable: guideData,
-      sent_fields: guideFields
-    }, null, 2))
+ if (!guideRes.ok || !guideData.id) {
+  console.error('AIRTABLE_CREATE_GUIDE_FAILED', JSON.stringify({
+    airtable: guideData,
+    sent_fields: guideFields
+  }, null, 2))
 
-    return res.status(502).json({
-      error: 'airtable_create_guide_failed',
-      airtable: guideData,
-      sent_fields: guideFields
-    })
-  }
+  await sendTelegram(
+    `🚨 AIRTABLE GUIDE ERROR
+
+Guide:
+${guideName}
+
+Email:
+${email}
+
+Phone:
+${phone}
+
+Error:
+${JSON.stringify(guideData).slice(0, 1200)}`
+  )
+
+  return res.status(502).json({
+    error: 'airtable_create_guide_failed',
+    airtable: guideData,
+    sent_fields: guideFields
+  })
+}
 
   const tourResult = await createTourRecord(baseId, headers, body, {
   guideId: guideData.id,
