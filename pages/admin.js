@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Header from '../components/Header'
+import FinanceTab from '../components/admin/FinanceTab'
 
 const ADMIN_PASSWORD = 'mvh2025admin'
 const BROWN = '#7E4821'
@@ -15,6 +16,7 @@ const OUTRO_PLACEHOLDER = `נרדמתם באמצע הפרק? לא נורא. המ
 export default function Admin() {
   const [authed, setAuthed] = useState(false)
   const [password, setPassword] = useState('')
+  const [actorName, setActorName] = useState('')
   const [pwError, setPwError] = useState('')
   const [tab, setTab] = useState('pending')
   const [tours, setTours] = useState([])
@@ -64,6 +66,7 @@ export default function Admin() {
 
   const handleLogin = function(e) {
     e.preventDefault()
+    if (!actorName.trim()) { setPwError('נא להזין שם'); return }
     if (password === ADMIN_PASSWORD) { setAuthed(true); setPwError('') }
     else setPwError('סיסמה שגויה')
   }
@@ -128,6 +131,7 @@ export default function Admin() {
         <h1 style={{ fontSize: 24, fontWeight: 900, marginBottom: 8 }}>MvH Mission Control</h1>
         <p style={{ color: '#888', fontSize: 13, marginBottom: 32 }}>גישה מורשית בלבד</p>
         <form onSubmit={handleLogin}>
+          <input type="text" value={actorName} onChange={e => setActorName(e.target.value)} placeholder="שם (לתיעוד פעולות בכספים)" style={Object.assign({}, inp, { marginBottom: 12 })} />
           <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="סיסמה" style={Object.assign({}, inp, { marginBottom: 12 })} />
           {pwError && <p style={{ color: '#e00', fontSize: 13, marginBottom: 12 }}>{pwError}</p>}
           <button type="submit" style={{ width: '100%', background: '#111', color: '#fff', padding: 12, borderRadius: 8, fontSize: 15, fontWeight: 800, cursor: 'pointer', border: 'none', fontFamily: 'Heebo, Arial, sans-serif' }}>כניסה</button>
@@ -155,6 +159,7 @@ export default function Admin() {
     ['guides', `מדריכים (${guides.length})`],
     ['signups', `קהילה (${signups.length})`],
     ['newsletter', 'ניוזלטר'],
+    ['finance', 'כספים'],
   ]
 
   return (
@@ -460,6 +465,11 @@ export default function Admin() {
               </div>
             )}
           </div>
+        )}
+
+        {/* ── FINANCE ── */}
+        {!loading && tab === 'finance' && (
+          <FinanceTab adminId={actorName} />
         )}
       </div>
     </div>
