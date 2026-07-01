@@ -138,7 +138,23 @@ async function createFounderFlow(res, baseId, headers, body) {
     founderNumber: guideData.fields?.Founder_Number || founderNumber,
     tourTitle
   })
+await sendTelegram(
+  `🎉 Founder חדש הצטרף
 
+Founder #${guideData.fields?.Founder_Number || founderNumber}
+
+👤 ${guideName}
+📧 ${email}
+📱 ${phone}
+
+🗺️ ${tourTitle}
+
+🆔 Guide ID:
+${guideData.id}
+
+🎯 Status:
+founder_free`
+)
   return res.status(200).json({
     success: true,
     id: tourResult.data.id,
