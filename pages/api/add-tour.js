@@ -225,13 +225,26 @@ async function createRegularTour(res, baseId, headers, body) {
 })
 
   if (!tourResult.ok || !tourResult.data?.id) {
-    console.error('AIRTABLE_CREATE_REGULAR_TOUR_FAILED', JSON.stringify(tourResult.data, null, 2))
+  console.error('AIRTABLE_CREATE_REGULAR_TOUR_FAILED', JSON.stringify(tourResult.data, null, 2))
 
-    return res.status(502).json({
-      error: 'airtable_create_tour_failed',
-      airtable: tourResult.data
-    })
-  }
+  await sendTelegram(
+    `🚨 REGULAR TOUR ERROR
+
+Guide:
+${body.guide_name || ''}
+
+Tour:
+${body.title || ''}
+
+Error:
+${JSON.stringify(tourResult.data).slice(0, 1200)}`
+  )
+
+  return res.status(502).json({
+    error: 'airtable_create_tour_failed',
+    airtable: tourResult.data
+  })
+}
 
   return res.status(200).json(tourResult.data)
 }
