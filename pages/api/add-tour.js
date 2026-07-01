@@ -1,3 +1,4 @@
+import { sendTelegram } from '../../lib/notify'
 const GUIDES_TABLE = 'Guides'
 const TOURS_TABLE = 'Tours'
 
