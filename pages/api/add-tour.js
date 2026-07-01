@@ -174,7 +174,7 @@ ${JSON.stringify(tourResult.data).slice(0, 1200)}`
     airtable: tourResult.data
   })
 }
-  const finalFounderNumber = guideData.fields?.Founder_Number || founderNumber
+const finalFounderNumber = guideData.fields?.Founder_Number || founderNumber
 
 await sendFounderConfirmationEmail({
   to: email,
@@ -183,17 +183,7 @@ await sendFounderConfirmationEmail({
   tourTitle
 })
 
-  await sendTelegram(
-  `📧 Founder email sent
-
-Founder #${finalFounderNumber}
-
-👤 ${guideName}
-📧 ${email}
-
-🗺️ ${tourTitle}`
-)
-  const telegramResult = await sendTelegram(
+await sendTelegram(
   `🎉 Founder חדש הצטרף
 
 Founder #${guideData.fields?.Founder_Number || founderNumber}
