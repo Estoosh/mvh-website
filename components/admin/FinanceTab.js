@@ -4,6 +4,7 @@ import SuspensionPanel from './SuspensionPanel'
 import CreditPanel from './CreditPanel'
 import BenefitPanel from './BenefitPanel'
 import AuditLogViewer from './AuditLogViewer'
+import ReportsTab from './ReportsTab'
 
 const BROWN = '#7E4821'
 
@@ -12,6 +13,7 @@ const SUB_TABS = [
   ['suspensions', 'השהיות'],
   ['credits', 'זיכויים'],
   ['benefits', 'הטבות'],
+  ['reports', 'דוחות'],
   ['audit', 'יומן פעולות']
 ]
 
@@ -41,6 +43,7 @@ export default function FinanceTab({ adminId }) {
       {subTab === 'suspensions' && <SuspensionPanel adminId={adminId} tableStyles={{ th, td }} />}
       {subTab === 'credits' && <CreditPanel adminId={adminId} tableStyles={{ th, td }} />}
       {subTab === 'benefits' && <BenefitPanel adminId={adminId} tableStyles={{ th, td }} />}
+      {subTab === 'reports' && <ReportsTab />}
       {subTab === 'audit' && <AuditLogViewer tableStyles={{ th, td }} />}
     </div>
   )
