@@ -38,7 +38,14 @@ export default function Discount() {
       .then(function(data) { if (data.found) setIsGuide(true) })
     fetch('/api/get-signup?clerk_id=' + user.id)
       .then(function(r) { return r.json() })
-      .then(function(data) { if (data.found) setAlreadySignedUp(true) })
+      .then(function(data) {
+        if (data.found) {
+          setAlreadySignedUp(true)
+          // Already a member — send them to their real dashboard instead
+          // of showing a static status card here.
+          router.replace('/member')
+        }
+      })
   }, [isLoaded, user])
 
   const toggle = function(list, setList, value) {
@@ -63,7 +70,12 @@ export default function Discount() {
         }))
       })
       const data = await res.json()
-      if (data.id) { setDone(true) }
+      if (data.id) {
+        setDone(true)
+        // New signup — send them into the welcome flow on their new
+        // dashboard instead of leaving them on a static success card.
+        router.replace('/member?welcome=1')
+      }
       else { console.error(data); setLoading(false) }
     } catch(err) { console.error(err); setLoading(false) }
   }
