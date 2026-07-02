@@ -1,3 +1,5 @@
+import { isBlocked } from '../../lib/blocklist-check'
+
 const GUIDES_TABLE = 'tblsJ5Ok1yPSgtvSj'
 
 export default async function handler(req, res) {
@@ -12,6 +14,25 @@ export default async function handler(req, res) {
 
   if (!cleanEmail || cleanPhone.length !== 10) {
     return res.status(400).json({ success: false, error: 'missing_or_invalid_fields' })
+  }
+
+  // Early UX check only — this is NOT the real enforcement point. The
+  // actual enforcement happens in add-tour.js (createFounderFlow) right
+  // before the Guide record is created. See Control Center Spec v1,
+  // Section 11.3.
+  try {
+    const blockCheck = await isBlocked({ email: cleanEmail, phone: cleanPhone })
+    if (blockCheck.blocked) {
+      return res.status(403).json({
+        success: false,
+        error: 'blocked',
+        message: 'לא ניתן להשלים את ההרשמה.'
+      })
+    }
+  } catch (err) {
+    console.error('BLOCKLIST_CHECK_FAILED', err)
+    // Fail open on an unexpected error here — this is only the early UX
+    // check; the real gate in add-tour.js still applies.
   }
 
   const token =
