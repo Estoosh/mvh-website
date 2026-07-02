@@ -1,283 +1,222 @@
 import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
-import { useRouter } from 'next/router'
 import Head from 'next/head'
 import Link from 'next/link'
-import Header from '../components/Header'
-import Footer from '../components/Footer'
-import RecommendedToursForMember from '../components/RecommendedToursForMember'
+import Header from '../../components/Header'
+import Footer from '../../components/Footer'
 
 const BROWN = '#7E4821'
 const CREAM = '#F7F1EA'
 
-const REGIONS = ["צפון", "שפלה", "מרכז", 'יו"ש', "צפון הנגב", "דרום"]
-const TOUR_TYPES = ["סיורים עירוניים", "סיורי שווקים"]
-const TRAVEL_WITH = ["משפחה", "חברים לעבודה", "בן/בת זוג", "מצטרף כיחיד", "לא משנה לי, העיקר לטייל"]
+const TOUR_IMAGES = {
+  'אפולוניה': '/Tour-Apolonia.jpg',
+  'עיר דוד': '/Tour-Davidcity.jpg',
+  'עין גדי': '/Tour-EinGedi.jpg',
+  'ירושלים': '/Tour-Churches.jpg',
+  'כנסיות': '/Tour-Churches.jpg',
+  'צפת': '/Tour-Safed.jpg',
+}
 
-function Chip({ value, selected, onClick }) {
+function getTourImage(tour) {
+  const title = tour.Tour_Title || ''
+  const city = tour.Cities_Tags || ''
+  for (const [key, val] of Object.entries(TOUR_IMAGES)) {
+    if (title.includes(key) || city.includes(key)) return val
+  }
+  return null
+}
+
+function TourRow({ tour }) {
+  const thumb = (tour.Tour_Images ? tour.Tour_Images.split('|')[0] : null) || getTourImage(tour)
+  const price = Number(tour.Price_Per_Person) || 0
+  const isCollab = tour.Tour_Status === 'collab'
+  const title = tour.Tour_Title || 'סיור'
+
   return (
-    <button type="button" onClick={onClick} style={{ padding: '7px 16px', borderRadius: 20, border: '1.5px solid', fontSize: 13, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif', fontWeight: 700, background: selected ? '#111' : '#fff', color: selected ? '#fff' : '#444', borderColor: selected ? '#111' : '#EDE7DF' }}>
-      {value}
-    </button>
+    <a href={'/tours/' + tour.id} style={{ textDecoration: 'none', color: 'inherit', display: 'grid', gridTemplateColumns: '150px 1fr 110px', background: '#fff', borderRadius: 12, border: '1px solid #EDE7DF', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+      <div style={{ height: 120, background: '#1a0d06' }}>
+        {thumb
+          ? <img src={thumb} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onError={e => e.target.style.display='none'} />
+          : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(150deg,#3a1a08,#1a0d06)' }} />
+        }
+      </div>
+      <div style={{ padding: '14px 18px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <p style={{ fontSize: 15, fontWeight: 700, color: '#222', marginBottom: 5, fontFamily: 'Heebo, Arial, sans-serif' }}>{title}</p>
+        <div style={{ display: 'flex', gap: 12, fontSize: 12, color: '#888', marginBottom: 6, fontFamily: 'Heebo, Arial, sans-serif' }}>
+          {tour.Cities_Tags && <span>📍 {tour.Cities_Tags}</span>}
+          {tour.Duration_Hours && <span>🕐 {tour.Duration_Hours} שעות</span>}
+        </div>
+        {tour.Tour_Teaser && <p style={{ fontSize: 12, color: '#999', lineHeight: 1.55, fontFamily: 'Heebo, Arial, sans-serif', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{tour.Tour_Teaser}</p>}
+      </div>
+      <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRight: '1px solid #F0EAE2' }}>
+        {isCollab
+          ? <span style={{ background: '#f0fdf4', color: '#16a34a', fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 16, fontFamily: 'Heebo, Arial, sans-serif', textAlign: 'center' }}>🎙 MvH</span>
+          : <span style={{ fontSize: 17, fontWeight: 800, color: BROWN, fontFamily: 'Heebo, Arial, sans-serif' }}>{price} ₪</span>
+        }
+        <span style={{ fontSize: 11, color: BROWN, fontWeight: 600, fontFamily: 'Heebo, Arial, sans-serif', marginTop: 5 }}>לפרטים ←</span>
+      </div>
+    </a>
   )
 }
 
-function formatDate(iso) {
-  if (!iso) return ''
-  try {
-    return new Date(iso).toLocaleDateString('he-IL', { day: 'numeric', month: 'long' })
-  } catch (e) { return '' }
-}
-
-export default function Member() {
+export default function GuidePage({ guide, tours }) {
   const { user, isLoaded } = useUser()
-  const router = useRouter()
-  const isWelcome = router.query.welcome === '1'
-
-  const [checkingSignup, setCheckingSignup] = useState(true)
-  const [signup, setSignup] = useState(null)
-  const [savedTours, setSavedTours] = useState(null)
-  const [removingId, setRemovingId] = useState(null)
-
-  const [editingPrefs, setEditingPrefs] = useState(false)
-  const [savingPrefs, setSavingPrefs] = useState(false)
-  const [regions, setRegions] = useState([])
-  const [tourTypes, setTourTypes] = useState([])
-  const [travelWith, setTravelWith] = useState([])
+  const [following, setFollowing] = useState(false)
+  const [toggling, setToggling] = useState(false)
 
   useEffect(function() {
-    if (!isLoaded) return
-    if (!user) { setCheckingSignup(false); return }
-
-    fetch('/api/get-signup?clerk_id=' + user.id)
+    if (!isLoaded || !user || !guide) return
+    fetch('/api/get-following?clerk_id=' + user.id)
       .then((r) => r.json())
       .then(function(data) {
-        if (data.found) {
-          setSignup(data.signup)
-          setRegions((data.signup.Regions_Interest || '').split(', ').filter(Boolean))
-          setTourTypes((data.signup.Tour_Types_Interest || '').split(', ').filter(Boolean))
-          setTravelWith((data.signup.Travel_With || '').split(', ').filter(Boolean))
-        } else {
-          // Not a community member yet — send them to sign up first.
-          router.replace('/discount')
-        }
-        setCheckingSignup(false)
+        const match = (data.guides || []).find(function(g) { return g.id === guide.id })
+        if (match) setFollowing(true)
       })
-      .catch(function() { setCheckingSignup(false) })
-  }, [isLoaded, user])
+      .catch(function() {})
+  }, [isLoaded, user, guide])
 
-  useEffect(function() {
-    if (!isLoaded || !user || !signup) return
-    fetch('/api/get-saved-tours?clerk_id=' + user.id)
-      .then((r) => r.json())
-      .then((data) => setSavedTours(data.tours || []))
-      .catch(() => setSavedTours([]))
-  }, [isLoaded, user, signup])
-
-  const toggle = function(list, setList, value) {
-    setList((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : prev.concat(value)))
-  }
-
-  const savePreferences = async function() {
-    setSavingPrefs(true)
-    try {
-      const res = await fetch('/api/update-signup-preferences', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clerk_id: user.id, regions, tour_types: tourTypes, travel_with: travelWith })
-      })
-      const data = await res.json()
-      if (data.ok) {
-        setSignup((prev) => Object.assign({}, prev, {
-          Regions_Interest: regions.join(', '),
-          Tour_Types_Interest: tourTypes.join(', '),
-          Travel_With: travelWith.join(', ')
-        }))
-        setEditingPrefs(false)
-      }
-    } catch (e) {
-      // non-fatal, form stays open for retry
+  const toggleFollow = async function() {
+    if (!user) {
+      window.location.href = '/sign-up'
+      return
     }
-    setSavingPrefs(false)
-  }
-
-  const removeSavedTour = async function(savedEntryId) {
-    setRemovingId(savedEntryId)
+    setToggling(true)
     try {
-      const res = await fetch('/api/remove-saved-tour', {
+      const endpoint = following ? '/api/unfollow-guide' : '/api/follow-guide'
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clerk_id: user.id, saved_entry_id: savedEntryId })
+        body: JSON.stringify({ clerk_id: user.id, guide_id: guide.id })
       })
       const data = await res.json()
-      if (data.ok) {
-        setSavedTours((prev) => prev.filter((t) => t.saved_entry_id !== savedEntryId))
-      }
+      if (data.ok) setFollowing(!following)
     } catch (e) {}
-    setRemovingId(null)
+    setToggling(false)
   }
 
-  const lbl = { display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 6, color: '#111' }
-  const card = { background: '#fff', borderRadius: 18, border: '1px solid #EDE7DF', padding: 28, marginBottom: 24 }
+  if (!guide) return (
+    <div style={{ fontFamily: 'Heebo, Arial, sans-serif', background: CREAM, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Header /><main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: '#6B6B6B' }}>המדריך לא נמצא</p></main><Footer />
+    </div>
+  )
 
-  if (!isLoaded || checkingSignup) {
-    return (
-      <div style={{ fontFamily: 'Heebo, Arial, sans-serif', background: CREAM, minHeight: '100vh' }}>
-        <Header />
-        <div style={{ textAlign: 'center', padding: '100px 0', color: '#B0A89E' }}>טוען...</div>
-      </div>
-    )
-  }
+  const tags = guide.Guide_Tags ? guide.Guide_Tags.split(',').map(t => t.trim()).filter(Boolean) : []
+  const photo = guide.Guide_Photo || null
+  const name = guide.Guide_Name || ''
+  const firstName = name.split(' ')[0]
+  const guideTitle = guide.Guide_Title || guide.Guide_title || ''
+  const bio = guide.Guide_Bio || guide.Guide_bio || ''
+  const region = guide.Guide_Region || ''
 
-  if (!user) {
-    return (
-      <div style={{ fontFamily: 'Heebo, Arial, sans-serif', background: CREAM, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <Header />
-        <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 20, padding: 24 }}>
-          <p style={{ fontSize: 18, fontWeight: 700 }}>האזור הזה מיועד לחברי קהילה מחוברים</p>
-          <a href="/sign-up" style={{ background: '#111', color: '#fff', padding: '13px 32px', borderRadius: 8, fontWeight: 800, textDecoration: 'none', fontFamily: 'Heebo, Arial, sans-serif' }}>הרשמה חינמית ←</a>
-        </main>
-        <Footer />
-      </div>
-    )
-  }
-
-  const excludeIds = (savedTours || []).map((t) => t.id)
+  const socialLinks = [
+    guide.Website && { label: 'אתר', href: guide.Website, icon: '🌐' },
+    guide.Facebook && { label: 'Facebook', href: guide.Facebook, icon: '📘' },
+    guide.Instagram && { label: 'Instagram', href: guide.Instagram, icon: '📷' },
+    guide.TikTok && { label: 'TikTok', href: guide.TikTok, icon: '♪' },
+  ].filter(Boolean)
 
   return (
-    <div style={{ fontFamily: 'Heebo, Arial, sans-serif', background: CREAM, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ fontFamily: 'Heebo, Arial, sans-serif', background: '#FAFAF8', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Head>
-        <title>האזור שלי | מאז ועד היום</title>
+        <title>{name} | מאז ועד היום</title>
+        <meta name="description" content={bio} />
       </Head>
       <Header />
 
-      <main style={{ flex: 1, maxWidth: 900, margin: '0 auto', padding: '48px 24px 64px', width: '100%' }}>
+      <main style={{ flex: 1, maxWidth: 820, margin: '0 auto', padding: '32px 24px', width: '100%' }}>
 
-        {isWelcome && (
-          <div style={{ background: '#fff', borderRadius: 18, border: '1px solid #EDE7DF', padding: 32, marginBottom: 32, textAlign: 'center' }}>
-            <p style={{ fontSize: 32, marginBottom: 10 }}>🎉</p>
-            <h1 style={{ fontSize: 22, fontWeight: 900, marginBottom: 10 }}>ברוכים הבאים לקהילה!</h1>
-            <p style={{ color: '#6B6B6B', marginBottom: 22, lineHeight: 1.7 }}>מעכשיו יש לכם הנחת חברי קהילה בכל סיור, ומקום לחזור אליו כשמשהו תופס לכם את העין.</p>
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Link href="/#tours" style={{ background: BROWN, color: '#fff', padding: '10px 20px', borderRadius: 999, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>גלו סיורים ←</Link>
-              <button onClick={() => setEditingPrefs(true)} style={{ background: '#fff', color: BROWN, border: '1.5px solid #EDE7DF', padding: '10px 20px', borderRadius: 999, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>עדכנו העדפות</button>
-            </div>
-          </div>
-        )}
+        {/* TOP */}
+        <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: 20, marginBottom: 32, alignItems: 'start' }}>
 
-        <div style={{ marginBottom: 32 }}>
-          <p style={{ fontSize: 12, color: BROWN, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 8 }}>האזור שלי</p>
-          <h1 style={{ fontSize: 'clamp(22px,3vw,32px)', fontWeight: 700, color: '#1a1a1a' }}>שלום {user.firstName || ''}</h1>
-        </div>
-
-        {/* Preferences summary / editor */}
-        <div style={card}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: editingPrefs ? 20 : 0 }}>
-            <h2 style={{ fontSize: 16, fontWeight: 700 }}>ההעדפות שלי</h2>
-            {!editingPrefs && (
-              <button onClick={() => setEditingPrefs(true)} style={{ background: 'transparent', color: BROWN, border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
-                עריכה
-              </button>
-            )}
+          {/* photo */}
+          <div style={{ borderRadius: 12, overflow: 'hidden', aspectRatio: '3/4', background: '#e8e0d8', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
+            {photo
+              ? <img src={photo} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onError={e => e.target.style.display='none'} />
+              : <div style={{ width: '100%', height: '100%', background: '#ddd4c8' }} />
+            }
           </div>
 
-          {!editingPrefs && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
-              <p style={{ fontSize: 14, color: '#6B6B6B' }}>אזורים: {regions.length > 0 ? regions.join(', ') : 'לא נבחרו עדיין'}</p>
-              <p style={{ fontSize: 14, color: '#6B6B6B' }}>סוגי סיורים: {tourTypes.length > 0 ? tourTypes.join(', ') : 'לא נבחרו עדיין'}</p>
-              <p style={{ fontSize: 14, color: '#6B6B6B' }}>מטיילים עם: {travelWith.length > 0 ? travelWith.join(', ') : 'לא נבחר עדיין'}</p>
-            </div>
-          )}
+          {/* info card */}
+          <div style={{ background: '#fff', borderRadius: 12, padding: '24px', border: '1px solid #EDE7DF', display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-          {editingPrefs && (
             <div>
-              {[
-                { label: 'אזורים שמעניינים אתכם', list: regions, setList: setRegions, items: REGIONS },
-                { label: 'סוגי סיורים שמעניינים אתכם', list: tourTypes, setList: setTourTypes, items: TOUR_TYPES },
-                { label: 'בעיקר מטיילים עם', list: travelWith, setList: setTravelWith, items: TRAVEL_WITH },
-              ].map(function(section) {
-                return (
-                  <div key={section.label} style={{ marginBottom: 20 }}>
-                    <label style={lbl}>{section.label}</label>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                      {section.items.map((item) => (
-                        <Chip key={item} value={item} selected={section.list.includes(item)} onClick={() => toggle(section.list, section.setList, item)} />
-                      ))}
-                    </div>
-                  </div>
-                )
-              })}
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button onClick={savePreferences} disabled={savingPrefs} style={{ background: '#111', color: '#fff', padding: '10px 24px', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: savingPrefs ? 'not-allowed' : 'pointer', border: 'none', opacity: savingPrefs ? 0.7 : 1, fontFamily: 'Heebo, Arial, sans-serif' }}>
-                  {savingPrefs ? 'שומר...' : 'שמירה'}
-                </button>
-                <button onClick={() => setEditingPrefs(false)} style={{ background: '#fff', color: '#666', border: '1px solid #EDE7DF', padding: '10px 24px', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
-                  ביטול
+              <p style={{ fontSize: 10, color: '#C0B8AE', marginBottom: 5, letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: 600 }}>מורה דרך</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                <h1 style={{ fontSize: 22, fontWeight: 800, color: '#2a2a2a', marginBottom: 3, letterSpacing: '-0.2px' }}>{name}</h1>
+                <button onClick={toggleFollow} disabled={toggling}
+                  style={{ background: following ? '#FBF7F1' : '#111', color: following ? BROWN : '#fff', border: '1px solid ' + (following ? '#EDE7DF' : '#111'), padding: '6px 16px', borderRadius: 999, fontSize: 12, fontWeight: 700, cursor: toggling ? 'not-allowed' : 'pointer', fontFamily: 'Heebo, Arial, sans-serif', opacity: toggling ? 0.7 : 1 }}>
+                  {following ? '✓ עוקב' : '+ עקבו'}
                 </button>
               </div>
+              {guideTitle && <p style={{ fontSize: 13, color: BROWN, fontWeight: 600 }}>{guideTitle}</p>}
             </div>
-          )}
-        </div>
 
-        {/* Saved tours */}
-        <div style={{ marginBottom: 16 }}>
-          <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>הסיורים שסימנתי</h2>
-
-          {savedTours === null && <p style={{ color: '#B0A89E' }}>טוען...</p>}
-
-          {savedTours !== null && savedTours.length === 0 && (
-            <div style={{ background: '#fff', borderRadius: 18, border: '1px solid #EDE7DF', padding: 32, marginBottom: 24 }}>
-              <p style={{ fontSize: 15, color: '#6B6B6B', marginBottom: 20 }}>
-                עוד לא סימנתם סיורים. הנה כמה שאולי יתאימו לכם, לפי מה שסיפרתם לנו:
-              </p>
-              <RecommendedToursForMember regions={regions} excludeTourIds={[]} limit={4} />
-            </div>
-          )}
-
-          {savedTours !== null && savedTours.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 32 }}>
-              {savedTours.map(function(tour) {
-                const images = tour.Tour_Images ? tour.Tour_Images.split('|').filter(Boolean) : []
-                const thumb = images[0] || null
-                return (
-                  <div key={tour.saved_entry_id} style={{ background: '#fff', borderRadius: 16, border: '1px solid #EDE7DF', overflow: 'hidden', display: 'grid', gridTemplateColumns: '140px 1fr' }}>
-                    <div style={{ height: 120, background: '#e8e0d8' }}>
-                      {thumb
-                        ? <img src={thumb} alt={tour.Tour_Title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onError={(e) => { e.target.style.display = 'none' }} />
-                        : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(150deg,#d4c5b0,#c2b09a)' }} />
-                      }
-                    </div>
-                    <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                      <div>
-                        <p style={{ fontSize: 12, color: '#B0A89E', marginBottom: 4 }}>{tour.Cities_Tags} · {tour.Guide_Name} · סומן ב-{formatDate(tour.saved_at)}</p>
-                        <p style={{ fontSize: 16, fontWeight: 700 }}>{tour.Tour_Title}</p>
-                      </div>
-                      <div style={{ display: 'flex', gap: 12, marginTop: 10 }}>
-                        <Link href={'/tours/' + tour.id} style={{ background: BROWN, color: '#fff', padding: '8px 18px', borderRadius: 999, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>
-                          פתחו את הסיור ←
-                        </Link>
-                        <button onClick={() => removeSavedTour(tour.saved_entry_id)} disabled={removingId === tour.saved_entry_id}
-                          style={{ background: 'transparent', color: '#B0A89E', border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'Heebo, Arial, sans-serif' }}>
-                          הסירו
-                        </button>
-                      </div>
-                    </div>
+            {(region || tags.length > 0) && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {region && <p style={{ fontSize: 12, color: '#888' }}>📍 {region}</p>}
+                {tags.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                    {tags.map(t => (
+                      <span key={t} style={{ background: 'rgba(126,72,33,0.06)', color: '#9a6040', border: '1px solid rgba(126,72,33,0.12)', fontSize: 11, fontWeight: 600, padding: '2px 9px', borderRadius: 16 }}>{t}</span>
+                    ))}
                   </div>
-                )
-              })}
+                )}
+              </div>
+            )}
+
+            {bio && (
+              <p style={{ fontSize: 13, color: '#555', lineHeight: 1.8, borderTop: '1px solid #F0EAE2', paddingTop: 12 }}>{bio}</p>
+            )}
+
+            {socialLinks.length > 0 && (
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', paddingTop: 4 }}>
+                {socialLinks.map(s => (
+                  <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 600, color: '#666', textDecoration: 'none', background: '#F7F1EA', border: '1px solid #EDE7DF', padding: '4px 10px', borderRadius: 16 }}>
+                    {s.icon} {s.label}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* TOURS */}
+        <div>
+          <p style={{ fontSize: 11, color: '#B0A89E', marginBottom: 12, letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: 600 }}>הסיורים של {firstName}</p>
+          {tours.length === 0 ? (
+            <div style={{ background: '#fff', borderRadius: 12, padding: 36, textAlign: 'center', border: '1px solid #EDE7DF' }}>
+              <p style={{ color: '#C0B8AE', fontSize: 13 }}>עדיין אין סיורים פעילים</p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {tours.map(t => <TourRow key={t.id} tour={t} />)}
             </div>
           )}
         </div>
-
-        {/* Recommendations, when there are already saved tours */}
-        {savedTours !== null && savedTours.length > 0 && (
-          <div style={card}>
-            <RecommendedToursForMember regions={regions} excludeTourIds={excludeIds} limit={4} title="עוד סיורים שאולי יתאימו לכם" />
-          </div>
-        )}
       </main>
-
       <Footer />
     </div>
   )
+}
+
+export async function getServerSideProps({ params }) {
+  try {
+    const token = process.env.AIRTABLE_TOKEN
+    const baseId = process.env.AIRTABLE_BASE_ID
+
+    const guideRes = await fetch(`https://api.airtable.com/v0/${baseId}/tblsJ5Ok1yPSgtvSj/${params.id}`, { headers: { Authorization: `Bearer ${token}` } })
+    if (!guideRes.ok) return { props: { guide: null, tours: [] } }
+    const guideRecord = await guideRes.json()
+    const guide = Object.assign({ id: guideRecord.id }, guideRecord.fields)
+
+    let tours = []
+    if (guide.Guide_Name) {
+      const toursRes = await fetch(`https://api.airtable.com/v0/${baseId}/tbltsGvfPLMAmJ764?filterByFormula={Guide_Name}="${guide.Guide_Name}"`, { headers: { Authorization: `Bearer ${token}` } })
+      const toursData = await toursRes.json()
+      tours = (toursData.records || []).map(r => Object.assign({ id: r.id }, r.fields)).filter(t => t.Tour_Status === 'paid' || t.Tour_Status === 'collab')
+    }
+
+    return { props: { guide, tours } }
+  } catch(e) { return { props: { guide: null, tours: [] } } }
 }
