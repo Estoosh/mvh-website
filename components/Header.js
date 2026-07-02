@@ -41,7 +41,9 @@ export default function Header() {
           <span style={{ color: '#D5CAC0' }}>|</span>
           <a href="/#tours" style={ls}>גלו מקומות</a>
           {user && (<><span style={{ color: '#D5CAC0' }}>|</span>
-            <Link href={isGuide ? '/dashboard' : '/discount'} style={ls}>{isGuide ? 'דשבורד' : 'ההנחה שלי'}</Link></>)}
+            <Link href={isGuide ? '/dashboard' : (isMember ? '/member' : '/discount')} style={ls}>
+              {isGuide ? 'דשבורד' : (isMember ? 'האזור שלי' : 'ההנחה שלי')}
+            </Link></>)}
         </div>
 
         <Link href="/">
