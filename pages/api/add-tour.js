@@ -1,4 +1,5 @@
 import { sendTelegram } from '../../lib/notify'
+import { isBlocked } from '../../lib/blocklist-check'
 const GUIDES_TABLE = 'Guides'
 const TOURS_TABLE = 'Tours'
 
@@ -82,6 +83,18 @@ async function createFounderFlow(res, baseId, headers, body) {
   }
 
   const founderNumber = await getNextFounderNumber(baseId, headers)
+
+  // Real enforcement point (Control Center Spec v1, Section 11.3). Uses
+  // the same shared isBlocked() as register-founder.js's early UX check —
+  // never a locally re-implemented copy. This is the check that matters
+  // even if the earlier register-founder.js screen was bypassed entirely.
+  const blockCheck = await isBlocked({ email, phone })
+  if (blockCheck.blocked) {
+    return res.status(403).json({
+      error: 'blocked',
+      message: 'לא ניתן להשלים את ההרשמה.'
+    })
+  }
 
   const guideFields = {
     Guide_Name: guideName,
