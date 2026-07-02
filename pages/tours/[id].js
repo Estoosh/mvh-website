@@ -66,6 +66,7 @@ export default function TourPage({ tour, guideRecord, mapUrl }) {
   const [relatedTours, setRelatedTours] = useState([])
   const [copied, setCopied] = useState(false)
   const [interested, setInterested] = useState(false)
+  const [savedEntryId, setSavedEntryId] = useState(null)
 
   useEffect(function() {
     if (!tour) return
@@ -94,6 +95,16 @@ export default function TourPage({ tour, guideRecord, mapUrl }) {
     fetch('/api/get-signup?clerk_id=' + user.id)
       .then(r => r.json())
       .then(function(data) { if (data.found) setIsSignedUpForDiscount(true) })
+    // Account-backed saved status, in addition to the existing localStorage
+    // check in the effect above. If the account has this tour saved, it
+    // takes precedence (source of truth for signed-in members).
+    fetch('/api/get-saved-tours?clerk_id=' + user.id)
+      .then(r => r.json())
+      .then(function(data) {
+        const match = (data.tours || []).find(function(t) { return t.id === tour.id })
+        if (match) { setInterested(true); setSavedEntryId(match.saved_entry_id) }
+      })
+      .catch(function() {})
   }, [isLoaded, user])
 
   if (!tour) return (
@@ -148,7 +159,35 @@ export default function TourPage({ tour, guideRecord, mapUrl }) {
     } catch(e) {}
   }
 
-  const saveTour = function() {
+  const saveTour = async function() {
+    // Signed-in member: use the real account-backed save (Member Area).
+    if (user) {
+      if (interested && savedEntryId) {
+        try {
+          const res = await fetch('/api/remove-saved-tour', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ clerk_id: user.id, saved_entry_id: savedEntryId })
+          })
+          const data = await res.json()
+          if (data.ok) { setInterested(false); setSavedEntryId(null) }
+        } catch (e) {}
+        return
+      }
+
+      try {
+        const res = await fetch('/api/save-tour', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ clerk_id: user.id, tour_id: tour.id, source: 'tour_page' })
+        })
+        const data = await res.json()
+        if (data.ok) { setInterested(true); if (data.entry) setSavedEntryId(data.entry.id) }
+      } catch (e) {}
+      return
+    }
+
+    // Signed-out visitor: unchanged localStorage-only behavior, same as before.
     try {
       const saved = JSON.parse(localStorage.getItem('mvh_interested_tours') || '[]')
       if (!saved.find(function(t) { return t.id === tour.id })) {
