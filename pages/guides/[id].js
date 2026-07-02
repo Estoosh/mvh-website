@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react'
+import { useUser } from '@clerk/nextjs'
 import Head from 'next/head'
 import Link from 'next/link'
 import Header from '../../components/Header'
@@ -58,6 +60,40 @@ function TourRow({ tour }) {
 }
 
 export default function GuidePage({ guide, tours }) {
+  const { user, isLoaded } = useUser()
+  const [following, setFollowing] = useState(false)
+  const [toggling, setToggling] = useState(false)
+
+  useEffect(function() {
+    if (!isLoaded || !user || !guide) return
+    fetch('/api/get-following?clerk_id=' + user.id)
+      .then((r) => r.json())
+      .then(function(data) {
+        const match = (data.guides || []).find(function(g) { return g.id === guide.id })
+        if (match) setFollowing(true)
+      })
+      .catch(function() {})
+  }, [isLoaded, user, guide])
+
+  const toggleFollow = async function() {
+    if (!user) {
+      window.location.href = '/sign-up'
+      return
+    }
+    setToggling(true)
+    try {
+      const endpoint = following ? '/api/unfollow-guide' : '/api/follow-guide'
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clerk_id: user.id, guide_id: guide.id })
+      })
+      const data = await res.json()
+      if (data.ok) setFollowing(!following)
+    } catch (e) {}
+    setToggling(false)
+  }
+
   if (!guide) return (
     <div style={{ fontFamily: 'Heebo, Arial, sans-serif', background: CREAM, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Header /><main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: '#6B6B6B' }}>המדריך לא נמצא</p></main><Footer />
@@ -105,7 +141,13 @@ export default function GuidePage({ guide, tours }) {
 
             <div>
               <p style={{ fontSize: 10, color: '#C0B8AE', marginBottom: 5, letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: 600 }}>מורה דרך</p>
-              <h1 style={{ fontSize: 22, fontWeight: 800, color: '#2a2a2a', marginBottom: 3, letterSpacing: '-0.2px' }}>{name}</h1>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                <h1 style={{ fontSize: 22, fontWeight: 800, color: '#2a2a2a', marginBottom: 3, letterSpacing: '-0.2px' }}>{name}</h1>
+                <button onClick={toggleFollow} disabled={toggling}
+                  style={{ background: following ? '#FBF7F1' : '#111', color: following ? BROWN : '#fff', border: '1px solid ' + (following ? '#EDE7DF' : '#111'), padding: '6px 16px', borderRadius: 999, fontSize: 12, fontWeight: 700, cursor: toggling ? 'not-allowed' : 'pointer', fontFamily: 'Heebo, Arial, sans-serif', opacity: toggling ? 0.7 : 1 }}>
+                  {following ? '✓ עוקב' : '+ עקבו'}
+                </button>
+              </div>
               {guideTitle && <p style={{ fontSize: 13, color: BROWN, fontWeight: 600 }}>{guideTitle}</p>}
             </div>
 
