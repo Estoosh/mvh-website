@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Header from '../components/Header'
 import FinanceTab from '../components/admin/FinanceTab'
 import ControlCenterTab from '../components/admin/ControlCenterTab'
+import DiscoveryTab from '../components/admin/DiscoveryTab'
 
 const ADMIN_PASSWORD = 'mvh2025admin'
 const BROWN = '#7E4821'
@@ -162,6 +163,7 @@ export default function Admin() {
     ['newsletter', 'ניוזלטר'],
     ['finance', 'כספים'],
     ['control', 'בקרה'],
+    ['discovery', 'Discovery'],
   ]
 
   return (
@@ -477,6 +479,11 @@ export default function Admin() {
         {/* ── CONTROL CENTER ── */}
         {!loading && tab === 'control' && (
           <ControlCenterTab adminId={actorName} />
+        )}
+
+        {/* ── DISCOVERY & OUTREACH ── */}
+        {!loading && tab === 'discovery' && (
+          <DiscoveryTab adminId={actorName} />
         )}
       </div>
     </div>
