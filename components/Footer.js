@@ -23,7 +23,7 @@ export default function Footer() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <strong style={{ fontSize: 13, fontWeight: 900, marginBottom: 4 }}>ניווט מהיר</strong>
-            {[['גלו מקומות','/#tours'],['מדריכים','/#guides'],['קהילה','/#community'],['פודקאסט','/#podcast'],['אני מדריך','/join'],['אודות','https://mvh.co.il']].map(s => (
+            {[['גלו מקומות','/#tours'],['מדריכים','/#guides'],['קהילה','/#community'],['פודקאסט','/#podcast'],['אני מדריך','/join'],['אודות','/why-mvh']].map(s => (
               <a key={s[0]} href={s[1]} style={{ fontSize: 13, color: '#6B6B6B', textDecoration: 'none', fontWeight: 600 }}>{s[0]}</a>
             ))}
           </div>
