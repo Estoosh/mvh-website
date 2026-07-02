@@ -1,8 +1,24 @@
+import { isBlocked } from '../../lib/blocklist-check'
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
   const token = process.env.AIRTABLE_TOKEN
   const baseId = process.env.AIRTABLE_BASE_ID
   const body = req.body
+
+  // First blocking/duplicate check of any kind in this file (Control
+  // Center Spec v1, Section 10.1 / 11.3). Uses the same shared
+  // isBlocked() as register-founder.js and add-tour.js.
+  try {
+    const blockCheck = await isBlocked({ email: body.email, phone: body.whatsapp_phone })
+    if (blockCheck.blocked) {
+      return res.status(403).json({ error: 'blocked', message: 'לא ניתן להשלים את ההרשמה.' })
+    }
+  } catch (err) {
+    console.error('BLOCKLIST_CHECK_FAILED', err)
+    // Fail open on an unexpected error — consistent with the same
+    // decision made in register-founder.js.
+  }
 
   const response = await fetch(
     `https://api.airtable.com/v0/${baseId}/Signups`,
