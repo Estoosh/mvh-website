@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Header from '../components/Header'
 import FinanceTab from '../components/admin/FinanceTab'
+import ControlCenterTab from '../components/admin/ControlCenterTab'
 
 const ADMIN_PASSWORD = 'mvh2025admin'
 const BROWN = '#7E4821'
@@ -160,6 +161,7 @@ export default function Admin() {
     ['signups', `קהילה (${signups.length})`],
     ['newsletter', 'ניוזלטר'],
     ['finance', 'כספים'],
+    ['control', 'בקרה'],
   ]
 
   return (
@@ -470,6 +472,11 @@ export default function Admin() {
         {/* ── FINANCE ── */}
         {!loading && tab === 'finance' && (
           <FinanceTab adminId={actorName} />
+        )}
+
+        {/* ── CONTROL CENTER ── */}
+        {!loading && tab === 'control' && (
+          <ControlCenterTab adminId={actorName} />
         )}
       </div>
     </div>
